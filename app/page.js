@@ -9,11 +9,13 @@ const focusAreas = [
   ["06", "Partnerships", "Working with institutions, communities and partners around shared priorities."],
 ];
 
+const logo = "/images/VSI LOGO white and blue.png";
+
 export default function Home() {
   return (
     <main>
       <header className="site-header"><div className="nav-shell">
-        <a className="brand" href="/"><Image src="/images/vsi-logo.svg" alt="Visionary Students Initiative" width={188} height={71} priority /></a>
+        <a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a>
         <nav className="desktop-nav"><a href="#about">About</a><a href="#work">Our work</a><a href="#stories">Stories</a><a href="/volunteer">Volunteer</a><a href="#contact">Contact</a></nav>
         <a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a>
       </div></header>
@@ -34,7 +36,7 @@ export default function Home() {
 
       <section className="get-involved section-shell" id="contact"><div><p className="kicker">GET INVOLVED</p><h2>There is a place for your voice.</h2><p>Volunteer, partner, learn with us or connect with VSI about work that matters to young people.</p></div><a className="button button-primary" href="/volunteer">Volunteer with VSI <span>↗</span></a></section>
 
-      <footer><div className="section-shell footer-grid"><div className="footer-brand"><Image src="/images/vsi-logo.svg" alt="Visionary Students Initiative" width={250} height={94} /><p>Promoting policies and initiatives that place students at the centre of national development.</p></div><div><p className="footer-title">Explore</p><a href="#about">About</a><a href="#work">Our work</a><a href="#stories">Stories</a><a href="/volunteer">Volunteer</a></div><div><p className="footer-title">Contact</p><a href="mailto:vsizambia@gmail.com">vsizambia@gmail.com</a><a href="tel:+260968623786">+260 968 623 786</a><span>Plot No. 9173, Ben Bella Road<br/>Peace Embassy Building, 1st Floor<br/>Lusaka, Zambia</span></div></div><div className="section-shell footer-bottom"><span>© {new Date().getFullYear()} Visionary Students Initiative</span><span>Made for youth-led change in Zambia.</span></div></footer>
+      <footer><div className="section-shell footer-grid"><div className="footer-brand"><Image src={logo} alt="Visionary Students Initiative" width={250} height={94} /><p>Promoting policies and initiatives that place students at the centre of national development.</p></div><div><p className="footer-title">Explore</p><a href="#about">About</a><a href="#work">Our work</a><a href="#stories">Stories</a><a href="/volunteer">Volunteer</a></div><div><p className="footer-title">Contact</p><a href="mailto:vsizambia@gmail.com">vsizambia@gmail.com</a><a href="tel:+260968623786">+260 968 623 786</a><span>Plot No. 9173, Ben Bella Road<br/>Peace Embassy Building, 1st Floor<br/>Lusaka, Zambia</span></div></div><div className="section-shell footer-bottom"><span>© {new Date().getFullYear()} Visionary Students Initiative</span><span>Made for youth-led change in Zambia.</span></div></footer>
     </main>
   );
 }
