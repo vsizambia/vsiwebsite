@@ -1,0 +1,61 @@
+/* VSI visual refinements */
+@media (min-width: 901px){
+  .nav-shell{min-height:88px;padding-top:8px;padding-bottom:8px}
+  .brand img{width:184px}
+}
+
+/* Consistent, gentle image motion on scroll and hover */
+.hero-image img,
+.story-image img,
+.programme-image img,
+.volunteer-hero-image img,
+.story-page-image img,
+.story-year-image img{
+  transition:transform .75s cubic-bezier(.2,.7,.2,1),filter .45s ease;
+}
+
+@media (prefers-reduced-motion:no-preference){
+  .hero-image img,
+  .story-image img,
+  .programme-image img,
+  .volunteer-hero-image img,
+  .story-page-image img,
+  .story-year-image img{
+    animation:imageReveal linear both;
+    animation-timeline:view();
+    animation-range:entry 0% cover 35%;
+  }
+  .programme-card:hover .programme-image img,
+  .story-image:hover img,
+  .volunteer-hero-image:hover img,
+  .story-page-image:hover img,
+  .story-year-image:hover img{
+    transform:scale(1.055);
+  }
+  .story-year-image:hover img{filter:saturate(1.04)}
+}
+
+@keyframes imageReveal{
+  from{transform:scale(1.045)}
+  to{transform:scale(1)}
+}
+
+/* Give story-page imagery a little more breathing room */
+.story-year-image{
+  position:relative;
+  min-height:390px;
+  margin-top:32px;
+  border-radius:26px;
+  overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,53,102,.10);
+}
+
+/* Subtle cross-page navigation transition where supported */
+@supports (view-transition-name:root){
+  @view-transition{navigation:auto}
+}
+
+@media(max-width:600px){
+  .nav-shell{min-height:68px;padding-top:0;padding-bottom:0}
+  .story-year-image{min-height:280px;margin-top:24px}
+}
