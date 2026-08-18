@@ -9,7 +9,7 @@ const focusAreas = [
   ["06", "Partnerships", "Working with institutions, communities and partners around shared priorities.", "/images/Partnerships.jpg"],
 ];
 
-const logo = "/images/VSI LOGO white and  blue.png";
+const logo = "/images/vsi logo blue text.png";
 
 export default function Home() {
   return (
