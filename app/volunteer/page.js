@@ -65,7 +65,7 @@ export default function Volunteer() {
       </section>
 
       <section className="volunteer-types section-shell">
-        <div className="section-heading-row"><div><p className="kicker">WAYS TO SERVE</p><h2>Find a way to contribute that fits you.</h2></div><p>Different forms of volunteering can support VSI depending on programme needs, skills, availability and assignment duration.</p></div>
+        <div className="section-heading-row"><div><p className="kicker">WAYS TO SERVE</p><h2>Discover how your unique skills can drive change.</h2></div></div>
         <div className="volunteer-type-grid">
           {types.map(([n, t, d, img]) => (
             <article className="volunteer-type-card volunteer-photo-card" key={t}>
@@ -84,7 +84,6 @@ export default function Volunteer() {
       </section>
 
       <section className="volunteer-process section-shell" id="how">
-        <div className="section-heading-row"><div><p className="kicker">HOW IT WORKS</p><h2>A simple journey from interest to contribution.</h2></div><p>Four clear stages help us place volunteers thoughtfully and prepare them to contribute well.</p></div>
         <div className="process-flow">
           {process.map(([n, t, d], index) => (
             <article className="process-step" key={n}>
