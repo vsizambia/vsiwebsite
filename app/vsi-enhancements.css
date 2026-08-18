@@ -40,22 +40,50 @@
   to{transform:scale(1)}
 }
 
-/* Give story-page imagery a little more breathing room */
-.story-year-image{
+/* Story page: keep every image/text pair balanced — image left, story right */
+.story-page-hero-grid.story-image-left{grid-template-columns:1fr 1fr}
+.story-page-hero-grid.story-image-left .story-page-image{grid-column:1}
+.story-page-hero-grid.story-image-left>div:last-child{grid-column:2}
+
+.story-timeline .story-year{
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:70px;
+  align-items:center;
+}
+.story-timeline .story-year-image{
   position:relative;
-  min-height:390px;
-  margin-top:32px;
+  width:100%;
+  min-height:430px;
+  margin-top:0;
   border-radius:26px;
   overflow:hidden;
   box-shadow:0 18px 50px rgba(0,53,102,.10);
 }
+.story-timeline .story-year-copy{min-width:0}
+.story-date{
+  display:block;
+  margin:0 0 16px;
+  color:var(--baltic-blue);
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.story-timeline .story-year-copy .kicker{margin-bottom:16px}
 
 /* Subtle cross-page navigation transition where supported */
 @supports (view-transition-name:root){
   @view-transition{navigation:auto}
 }
 
+@media(max-width:900px){
+  .story-page-hero-grid.story-image-left{grid-template-columns:1fr}
+  .story-page-hero-grid.story-image-left .story-page-image,
+  .story-page-hero-grid.story-image-left>div:last-child{grid-column:auto}
+  .story-timeline .story-year{grid-template-columns:1fr;gap:28px}
+  .story-timeline .story-year-image{min-height:380px}
+}
+
 @media(max-width:600px){
   .nav-shell{min-height:68px;padding-top:0;padding-bottom:0}
-  .story-year-image{min-height:280px;margin-top:24px}
+  .story-timeline .story-year-image{min-height:280px}
 }
