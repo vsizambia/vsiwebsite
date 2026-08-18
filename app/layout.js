@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./vsi-enhancements.css";
 
 export const metadata = {
   title: "Visionary Students Initiative | Zambia",
