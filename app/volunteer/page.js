@@ -84,11 +84,24 @@ export default function Volunteer() {
       </section>
 
       <section className="volunteer-process section-shell" id="how">
-        <div className="section-heading-row"><div><p className="kicker">HOW IT WORKS</p><h2>A clear path from interest to contribution.</h2></div></div>
-        <div className="process-grid">{process.map(([n, t, d]) => <article key={n}><span>{n}</span><h3>{t}</h3><p>{d}</p></article>)}</div>
+        <div className="section-heading-row"><div><p className="kicker">HOW IT WORKS</p><h2>A simple journey from interest to contribution.</h2></div><p>Four clear stages help us place volunteers thoughtfully and prepare them to contribute well.</p></div>
+        <div className="process-flow">
+          {process.map(([n, t, d], index) => (
+            <article className="process-step" key={n}>
+              <div className="process-marker"><span>{n}</span></div>
+              <div className="process-copy"><h3>{t}</h3><p>{d}</p></div>
+              {index < process.length - 1 && <div className="process-connector" aria-hidden="true"><span>→</span></div>}
+            </article>
+          ))}
+        </div>
       </section>
 
-      <section className="volunteer-standard"><div className="section-shell standard-grid"><div><p className="kicker">WHAT YOU CAN EXPECT</p><h2>Safe. Respectful. Supportive.</h2><p>VSI's volunteer framework emphasises clear information, training and support, fair treatment, appropriate supervision and recognition. Volunteers are also expected to uphold conduct, confidentiality, safeguarding and responsible service.</p></div><div className="standard-list"><div><strong>Training & induction</strong><span>Orientation, safeguarding, safety, communication and reporting.</span></div><div><strong>Supervision</strong><span>Volunteer assignments have clear supervision and reporting arrangements.</span></div><div><strong>Development</strong><span>Mentorship, coaching, feedback, learning and leadership opportunities.</span></div><div><strong>Recognition</strong><span>Appropriate acknowledgement can include certificates and appreciation.</span></div></div></div></section>
+      <section className="volunteer-standard">
+        <div className="section-shell standard-grid">
+          <div className="standard-image"><Image src="/images/Civic leadership.jpg" alt="Young people participating in civic leadership and community activity" fill sizes="(max-width:900px) 100vw,48vw" /></div>
+          <div className="standard-copy"><p className="kicker">WHAT YOU CAN EXPECT</p><h2>Safe. Respectful. Supportive.</h2><p>VSI's volunteer framework emphasises clear information, training and support, fair treatment, appropriate supervision and recognition. Volunteers are also expected to uphold conduct, confidentiality, safeguarding and responsible service.</p><div className="standard-list"><div><strong>Training & induction</strong><span>Orientation, safeguarding, safety, communication and reporting.</span></div><div><strong>Supervision</strong><span>Volunteer assignments have clear supervision and reporting arrangements.</span></div><div><strong>Development</strong><span>Mentorship, coaching, feedback, learning and leadership opportunities.</span></div><div><strong>Recognition</strong><span>Appropriate acknowledgement can include certificates and appreciation.</span></div></div></div>
+        </div>
+      </section>
 
       <section className="application-section section-shell" id="apply"><div className="application-card"><div className="application-copy"><p className="kicker">VOLUNTEER WITH VSI</p><h2>Ready to contribute?</h2><p>If you are passionate about youth leadership, community service, civic participation, wellbeing, research, communications or other areas of VSI's work, we would love to hear from you.</p><p>Complete the official VSI volunteer form with your details, interests, skills and availability. The VSI team will review your information and contact you about suitable opportunities.</p><div className="application-note"><strong>Before you apply</strong><span>Volunteer roles may require induction, training, supervision and additional safeguarding or screening depending on the assignment.</span></div></div><div className="form-cta-panel"><div className="form-cta-icon">↗</div><p className="kicker">OFFICIAL VSI FORM</p><h3>Tell us where you can make a difference.</h3><p>Your application is handled through VSI's official Google Form.</p><a className="button button-yellow" href="https://docs.google.com/forms/d/e/1FAIpQLSc_ht3xWqborbPsbkYOR9xFEgOS7nIBJAkascnx0KAtyXbJYQ/viewform" target="_blank" rel="noopener noreferrer">Apply to volunteer <span>↗</span></a><small>The form opens in a new tab.</small></div></div></section>
 
