@@ -85,11 +85,10 @@ export default function Volunteer() {
 
       <section className="volunteer-process section-shell" id="how">
         <div className="process-flow">
-          {process.map(([n, t, d], index) => (
+          {process.map(([n, t, d]) => (
             <article className="process-step" key={n}>
               <div className="process-marker"><span>{n}</span></div>
               <div className="process-copy"><h3>{t}</h3><p>{d}</p></div>
-              {index > 0 && index < process.length - 1 && <div className="process-connector" aria-hidden="true"><span>→</span></div>}
             </article>
           ))}
         </div>
