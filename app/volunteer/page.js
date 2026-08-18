@@ -89,7 +89,7 @@ export default function Volunteer() {
             <article className="process-step" key={n}>
               <div className="process-marker"><span>{n}</span></div>
               <div className="process-copy"><h3>{t}</h3><p>{d}</p></div>
-              {index < process.length - 1 && <div className="process-connector" aria-hidden="true"><span>→</span></div>}
+              {index > 0 && index < process.length - 1 && <div className="process-connector" aria-hidden="true"><span>→</span></div>}
             </article>
           ))}
         </div>
