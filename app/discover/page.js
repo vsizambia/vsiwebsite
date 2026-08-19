@@ -9,11 +9,11 @@ export const metadata = {
   openGraph: {
     title: "Discover VSI | Visionary Students Initiative",
     description: "Learn who Visionary Students Initiative is, what we stand on, and why we exist.",
-    url: "https://vsizambia.org/discover",
+    url: "https://www.vsizambia.org/discover",
   },
 };
 
-const standOnImages = [{ src: "/images/vsi what we stand on 1.jpg", alt: "VSI What We Stand On" },{ src: "/images/vsi what we stand on 2.jpg", alt: "VSI What We Stand On" },{ src: "/images/vsi what we stand on 3.jpg", alt: "VSI What We Stand On" },{ src: "/images/vsi what we stand on 4.jpg", alt: "VSI What We Stand On" },{ src: "/images/vsi what we stand on 7.jpg", alt: "VSI What We Stand On" },{ src: "/images/vsi what we stand on policy.jpg", alt: "VSI policy and public participation" }];
+const standOnImages = [{ src: "/images/vsi what we stand on 1.jpg", alt: "VSI members taking part in community action" },{ src: "/images/vsi what we stand on 2.jpg", alt: "VSI members working together" },{ src: "/images/vsi what we stand on 3.jpg", alt: "Young people participating in VSI activities" },{ src: "/images/vsi what we stand on 4.jpg", alt: "VSI community engagement" },{ src: "/images/vsi what we stand on 7.jpg", alt: "VSI volunteers serving their community" },{ src: "/images/vsi what we stand on policy.jpg", alt: "VSI policy and public participation" }];
 
 export default function DiscoverPage() {
   const carouselImages = [...standOnImages, ...standOnImages];
