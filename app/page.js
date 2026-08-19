@@ -9,7 +9,7 @@ export const metadata = {
   openGraph: {
     title: "Visionary Students Initiative | Zambia",
     description: "Promoting policies and initiatives that place students at the centre of national development.",
-    url: "https://vsizambia.org",
+    url: "https://www.vsizambia.org",
   },
 };
 
