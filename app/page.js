@@ -10,10 +10,19 @@ const focusAreas = [
   ["06", "Partnerships", "Working with institutions, communities and partners around shared priorities.", "/images/Partnerships.jpg"],
 ];
 
+const partners = [
+  ["GRZ", "/images/vsi partner grz.jpg"],
+  ["IAYSP", "/images/vsi partner iaysp.jpg"],
+  ["VicTalk", "/images/vsi partner victalk.jpg"],
+  ["ZYDF", "/images/vsi partner zydf.jpg"],
+];
+
 const logo = "/images/vsi logo blue text.png";
 const whiteLogo = "/images/VSI LOGO white.png";
 
 export default function Home() {
+  const carouselPartners = [...partners, ...partners];
+
   return (
     <main>
       <header className="site-header">
@@ -67,7 +76,11 @@ export default function Home() {
         </div>
         <div className="partners-carousel" aria-label="VSI partners">
           <div className="partners-track">
-            <div className="partner-placeholder">Partner logos will appear here.</div>
+            {carouselPartners.map(([name, src], index) => (
+              <div className="partner-logo" key={`${name}-${index}`}>
+                <Image src={src} alt={`${name} partner logo`} width={280} height={130} />
+              </div>
+            ))}
           </div>
         </div>
       </section>
