@@ -41,13 +41,15 @@ export default function Home() {
       </section>
 
       <section className="work" id="work">
-        <div className="section-shell intro" style={{background:"#f3f7f9", paddingTop:80, paddingBottom:80}}>
-          <div>
-            <h2>Work that helps young people lead, serve and shape change.</h2>
-            <p>Our work connects learning with action — creating spaces where young people can develop skills, engage communities, and contribute to national conversations</p>
-          </div>
-          <div className="story-image" style={{minHeight:500}}>
-            <Image src="/images/vsi what we stand on 1.jpg" alt="VSI members taking part in community action" fill sizes="(max-width: 900px) 100vw, 50vw" />
+        <div className="work-intro-band">
+          <div className="section-shell intro">
+            <div>
+              <h2>Work that helps young people lead, serve and shape change.</h2>
+              <p>Our work connects learning with action — creating spaces where young people can develop skills, engage communities, and contribute to national conversations</p>
+            </div>
+            <div className="story-image" style={{minHeight:500}}>
+              <Image src="/images/vsi what we stand on 1.jpg" alt="VSI members taking part in community action" fill sizes="(max-width: 900px) 100vw, 50vw" />
+            </div>
           </div>
         </div>
         <div className="section-shell">
