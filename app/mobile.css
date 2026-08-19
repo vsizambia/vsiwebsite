@@ -11,9 +11,10 @@
   .nav-shell{width:calc(100% - 24px);min-height:68px;gap:10px}
   .brand{flex:1;min-width:0}
   .brand img{width:148px;max-width:100%;height:auto}
-  .nav-cta{flex:0 0 auto;min-height:44px;padding:0 16px;font-size:13px}
+  .nav-cta{flex:0 0 132px;width:132px;min-height:44px;height:44px;padding:0 12px;font-size:13px;line-height:1;gap:7px;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center}
+  .nav-cta span{font-size:13px;line-height:1}
   .desktop-nav{display:none}
-  .mobile-menu{display:block;position:relative;flex:0 0 auto}
+  .mobile-menu{display:block;position:relative;flex:0 0 44px}
   .mobile-menu summary{list-style:none;display:grid;place-items:center;width:44px;height:44px;border:1px solid #d9e5eb;border-radius:50%;background:#fff;color:var(--regal-navy);cursor:pointer}
   .mobile-menu summary::-webkit-details-marker{display:none}
   .mobile-menu summary span,.mobile-menu summary span::before,.mobile-menu summary span::after{display:block;width:17px;height:2px;background:var(--regal-navy);border-radius:3px;content:""}
@@ -112,10 +113,19 @@
 
 @media (max-width:380px){
   .brand img{width:136px}
-  .nav-cta{padding:0 13px;font-size:12px}
-  .mobile-menu summary{width:40px;height:40px}
+  .nav-cta{flex-basis:122px;width:122px;min-height:42px;height:42px;padding:0 10px;font-size:12px}
+  .mobile-menu{flex-basis:42px}
+  .mobile-menu summary{width:42px;height:42px}
   .hero-content{padding-top:82px}
   .hero h1{font-size:38px}
   .hero-actions{flex-direction:column}
   .hero-actions .button{width:100%}
+}
+
+/* Header alignment: keep the CTA and menu visually balanced on every mobile page. */
+@media (max-width:600px){
+  .nav-shell{align-items:center}
+  .nav-cta,.mobile-menu summary{box-shadow:none}
+  .nav-cta{border:0}
+  .nav-cta span{display:inline-block;transform:translateY(-.5px)}
 }
