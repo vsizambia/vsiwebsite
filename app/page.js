@@ -5,6 +5,12 @@ import { SiteHeader, SiteFooter } from "./components/SiteChrome";
 export const metadata = {
   title: "Home",
   description: "Visionary Students Initiative promotes policies and initiatives that place students and young people at the centre of national development in Zambia.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Visionary Students Initiative | Zambia",
+    description: "Promoting policies and initiatives that place students at the centre of national development.",
+    url: "https://vsizambia.org",
+  },
 };
 
 const focusAreas = [
