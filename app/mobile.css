@@ -1,0 +1,121 @@
+/* Mobile-first polish layer. Desktop layout remains unchanged. */
+
+.mobile-menu{display:none}
+
+@media (max-width: 600px){
+  body{overflow-x:hidden;font-size:16px}
+  .section-shell{width:calc(100% - 28px)}
+
+  /* Header */
+  .site-header{position:sticky;top:0}
+  .nav-shell{width:calc(100% - 24px);min-height:68px;gap:10px}
+  .brand{flex:1;min-width:0}
+  .brand img{width:148px;max-width:100%;height:auto}
+  .nav-cta{flex:0 0 auto;min-height:44px;padding:0 16px;font-size:13px}
+  .desktop-nav{display:none}
+  .mobile-menu{display:block;position:relative;flex:0 0 auto}
+  .mobile-menu summary{list-style:none;display:grid;place-items:center;width:44px;height:44px;border:1px solid #d9e5eb;border-radius:50%;background:#fff;color:var(--regal-navy);cursor:pointer}
+  .mobile-menu summary::-webkit-details-marker{display:none}
+  .mobile-menu summary span,.mobile-menu summary span::before,.mobile-menu summary span::after{display:block;width:17px;height:2px;background:var(--regal-navy);border-radius:3px;content:""}
+  .mobile-menu summary span{position:relative}
+  .mobile-menu summary span::before{position:absolute;top:-6px}
+  .mobile-menu summary span::after{position:absolute;top:6px}
+  .mobile-menu-panel{position:absolute;right:0;top:52px;width:min(270px,calc(100vw - 28px));padding:10px;background:#fff;border:1px solid #dfe8ed;border-radius:18px;box-shadow:0 18px 45px rgba(0,53,102,.16);z-index:100}
+  .mobile-menu-panel a{display:block;padding:13px 14px;border-radius:12px;color:var(--regal-navy);font-weight:800;font-size:14px}
+  .mobile-menu-panel a:hover{background:#f1f6f8}
+  .mobile-menu-panel a:last-child{background:var(--school-bus-yellow);margin-top:4px}
+
+  /* Hero: reduce the oversized type and give the copy breathing room. */
+  .hero{min-height:0;height:auto;align-items:stretch}
+  .hero-image img{object-position:center center}
+  .hero-overlay{background:linear-gradient(180deg,rgba(0,53,102,.55) 0%,rgba(0,53,102,.78) 55%,rgba(0,53,102,.94) 100%)}
+  .hero-content{padding:92px 0 54px}
+  .hero h1{max-width:100%;font-size:clamp(39px,11.2vw,50px);line-height:.98;letter-spacing:-.055em}
+  .hero-content>p:not(.kicker){max-width:100%;margin:24px 0 28px;font-size:16px;line-height:1.62;color:#edf5f8}
+  .kicker{font-size:10px;letter-spacing:.14em;margin-bottom:14px}
+  .hero-actions{gap:10px}
+  .hero-actions .button{min-height:48px;padding:0 17px}
+
+  /* Work intro */
+  .intro{padding:68px 0 56px;grid-template-columns:1fr;gap:34px}
+  .intro h2,.section-heading-row h2,.values h2,.get-involved h2,.volunteer-hero h1,.volunteer-intro h2,.volunteer-process h2,.volunteer-cta h2{font-size:clamp(35px,9.5vw,48px);line-height:1.02;letter-spacing:-.045em}
+  .intro>div:last-child p{font-size:16px;line-height:1.7}
+  .intro .button{width:100%}
+  .story-image{min-height:330px!important;border-radius:22px}
+
+  /* Cards and image sections */
+  .work{padding-bottom:72px}
+  .focus-grid{grid-template-columns:1fr;gap:14px;margin-top:30px}
+  .focus-grid article,.volunteer-type-card,.process-grid article{min-height:0;border-radius:20px}
+  .programme-image{height:205px}
+  .programme-content{padding:21px 21px 24px}
+  .focus-grid h3,.volunteer-type-card h3,.process-grid h3{margin:14px 0 8px;font-size:22px}
+  .focus-grid p,.volunteer-type-card p,.process-grid p{font-size:15px;line-height:1.62}
+  .work>.section-shell>div:last-child{justify-content:flex-start!important;margin-top:28px!important}
+  .text-link{font-size:14px}
+
+  /* Dark approach section */
+  .values{padding:72px 0}
+  .values-grid{grid-template-columns:1fr;gap:24px}
+  .values p{font-size:16px;line-height:1.7}
+  .values .button{width:100%}
+
+  /* Partners */
+  .partners{padding-top:8px}
+  .partners-heading{margin-bottom:26px}
+  .partners-carousel{overflow:hidden;width:calc(100% + 28px);margin-left:-14px}
+  .partner-logo{min-width:220px}
+
+  /* Other shared page sections */
+  .photo-grid,.image-story{grid-template-columns:1fr;gap:14px;padding-bottom:72px}
+  .photo-large{min-height:360px}
+  .photo-stack>div{min-height:245px}
+  .volunteer-hero{padding:48px 0 60px}
+  .volunteer-hero-grid,.volunteer-intro,.standard-grid,.application-card,.story-page-hero-grid{grid-template-columns:1fr;gap:30px}
+  .volunteer-hero-image{min-height:360px;border-radius:24px}
+  .volunteer-intro{padding:72px 0}
+  .volunteer-type-grid,.opportunity-grid,.process-grid{grid-template-columns:1fr}
+  .opportunity-section{padding:72px 0}
+  .volunteer-standard{padding:72px 0}
+  .application-section{padding:72px 0}
+  .application-card{padding:22px;border-radius:22px}
+  .form-cta-panel{min-height:300px;padding:28px;border-radius:20px}
+  .volunteer-cta{display:block;padding-bottom:72px}
+  .volunteer-cta .button{width:100%;margin-top:24px}
+
+  /* Story / Discover image containers: never stretch or crop contained editorial images. */
+  .story-page-hero{padding:48px 0 65px}
+  .story-page-hero h1{font-size:clamp(42px,10.5vw,58px)}
+  .story-page-hero p:not(.kicker){font-size:16px;line-height:1.7}
+  .story-page-image{min-height:330px;border-radius:24px}
+  .story-timeline{padding:72px 0}
+  .story-year{grid-template-columns:1fr;gap:14px;padding:42px 0}
+  .story-year h2{font-size:clamp(34px,9vw,48px)}
+  .story-year p:not(.kicker){font-size:16px;line-height:1.75}
+  .story-year-image{min-height:300px;border-radius:22px}
+  .story-year-image img,.story-page-image img{object-fit:contain!important;padding:10px}
+  .story-photo-band{grid-template-columns:1fr;gap:14px;padding:24px 0 50px}
+  .story-photo-band>div{min-height:300px;border-radius:22px}
+  .story-highlight{margin-top:30px;padding:28px;border-radius:22px}
+  .story-highlight h2{font-size:clamp(34px,9vw,48px)}
+  .story-highlight p:not(.kicker){font-size:16px;line-height:1.75}
+  .story-next{padding:72px 0}
+  .story-next h2{font-size:clamp(36px,9.5vw,52px)}
+
+  /* Footer */
+  footer{padding-top:54px}
+  .footer-grid{grid-template-columns:1fr;gap:36px;padding-bottom:42px}
+  .footer-brand img{width:205px}
+  .footer-brand p{font-size:15px;line-height:1.7}
+  .footer-bottom{display:flex;flex-direction:column;gap:8px;font-size:11px}
+}
+
+@media (max-width:380px){
+  .brand img{width:136px}
+  .nav-cta{padding:0 13px;font-size:12px}
+  .mobile-menu summary{width:40px;height:40px}
+  .hero-content{padding-top:82px}
+  .hero h1{font-size:38px}
+  .hero-actions{flex-direction:column}
+  .hero-actions .button{width:100%}
+}
