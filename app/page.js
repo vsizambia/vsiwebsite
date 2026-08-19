@@ -45,7 +45,8 @@ export default function Home() {
           <div className="section-shell intro">
             <div>
               <h2>Work that helps young people lead, serve and shape change.</h2>
-              <p>Our work connects learning with action — creating spaces where young people can develop skills, engage communities, and contribute to national conversations</p>
+              <p>Our work connects learning with action — creating spaces where young people can develop skills, engage communities, and contribute to national conversations. There is a place for your voice. Volunteer, partner, learn with us or connect with VSI about work that matters to young people.</p>
+              <a className="button button-primary" href="/volunteer">Volunteer with VSI <span>↗</span></a>
             </div>
             <div className="story-image" style={{minHeight:500}}>
               <Image src="/images/vsi what we stand on 1.jpg" alt="VSI members taking part in community action" fill sizes="(max-width: 900px) 100vw, 50vw" />
@@ -60,7 +61,16 @@ export default function Home() {
 
       <section className="values"><div className="section-shell values-grid"><div><p className="kicker light">OUR APPROACH</p><h2>Young people deserve a seat at the table.</h2></div><div><p>We value integrity, inclusion, service, learning, accountability and meaningful participation. Our approach is collaborative and grounded in the realities of students and communities.</p><a className="button button-yellow" href="/volunteer">Join the movement <span>↗</span></a></div></div></section>
 
-      <section className="get-involved section-shell" id="contact"><div><p className="kicker">GET INVOLVED</p><h2>There is a place for your voice.</h2><p>Volunteer, partner, learn with us or connect with VSI about work that matters to young people.</p></div><a className="button button-primary" href="/volunteer">Volunteer with VSI <span>↗</span></a></section>
+      <section className="partners section-shell" id="contact">
+        <div className="section-heading-row partners-heading">
+          <div><p className="kicker">OUR PARTNERS</p><h2>Working together for young people and Zambia's future.</h2></div>
+        </div>
+        <div className="partners-carousel" aria-label="VSI partners">
+          <div className="partners-track">
+            <div className="partner-placeholder">Partner logos will appear here.</div>
+          </div>
+        </div>
+      </section>
 
       <footer><div className="section-shell footer-grid"><div className="footer-brand"><Image src={whiteLogo} alt="Visionary Students Initiative" width={250} height={94} /><p>Promoting policies and initiatives that place students at the centre of national development.</p></div><div><p className="footer-title">Explore</p><a href="/discover">Discover VSI</a><a href="#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a></div><div><p className="footer-title">Contact</p><a href="mailto:vsizambia@gmail.com">vsizambia@gmail.com</a><a href="tel:+260968623786">+260 968 623 786</a><span>Plot No. 9173, Ben Bella Road<br/>Peace Embassy Building, 1st Floor<br/>Lusaka, Zambia</span></div></div><div className="section-shell footer-bottom"><span>© {new Date().getFullYear()} Visionary Students Initiative</span><span>Made for youth-led change in Zambia.</span></div></footer>
     </main>
