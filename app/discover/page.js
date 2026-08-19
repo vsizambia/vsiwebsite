@@ -17,7 +17,35 @@ export default function DiscoverPage() {
   const carouselImages = [...standOnImages, ...standOnImages];
   return (
     <main>
-      <header className="site-header"><div className="nav-shell"><a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a><nav className="desktop-nav"><a href="/discover">Discover VSI</a><a href="/#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="/#contact">Contact</a></nav><a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a></div></header>
+      <header className="site-header">
+        <div className="vsi-top-ribbon" aria-label="VSI social links">
+          <div className="vsi-top-ribbon-inner">
+            <div className="vsi-top-ribbon-left" />
+            <div className="vsi-top-ribbon-right">
+              <span className="vsi-social-label">Follow us</span>
+              <a href="https://web.facebook.com/vsizambia" target="_blank" rel="noreferrer">Facebook</a>
+              <a href="https://www.instagram.com/vsizambia" target="_blank" rel="noreferrer">Instagram</a>
+              <a href="https://www.youtube.com/@vsizambia" target="_blank" rel="noreferrer">YouTube</a>
+              <a href="https://www.linkedin.com/in/visionary-students-initiative-vsi-0a4472382/" target="_blank" rel="noreferrer">LinkedIn</a>
+            </div>
+          </div>
+        </div>
+        <div className="nav-shell">
+          <a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a>
+          <nav className="desktop-nav"><a href="/discover">Discover VSI</a><a href="/#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="/#contact">Contact</a></nav>
+          <a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a>
+          <details className="mobile-menu">
+            <summary aria-label="Open navigation"><span /></summary>
+            <div className="mobile-menu-panel">
+              <a href="/discover">Discover VSI</a>
+              <a href="/#work">Our work</a>
+              <a href="/story">Our story</a>
+              <a href="/volunteer">Volunteer</a>
+              <a href="/#contact">Contact</a>
+            </div>
+          </details>
+        </div>
+      </header>
       <section className="discover-hero"><div className="section-shell discover-hero-grid"><div><p className="kicker">DISCOVER VSI</p><h1>Who we are, what we stand on, and <em>why we exist.</em></h1><p>Visionary Students Initiative (VSI) is a Zambian youth-led organisation working to promote policies and initiatives that place students and young people at the centre of national development. We create opportunities for learning, leadership, civic participation, community action, research, dialogue and collaboration. Our work is guided by a belief that students are not simply preparing for the future — they are partners in shaping Zambia's future today.</p></div><div className="discover-hero-image"><Image src="/images/vsi-community-action.jpg" alt="VSI volunteers taking part in community action" fill priority sizes="(max-width: 900px) 100vw, 50vw" /></div></div></section>
       <section className="stand-on section-shell">
         <div className="stand-on-heading"><p className="kicker">OUR FOUNDATION</p><h2>What we stand on</h2><p>We, the members of Visionary Students Initiative (VSI), united by a shared commitment to student leadership, democratic participation, social justice, and sustainable development.</p></div>
