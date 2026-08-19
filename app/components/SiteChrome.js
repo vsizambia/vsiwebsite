@@ -4,10 +4,10 @@ const logo = "/images/vsi logo blue text.png";
 const whiteLogo = "/images/VSI LOGO white.png";
 
 const socialLinks = [
-  ["Facebook", "https://web.facebook.com/vsizambia"],
-  ["Instagram", "https://www.instagram.com/vsizambia"],
-  ["YouTube", "https://www.youtube.com/@vsizambia"],
-  ["LinkedIn", "https://www.linkedin.com/in/visionary-students-initiative-vsi-0a4472382/"],
+  ["Facebook", "https://web.facebook.com/vsizambia", "/icons/facebook.svg"],
+  ["Instagram", "https://www.instagram.com/vsizambia", "/icons/instagram.svg"],
+  ["YouTube", "https://www.youtube.com/@vsizambia", "/icons/youtube.svg"],
+  ["LinkedIn", "https://www.linkedin.com/in/visionary-students-initiative-vsi-0a4472382/", "/icons/linkedin.svg"],
 ];
 
 const navLinks = [
@@ -25,10 +25,10 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
         <div className="vsi-top-ribbon-inner">
           <div className="vsi-top-ribbon-left" aria-hidden="true" />
           <div className="vsi-top-ribbon-right">
-            <span className="vsi-social-label">Follow us</span>
-            {socialLinks.map(([label, href]) => (
+            {socialLinks.map(([label, href, icon]) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={`VSI on ${label}`}>
-                {label}
+                <Image src={icon} alt="" width={18} height={18} aria-hidden="true" />
+                <span className="sr-only">{label}</span>
               </a>
             ))}
           </div>
@@ -63,7 +63,7 @@ export function SiteFooter({ includeNews = true }) {
           <Image src={whiteLogo} alt="Visionary Students Initiative" width={250} height={94} />
           <p>Promoting policies and initiatives that place students at the centre of national development.</p>
         </div>
-        <div>
+        <nav aria-label="Footer navigation">
           <p className="footer-title">Explore</p>
           <a href="/">Home</a>
           <a href="/discover">Discover VSI</a>
@@ -71,7 +71,7 @@ export function SiteFooter({ includeNews = true }) {
           <a href="/story">Our story</a>
           {includeNews && <a href="/news">News</a>}
           <a href="/volunteer">Volunteer</a>
-        </div>
+        </nav>
         <div>
           <p className="footer-title">Contact</p>
           <a href="mailto:vsizambia@gmail.com">vsizambia@gmail.com</a>
