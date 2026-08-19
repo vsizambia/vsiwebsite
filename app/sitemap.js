@@ -1,5 +1,5 @@
 export default function sitemap() {
-  const baseUrl = "https://www.vsizambia.org";
+  const baseUrl = "https://vsizambia.org";
   const routes = ["/", "/discover", "/story", "/volunteer", "/news"];
 
   return routes.map((route) => ({
