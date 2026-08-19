@@ -1,14 +1,12 @@
 import Image from "next/image";
 import { SiteHeader, SiteFooter } from "../components/SiteChrome";
 
-const types = [
-  ["01", "Programme volunteers", "Support approved VSI programmes and activities with clear roles, outputs and supervision.", "/images/vsi volunteers 2.jpg"],
-  ["02", "School-based volunteers", "Support learner-focused activities in schools, with appropriate safeguarding and professional boundaries.", "/images/vsi volunteers 3.jpg"],
-  ["03", "Community volunteers", "Help with community awareness, mobilisation, outreach and feedback activities.", "/images/vsi volunteers 4.jpg"],
-  ["04", "Youth volunteers", "Build practical experience, confidence, leadership and civic participation through service.", "/images/vsi volunteers 5.jpg"],
-  ["05", "Technical & professional", "Contribute skills in research, communications, ICT, governance, facilitation and organisational development.", "/images/vsi volunteers 6.jpg"],
-  ["06", "Short-term & event", "Support conferences, campaigns, awareness events, research and public engagement activities.", "/images/vsi volunteers 7.jpg"],
-];
+export const metadata = {
+  title: "Volunteer with VSI",
+  description: "Volunteer with Visionary Students Initiative and contribute your time, skills and ideas to youth-led work across Zambia.",
+};
+
+const types = [["01", "Programme volunteers", "Support approved VSI programmes and activities with clear roles, outputs and supervision.", "/images/vsi volunteers 2.jpg"],["02", "School-based volunteers", "Support learner-focused activities in schools, with appropriate safeguarding and professional boundaries.", "/images/vsi volunteers 3.jpg"],["03", "Community volunteers", "Help with community awareness, mobilisation, outreach and feedback activities.", "/images/vsi volunteers 4.jpg"],["04", "Youth volunteers", "Build practical experience, confidence, leadership and civic participation through service.", "/images/vsi volunteers 5.jpg"],["05", "Technical & professional", "Contribute skills in research, communications, ICT, governance, facilitation and organisational development.", "/images/vsi volunteers 6.jpg"],["06", "Short-term & event", "Support conferences, campaigns, awareness events, research and public engagement activities.", "/images/vsi volunteers 7.jpg"]];
 const areas = [["01", "Civic leadership", "Facilitation, democratic participation, youth engagement and civic education."],["02", "Mental resilience", "Awareness, resilience-building, peer support and healthy learning environments."],["03", "Youth development", "Leadership, employability, entrepreneurship, digital skills and mentorship."],["04", "Community engagement", "Community mobilisation, outreach, service activities and stakeholder engagement."],["05", "Research & advocacy", "Research, data collection, policy analysis, evidence and advocacy."],["06", "Communications & media", "Website content, social media, photography, videography, design and digital campaigns."]];
 const process = [["01", "Apply", "Tell VSI about yourself, your skills, motivation, availability and areas where you would like to contribute."],["02", "Review", "Applications are reviewed against the needs and selection criteria of the relevant opportunity."],["03", "Prepare", "Selected volunteers receive role information, induction and relevant preparation before deployment."],["04", "Contribute", "Volunteers work within approved assignments, with supervision, support, safeguarding and feedback."]];
 
