@@ -56,7 +56,7 @@ export default function Home() {
       </header>
 
       <section className="hero"><div className="hero-image"><Image src="/images/vsi-parliament.jpg" alt="Students participating in a civic engagement activity" fill priority sizes="100vw" /></div><div className="hero-overlay" />
-        <div className="section-shell hero-content"><p className="kicker light">VISIONARY STUDENTS INITIATIVE</p><h1>Students at the centre of <em>national development.</em></h1><p>We promote policies and initiatives that give young people the knowledge, voice, skills and opportunities to participate meaningfully in Zambia's future.</p><div className="hero-actions"><a className="button button-yellow" href="/discover">Discover VSI <span>↗</span></a><a className="button button-primary" href="/story">Our story <span>↗</span></a></div></div>
+        <div className="section-shell hero-content"><p className="kicker light">VISIONARY STUDENTS INITIATIVE</p><h1><span className="hero-title-desktop">Students at the centre of <em>national development.</em></span><span className="hero-title-mobile">Students at the<br/>centre of <em>national</em><br/><em>development.</em></span></h1><p>We promote policies and initiatives that give young people the knowledge, voice, skills and opportunities to participate meaningfully in Zambia's future.</p><div className="hero-actions"><a className="button button-yellow" href="/discover">Discover VSI <span>↗</span></a><a className="button button-primary" href="/story">Our story <span>↗</span></a></div></div>
       </section>
 
       <section className="work" id="work">
