@@ -42,7 +42,7 @@ export default function NewsPage() {
       <section className="news-list section-shell">
         {updates.map(([label, title, description, img], index) => (
           <article className={`news-feature ${index % 2 ? "reverse" : ""}`} key={title}>
-            <div className="news-feature-image"><Image src={img} alt="" fill sizes="(max-width: 900px) 100vw, 50vw" /></div>
+            <div className="news-feature-image"><Image src={img} alt={title} fill sizes="(max-width: 900px) 100vw, 50vw" /></div>
             <div className="news-feature-copy"><span className="update-label">{label}</span><h2>{title}</h2><p>{description}</p><a className="text-link" href="/story">Explore VSI <span>→</span></a></div>
           </article>
         ))}
