@@ -21,19 +21,19 @@ const navLinks = [
 export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
   return (
     <header className="site-header">
-      <div className="vsi-top-ribbon" aria-label="VSI social links">
+      <nav className="vsi-top-ribbon" aria-label="VSI social links">
         <div className="vsi-top-ribbon-inner">
-          <div className="vsi-top-ribbon-left" />
+          <div className="vsi-top-ribbon-left" aria-hidden="true" />
           <div className="vsi-top-ribbon-right">
             <span className="vsi-social-label">Follow us</span>
             {socialLinks.map(([label, href]) => (
-              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}>
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={`VSI on ${label}`}>
                 {label}
               </a>
             ))}
           </div>
         </div>
-      </div>
+      </nav>
       <div className="nav-shell">
         <a className="brand" href="/" aria-label="Visionary Students Initiative home">
           <Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority />
@@ -45,10 +45,10 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
           {ctaLabel} <span aria-hidden="true">↗</span>
         </a>
         <details className="mobile-menu">
-          <summary aria-label="Open navigation"><span /></summary>
-          <div className="mobile-menu-panel">
+          <summary aria-label="Open navigation menu"><span /></summary>
+          <nav className="mobile-menu-panel" aria-label="Mobile navigation">
             {navLinks.map(([label, href]) => <a key={label} href={href}>{label}</a>)}
-          </div>
+          </nav>
         </details>
       </div>
     </header>
