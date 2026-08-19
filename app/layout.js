@@ -7,7 +7,7 @@ import "./mobile.css";
 import "./accessibility.css";
 import "./qa.css";
 
-const siteUrl = "https://vsizambia.org";
+const siteUrl = "https://www.vsizambia.org";
 
 export const metadata = {
   metadataBase: new URL(siteUrl),
