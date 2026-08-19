@@ -13,11 +13,29 @@ const whiteLogo = "/images/VSI LOGO white.png";
 export default function NewsPage() {
   return (
     <main>
-      <header className="site-header"><div className="nav-shell">
-        <a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a>
-        <nav className="desktop-nav"><a href="/#about">About</a><a href="/#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="/#contact">Contact</a></nav>
-        <a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a>
-      </div></header>
+      <header className="site-header">
+        <div className="vsi-top-ribbon" aria-label="VSI social links">
+          <div className="vsi-top-ribbon-inner">
+            <div className="vsi-top-ribbon-left" />
+            <div className="vsi-top-ribbon-right">
+              <span className="vsi-social-label">Follow us</span>
+              <a href="https://web.facebook.com/vsizambia" target="_blank" rel="noreferrer" aria-label="Facebook">Facebook</a>
+              <a href="https://www.instagram.com/vsizambia" target="_blank" rel="noreferrer" aria-label="Instagram">Instagram</a>
+              <a href="https://www.youtube.com/@vsizambia" target="_blank" rel="noreferrer" aria-label="YouTube">YouTube</a>
+              <a href="https://www.linkedin.com/in/visionary-students-initiative-vsi-0a4472382/" target="_blank" rel="noreferrer" aria-label="LinkedIn">LinkedIn</a>
+            </div>
+          </div>
+        </div>
+        <div className="nav-shell">
+          <a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a>
+          <nav className="desktop-nav"><a href="/discover">Discover VSI</a><a href="/#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="/#contact">Contact</a></nav>
+          <a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a>
+          <details className="mobile-menu">
+            <summary aria-label="Open navigation"><span /></summary>
+            <div className="mobile-menu-panel"><a href="/discover">Discover VSI</a><a href="/#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="/#contact">Contact</a></div>
+          </details>
+        </div>
+      </header>
 
       <section className="news-hero"><div className="section-shell"><p className="kicker">VSI NEWS &amp; UPDATES</p><h1>Stories from the work, people and ideas shaping VSI.</h1><p>Explore highlights from our journey, community work and opportunities for young people to participate.</p></div></section>
 
