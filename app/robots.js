@@ -1,7 +1,9 @@
 export default function robots() {
+  const baseUrl = "https://vsizambia.org";
+
   return {
     rules: [{ userAgent: "*", allow: "/" }],
-    sitemap: "https://www.vsizambia.org/sitemap.xml",
-    host: "https://www.vsizambia.org",
+    sitemap: `${baseUrl}/sitemap.xml`,
+    host: baseUrl,
   };
 }
