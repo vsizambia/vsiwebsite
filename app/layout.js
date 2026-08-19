@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./ribbon.css";
 import "./vsi-enhancements.css";
 import "./volunteer-enhancements.css";
 import "./polish.css";
