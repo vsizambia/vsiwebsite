@@ -40,17 +40,19 @@ export default function Home() {
         <div className="section-shell hero-content"><p className="kicker light">VISIONARY STUDENTS INITIATIVE</p><h1>Students at the centre of <em>national development.</em></h1><p>We promote policies and initiatives that give young people the knowledge, voice, skills and opportunities to participate meaningfully in Zambia's future.</p><div className="hero-actions"><a className="button button-yellow" href="/discover">Discover VSI <span>↗</span></a><a className="button button-primary" href="/story">Our story <span>↗</span></a></div></div>
       </section>
 
-      <section className="work section-shell" id="work">
-        <div className="work-lead">
-          <div className="work-lead-copy">
+      <section className="work" id="work">
+        <div className="section-shell intro" style={{background:"#f3f7f9", paddingTop:80, paddingBottom:80}}>
+          <div>
             <h2>Work that helps young people lead, serve and shape change.</h2>
           </div>
-          <div className="work-lead-image">
+          <div className="story-image" style={{minHeight:500}}>
             <Image src="/images/vsi what we stand on 1.jpg" alt="VSI members taking part in community action" fill sizes="(max-width: 900px) 100vw, 50vw" />
           </div>
         </div>
-        <div className="focus-grid">{focusAreas.map(([n,t,d,img])=><article className="programme-card" key={t}><div className="programme-image"><Image src={img} alt={`${t} programme`} fill sizes="(max-width: 900px) 100vw, 33vw" /></div><div className="programme-content"><span>{n}</span><h3>{t}</h3><p>{d}</p></div></article>)}</div>
-        <div style={{display:"flex",justifyContent:"flex-end",marginTop:38}}><a className="text-link" href="https://web.facebook.com/vsizambia" target="_blank" rel="noreferrer">View all news on Facebook <span>↗</span></a></div>
+        <div className="section-shell">
+          <div className="focus-grid">{focusAreas.map(([n,t,d,img])=><article className="programme-card" key={t}><div className="programme-image"><Image src={img} alt={`${t} programme`} fill sizes="(max-width: 900px) 100vw, 33vw" /></div><div className="programme-content"><span>{n}</span><h3>{t}</h3><p>{d}</p></div></article>)}</div>
+          <div style={{display:"flex",justifyContent:"flex-end",marginTop:38}}><a className="text-link" href="https://web.facebook.com/vsizambia" target="_blank" rel="noreferrer">View all news on Facebook <span>↗</span></a></div>
+        </div>
       </section>
 
       <section className="values"><div className="section-shell values-grid"><div><p className="kicker light">OUR APPROACH</p><h2>Young people deserve a seat at the table.</h2></div><div><p>We value integrity, inclusion, service, learning, accountability and meaningful participation. Our approach is collaborative and grounded in the realities of students and communities.</p><a className="button button-yellow" href="/volunteer">Join the movement <span>↗</span></a></div></div></section>
