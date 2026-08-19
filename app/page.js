@@ -42,6 +42,16 @@ export default function Home() {
           <a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a>
           <nav className="desktop-nav"><a href="/discover">Discover VSI</a><a href="#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="#contact">Contact</a></nav>
           <a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a>
+          <details className="mobile-menu">
+            <summary aria-label="Open navigation"><span /></summary>
+            <div className="mobile-menu-panel">
+              <a href="/discover">Discover VSI</a>
+              <a href="#work">Our work</a>
+              <a href="/story">Our story</a>
+              <a href="/volunteer">Volunteer</a>
+              <a href="#contact">Contact</a>
+            </div>
+          </details>
         </div>
       </header>
 
