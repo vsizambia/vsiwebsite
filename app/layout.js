@@ -2,6 +2,7 @@ import "./globals.css";
 import "./vsi-enhancements.css";
 import "./volunteer-enhancements.css";
 import "./polish.css";
+import "./mobile.css";
 
 export const metadata = {
   title: "Visionary Students Initiative | Zambia",
