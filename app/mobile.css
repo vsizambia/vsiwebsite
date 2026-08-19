@@ -132,3 +132,53 @@
   .nav-cta{border:0}
   .nav-cta span{display:inline-block;transform:translateY(-.5px)}
 }
+
+/* Final mobile composition pass: tighter vertical rhythm, stronger section hierarchy,
+   and consistent VSI-blue headings without changing the desktop presentation. */
+@media (max-width:600px){
+  /* Home: Work intro */
+  .intro{padding:54px 0 44px;gap:28px}
+  .intro h2{color:var(--regal-navy)!important;font-size:clamp(34px,9.2vw,47px);line-height:1.045;letter-spacing:-.045em;margin:0 0 16px}
+  .intro>div:first-child p{font-size:16px;line-height:1.68;margin:0 0 24px}
+  .intro .button{min-height:52px}
+  .intro .story-image{height:260px;min-height:260px!important;border-radius:20px;overflow:hidden}
+
+  /* Home: keep the work cards readable without making the first screen unnecessarily tall. */
+  .work{padding-bottom:58px}
+  .focus-grid{margin-top:24px;gap:12px}
+  .programme-image{height:190px}
+  .programme-content{padding:19px 19px 22px}
+  .work>.section-shell>div:last-child{margin-top:22px!important}
+
+  /* Discover hero */
+  .discover-hero{padding:42px 0 54px}
+  .discover-hero-grid{gap:28px}
+  .discover-hero h1{font-size:clamp(42px,11vw,50px);line-height:1.01;letter-spacing:-.05em}
+  .discover-hero>div>div>p:not(.kicker){font-size:16px;line-height:1.72}
+  .discover-hero-image{min-height:320px;border-radius:24px}
+
+  /* Discover: What we stand on */
+  .stand-on{padding:58px 0 58px;gap:28px}
+  .stand-on-heading h2{font-size:clamp(42px,10.5vw,48px);line-height:1.03;letter-spacing:-.045em;margin-bottom:18px}
+  .stand-on-heading>p:last-child{font-size:16px;line-height:1.72}
+  .stand-on-lead-image{min-height:270px;border-radius:22px}
+  .stand-on-copy p{padding:20px 0;font-size:16px;line-height:1.78}
+
+  /* Discover: commitment gallery */
+  .stand-gallery{padding:58px 0 60px}
+  .stand-gallery-intro{width:calc(100% - 28px);gap:20px;margin-bottom:28px}
+  .stand-gallery-feature{min-height:205px;border-radius:22px}
+  .stand-gallery-intro h2{font-size:clamp(39px,9.8vw,47px);line-height:1.04}
+  .stand-gallery-intro p:not(.kicker){font-size:15px;line-height:1.65}
+  .stand-gallery-carousel{padding:4px 0 16px}
+  .stand-gallery-card{flex-basis:82vw;height:250px;border-radius:20px}
+  .stand-gallery-track{gap:12px;animation-duration:30s}
+
+  /* Discover: closing CTA */
+  .discover-next{padding:58px 0 62px}
+  .discover-next h2{font-size:clamp(42px,10.5vw,50px);line-height:1.03;margin-bottom:26px}
+  .discover-next .button{min-height:52px;width:100%}
+
+  /* Keep small screens from becoming overly cramped while retaining the same hierarchy. */
+  .section-heading-row h2{line-height:1.05}
+}
