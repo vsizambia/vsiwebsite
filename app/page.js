@@ -10,12 +10,6 @@ const focusAreas = [
   ["06", "Partnerships", "Working with institutions, communities and partners around shared priorities.", "/images/Partnerships.jpg"],
 ];
 
-const updates = [
-  ["OUR STORY", "From a student idea to a growing movement for national development.", "VSI began at Cavendish University Zambia in 2018 and has grown into a youth-led organisation focused on participation, service and public policy advocacy.", "/images/From Club to NGO.jpg"],
-  ["SEVEN YEARS AND BEYOND", "Community service, volunteerism and humanitarian aid.", "VSI is building on years of service while strengthening student participation in national development and stability.", "/images/vsi story Room full of ideas.jpg"],
-  ["GET INVOLVED", "There is a place for your voice.", "Volunteer your time, contribute your skills and connect with work that matters to students and communities across Zambia.", "/images/vsi volunteers charity work.jpg"],
-];
-
 const logo = "/images/vsi logo blue text.png";
 const whiteLogo = "/images/VSI LOGO white.png";
 
@@ -23,11 +17,9 @@ export default function Home() {
   return (
     <main>
       <header className="site-header">
-        <div className="vsi-top-ribbon" aria-label="VSI contact and social links">
+        <div className="vsi-top-ribbon" aria-label="VSI social links">
           <div className="vsi-top-ribbon-inner">
-            <div className="vsi-top-ribbon-left">
-              <a href="mailto:vsizambia@gmail.com">VSI Email: vsizambia@gmail.com</a>
-            </div>
+            <div className="vsi-top-ribbon-left" />
             <div className="vsi-top-ribbon-right">
               <span className="vsi-social-label">Follow us</span>
               <a href="https://web.facebook.com/vsizambia" target="_blank" rel="noreferrer">Facebook</a>
@@ -39,28 +31,24 @@ export default function Home() {
         </div>
         <div className="nav-shell">
           <a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a>
-          <nav className="desktop-nav"><a href="#about">About</a><a href="#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="#contact">Contact</a></nav>
+          <nav className="desktop-nav"><a href="/discover">Discover VSI</a><a href="#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="#contact">Contact</a></nav>
           <a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a>
         </div>
       </header>
 
       <section className="hero"><div className="hero-image"><Image src="/images/vsi-parliament.jpg" alt="Students participating in a civic engagement activity" fill priority sizes="100vw" /></div><div className="hero-overlay" />
-        <div className="section-shell hero-content"><p className="kicker light">VISIONARY STUDENTS INITIATIVE</p><h1>Students at the centre of <em>national development.</em></h1><p>We promote policies and initiatives that give young people the knowledge, voice, skills and opportunities to participate meaningfully in Zambia's future.</p><div className="hero-actions"><a className="button button-yellow" href="#about">Discover VSI <span>↓</span></a><a className="button button-primary" href="/story">Our story <span>↗</span></a></div></div>
+        <div className="section-shell hero-content"><p className="kicker light">VISIONARY STUDENTS INITIATIVE</p><h1>Students at the centre of <em>national development.</em></h1><p>We promote policies and initiatives that give young people the knowledge, voice, skills and opportunities to participate meaningfully in Zambia's future.</p><div className="hero-actions"><a className="button button-yellow" href="/discover">Discover VSI <span>↗</span></a><a className="button button-primary" href="/story">Our story <span>↗</span></a></div></div>
       </section>
 
-      <section className="intro section-shell" id="about"><div><p className="kicker">WHO WE ARE</p><h2>A youth-led initiative rooted in participation, service and possibility.</h2></div><div><p>Visionary Students Initiative (VSI) is a Zambian youth-led organisation working to promote policies and initiatives that place students and young people at the centre of national development.</p><p>We create opportunities for learning, leadership, civic participation, community action, research, dialogue and collaboration.</p><a className="text-link" href="/story">Discover the VSI story <span>→</span></a></div></section>
+      <section className="work section-shell" id="work"><div className="section-heading-row"><div><p className="kicker">WHAT WE DO</p><h2>Work that helps young people lead, serve and shape change.</h2></div><p>Our work connects learning with action — creating spaces where young people can develop skills, engage communities and contribute to national conversations.</p></div><div className="focus-grid">{focusAreas.map(([n,t,d,img])=><article className="programme-card" key={t}><div className="programme-image"><Image src={img} alt={`${t} programme`} fill sizes="(max-width: 900px) 100vw, 33vw" /></div><div className="programme-content"><span>{n}</span><h3>{t}</h3><p>{d}</p></div></article>)}</div><div className="work-news-link"><a className="text-link" href="https://web.facebook.com/vsizambia" target="_blank" rel="noreferrer">View all news on Facebook <span>↗</span></a></div></section>
 
       <section className="image-story section-shell" id="stories"><div className="story-image"><Image src="/images/vsi-community-action.jpg" alt="VSI volunteers taking part in community clean-up action" fill sizes="(max-width: 900px) 100vw, 55vw" /></div><div className="story-copy"><p className="kicker">REAL PEOPLE. REAL COMMUNITIES.</p><h2>Ideas become meaningful when they reach the community.</h2><p>From community action to civic learning, VSI brings young people together around practical experiences that build responsibility, confidence and leadership.</p><a className="text-link" href="#work">Explore our work <span>→</span></a></div></section>
 
-      <section className="work section-shell" id="work"><div className="section-heading-row"><div><p className="kicker">WHAT WE DO</p><h2>Work that helps young people lead, serve and shape change.</h2></div><p>Our work connects learning with action — creating spaces where young people can develop skills, engage communities and contribute to national conversations.</p></div><div className="focus-grid">{focusAreas.map(([n,t,d,img])=><article className="programme-card" key={t}><div className="programme-image"><Image src={img} alt={`${t} programme`} fill sizes="(max-width: 900px) 100vw, 33vw" /></div><div className="programme-content"><span>{n}</span><h3>{t}</h3><p>{d}</p></div></article>)}</div></section>
-
       <section className="values"><div className="section-shell values-grid"><div><p className="kicker light">OUR APPROACH</p><h2>Young people deserve a seat at the table.</h2></div><div><p>We value integrity, inclusion, service, learning, accountability and meaningful participation. Our approach is collaborative and grounded in the realities of students and communities.</p><a className="button button-yellow" href="/volunteer">Join the movement <span>↗</span></a></div></div></section>
-
-      <section className="updates section-shell" id="news"><div className="section-heading-row"><div><p className="kicker">NEWS &amp; UPDATES</p><h2>What is happening at VSI.</h2></div><a className="text-link" href="/news">View all news <span>→</span></a></div><div className="updates-grid">{updates.map(([label,title,description,img])=><article className="update-card" key={title}><div className="update-image"><Image src={img} alt="" fill sizes="(max-width: 900px) 100vw, 33vw" /></div><div className="update-content"><span className="update-label">{label}</span><h3>{title}</h3><p>{description}</p><a className="text-link" href="/news">Read more <span>→</span></a></div></article>)}</div></section>
 
       <section className="get-involved section-shell" id="contact"><div><p className="kicker">GET INVOLVED</p><h2>There is a place for your voice.</h2><p>Volunteer, partner, learn with us or connect with VSI about work that matters to young people.</p></div><a className="button button-primary" href="/volunteer">Volunteer with VSI <span>↗</span></a></section>
 
-      <footer><div className="section-shell footer-grid"><div className="footer-brand"><Image src={whiteLogo} alt="Visionary Students Initiative" width={250} height={94} /><p>Promoting policies and initiatives that place students at the centre of national development.</p></div><div><p className="footer-title">Explore</p><a href="#about">About</a><a href="#work">Our work</a><a href="/story">Our story</a><a href="/news">News</a><a href="/volunteer">Volunteer</a></div><div><p className="footer-title">Contact</p><a href="mailto:vsizambia@gmail.com">vsizambia@gmail.com</a><a href="tel:+260968623786">+260 968 623 786</a><span>Plot No. 9173, Ben Bella Road<br/>Peace Embassy Building, 1st Floor<br/>Lusaka, Zambia</span></div></div><div className="section-shell footer-bottom"><span>© {new Date().getFullYear()} Visionary Students Initiative</span><span>Made for youth-led change in Zambia.</span></div></footer>
+      <footer><div className="section-shell footer-grid"><div className="footer-brand"><Image src={whiteLogo} alt="Visionary Students Initiative" width={250} height={94} /><p>Promoting policies and initiatives that place students at the centre of national development.</p></div><div><p className="footer-title">Explore</p><a href="/discover">Discover VSI</a><a href="#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a></div><div><p className="footer-title">Contact</p><a href="mailto:vsizambia@gmail.com">vsizambia@gmail.com</a><a href="tel:+260968623786">+260 968 623 786</a><span>Plot No. 9173, Ben Bella Road<br/>Peace Embassy Building, 1st Floor<br/>Lusaka, Zambia</span></div></div><div className="section-shell footer-bottom"><span>© {new Date().getFullYear()} Visionary Students Initiative</span><span>Made for youth-led change in Zambia.</span></div></footer>
     </main>
   );
 }
