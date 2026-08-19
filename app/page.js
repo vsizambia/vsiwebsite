@@ -23,10 +23,18 @@ export default function Home() {
   return (
     <main>
       <header className="site-header">
-        <div className="vsi-top-ribbon" aria-label="VSI information ribbon">
+        <div className="vsi-top-ribbon" aria-label="VSI contact and social links">
           <div className="vsi-top-ribbon-inner">
-            <div className="vsi-top-ribbon-left"><span className="vsi-top-ribbon-mark" />Visionary Students Initiative</div>
-            <div className="vsi-top-ribbon-right"><strong>Youth-led change</strong> in Zambia</div>
+            <div className="vsi-top-ribbon-left">
+              <a href="mailto:vsizambia@gmail.com">VSI Email: vsizambia@gmail.com</a>
+            </div>
+            <div className="vsi-top-ribbon-right">
+              <span className="vsi-social-label">Follow us</span>
+              <a href="https://web.facebook.com/vsizambia" target="_blank" rel="noreferrer">Facebook</a>
+              <a href="https://www.instagram.com/vsizambia" target="_blank" rel="noreferrer">Instagram</a>
+              <a href="https://www.youtube.com/@vsizambia" target="_blank" rel="noreferrer">YouTube</a>
+              <a href="https://www.linkedin.com/in/visionary-students-initiative-vsi-0a4472382/" target="_blank" rel="noreferrer">LinkedIn</a>
+            </div>
           </div>
         </div>
         <div className="nav-shell">
