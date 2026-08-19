@@ -1,4 +1,5 @@
 import Image from "next/image";
+import "./ribbon.css";
 
 const focusAreas = [
   ["01", "Civic leadership", "Creating space for students to understand, practise and shape civic life.", "/images/Civic leadership.jpg"],
@@ -21,11 +22,19 @@ const whiteLogo = "/images/VSI LOGO white.png";
 export default function Home() {
   return (
     <main>
-      <header className="site-header"><div className="nav-shell">
-        <a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a>
-        <nav className="desktop-nav"><a href="#about">About</a><a href="#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="#contact">Contact</a></nav>
-        <a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a>
-      </div></header>
+      <header className="site-header">
+        <div className="vsi-top-ribbon" aria-label="VSI information ribbon">
+          <div className="vsi-top-ribbon-inner">
+            <div className="vsi-top-ribbon-left"><span className="vsi-top-ribbon-mark" />Visionary Students Initiative</div>
+            <div className="vsi-top-ribbon-right"><strong>Youth-led change</strong> in Zambia</div>
+          </div>
+        </div>
+        <div className="nav-shell">
+          <a className="brand" href="/"><Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority /></a>
+          <nav className="desktop-nav"><a href="#about">About</a><a href="#work">Our work</a><a href="/story">Our story</a><a href="/volunteer">Volunteer</a><a href="#contact">Contact</a></nav>
+          <a className="nav-cta" href="/volunteer">Volunteer <span>↗</span></a>
+        </div>
+      </header>
 
       <section className="hero"><div className="hero-image"><Image src="/images/vsi-parliament.jpg" alt="Students participating in a civic engagement activity" fill priority sizes="100vw" /></div><div className="hero-overlay" />
         <div className="section-shell hero-content"><p className="kicker light">VISIONARY STUDENTS INITIATIVE</p><h1>Students at the centre of <em>national development.</em></h1><p>We promote policies and initiatives that give young people the knowledge, voice, skills and opportunities to participate meaningfully in Zambia's future.</p><div className="hero-actions"><a className="button button-yellow" href="#about">Discover VSI <span>↓</span></a><a className="button button-primary" href="/story">Our story <span>↗</span></a></div></div>
