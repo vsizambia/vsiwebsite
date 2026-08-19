@@ -16,23 +16,14 @@ export const metadata = {
     template: "%s | Visionary Students Initiative",
   },
   description: "Promoting policies and initiatives that place students at the centre of national development.",
-  alternates: {
-    canonical: "/",
-  },
+  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     siteName: "Visionary Students Initiative",
     title: "Visionary Students Initiative | Zambia",
     description: "Promoting policies and initiatives that place students at the centre of national development.",
     url: siteUrl,
-    images: [
-      {
-        url: "/images/vsi-parliament.jpg",
-        width: 1600,
-        height: 900,
-        alt: "Students participating in a civic engagement activity",
-      },
-    ],
+    images: [{ url: "/images/vsi-parliament.jpg", width: 1600, height: 900, alt: "Students participating in a civic engagement activity" }],
   },
   twitter: {
     card: "summary_large_image",
@@ -40,10 +31,7 @@ export const metadata = {
     description: "Promoting policies and initiatives that place students at the centre of national development.",
     images: ["/images/vsi-parliament.jpg"],
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
 };
 
 const organizationSchema = {
@@ -54,8 +42,8 @@ const organizationSchema = {
   url: siteUrl,
   logo: `${siteUrl}/images/vsi logo blue text.png`,
   description: "A Zambian youth-led organisation working to promote policies and initiatives that place students and young people at the centre of national development.",
-  email: "info@vsizambia.org",
-  telephone: "+260974140217",
+  email: "vsizambia@gmail.com",
+  telephone: "+260968623786",
   sameAs: [
     "https://web.facebook.com/vsizambia",
     "https://www.instagram.com/vsizambia",
@@ -76,10 +64,7 @@ export default function RootLayout({ children }) {
       <body>
         <a className="skip-link" href="#main-content">Skip to main content</a>
         <div id="main-content">{children}</div>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-        />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
       </body>
     </html>
   );
