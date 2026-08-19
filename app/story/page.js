@@ -1,6 +1,11 @@
 import Image from "next/image";
 import { SiteHeader, SiteFooter } from "../components/SiteChrome";
 
+export const metadata = {
+  title: "Our Story",
+  description: "Discover the story of Visionary Students Initiative, from a student idea to a growing movement for national development.",
+};
+
 export default function StoryPage() {
   return (
     <main>
