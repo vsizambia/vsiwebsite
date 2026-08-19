@@ -28,7 +28,6 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
             {socialLinks.map(([label, href, icon]) => (
               <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={`VSI on ${label}`}>
                 <Image src={icon} alt="" width={18} height={18} aria-hidden="true" />
-                <span className="sr-only">{label}</span>
               </a>
             ))}
           </div>
