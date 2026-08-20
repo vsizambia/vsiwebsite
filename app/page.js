@@ -1,6 +1,7 @@
 import Image from "next/image";
 import "./ribbon.css";
 import "./focus-story.css";
+import "./impact-story.css";
 import { SiteHeader, SiteFooter } from "./components/SiteChrome";
 
 export const metadata = {
@@ -18,6 +19,11 @@ const focusAreas = [
   ["05", "Research & advocacy", "Using evidence, dialogue and youth voices to inform better decisions.", "/images/research.JPG"],
   ["06", "Partnerships", "Working with institutions, communities and partners around shared priorities.", "/images/Partnerships.jpg"],
 ];
+const impactStories = [
+  ["LEAD", "Young people finding their voice", "Creating spaces for students to understand civic life, build confidence and participate meaningfully.", "/images/Civic leadership.jpg"],
+  ["SERVE", "Learning becomes community action", "Turning student energy into practical service and community participation where it matters.", "/images/cleaning programme.jpg"],
+  ["SHAPE", "Evidence becomes advocacy", "Bringing research, dialogue and youth perspectives into conversations that can shape better decisions.", "/images/research.JPG"],
+];
 const partners = [["GRZ", "/images/vsi partner grz.jpg"], ["IAYSP", "/images/vsi partner iaysp.jpg"], ["VicTalk", "/images/vsi partner victalk.jpg"], ["ZYDF", "/images/vsi partner zydf.jpg"]];
 
 export default function Home() {
@@ -33,6 +39,7 @@ export default function Home() {
         <div style={{display:"flex",justifyContent:"flex-end",marginTop:38}}><a className="text-link" href="https://web.facebook.com/vsizambia" target="_blank" rel="noopener noreferrer">View all news on Facebook <span aria-hidden="true">↗</span></a></div>
       </div>
     </section>
+    <section className="impact-story" id="impact" aria-labelledby="impact-heading"><div className="section-shell"><div className="impact-story-intro"><div><p className="kicker">IMPACT IN ACTION</p><h2 id="impact-heading">From ideas to action. From action to change.</h2></div><p>VSI connects leadership, service and evidence so that young people can move from participation to meaningful contribution.</p></div><div className="impact-story-track">{impactStories.map(([label,title,description,img])=><article className="impact-story-card" key={title}><div className="impact-story-card-image"><Image src={img} alt={title} fill sizes="(min-width: 901px) 33vw, 100vw" /></div><div className="impact-story-card-content"><span>{label}</span><h3>{title}</h3><p>{description}</p></div></article>)}</div></div></section>
     <section className="values"><div className="section-shell values-grid"><div><p className="kicker light">OUR APPROACH</p><h2>Young people deserve a seat at the table.</h2></div><div><p>We value integrity, inclusion, service, learning, accountability and meaningful participation. Our approach is collaborative and grounded in the realities of students and communities.</p><a className="button button-yellow" href="/volunteer">Join the movement <span aria-hidden="true">↗</span></a></div></div></section>
     <section className="partners section-shell" id="contact" aria-labelledby="partners-heading"><div className="section-heading-row partners-heading"><div><p className="kicker">OUR PARTNERS</p><h2 id="partners-heading">Working together for young people and Zambia's future.</h2></div></div><div className="partners-carousel" role="region" aria-label="VSI partners carousel"><div className="partners-track">{carouselPartners.map(([name, src], index) => <div className="partner-logo" key={`${name}-${index}`} aria-hidden={index >= partners.length}><Image src={src} alt={`${name} partner logo`} width={280} height={130} /></div>)}</div></div></section>
     <SiteFooter />
