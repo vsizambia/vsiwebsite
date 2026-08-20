@@ -1,6 +1,8 @@
 import Image from "next/image";
 import "../community.css";
+import "../focus-story.css";
 import { SiteHeader, SiteFooter } from "../components/SiteChrome";
+import StoryScroll from "../components/StoryScroll";
 
 export const metadata = {
   title: "VSI in the Community | Youth Growth Project",
@@ -29,6 +31,13 @@ const photos = [
   ["/images/IMG_1958.JPG", "Learners and community participants"],
 ];
 
+const communityScroll = [
+  ["01", "Learning & mentorship", "The Youth Growth Project engaged learners through workshops, school clubs, peer support and practical activities around mental health awareness, community service and volunteerism.", photos[0][0], photos[0][1]],
+  ["02", "Community action", "Learners connected classroom learning with practical community participation. Community cleaning activities were conducted in Roan Market, Luanshya CBD and Mpatamatu Market.", photos[1][0], photos[1][1]],
+  ["03", "Wellbeing & participation", "The project created spaces where learners could discuss mental health with peers, guidance teachers and family members while developing practical experience through community service and volunteerism.", photos[2][0], photos[2][1]],
+  ["04", "Sharing what they learned", "The project culminated in an end-line workshop attended by 350 learners from 10 participating schools. Learners shared experiences and presented creative work including poetry and a sketch addressing substance abuse.", photos[3][0], photos[3][1]],
+];
+
 export default function CommunityPage() {
   return <main><SiteHeader />
     <section className="community-hero"><div className="community-hero-image"><Image src={photos[0][0]} alt={photos[0][1]} fill priority sizes="100vw" /></div><div className="community-hero-overlay"/><div className="section-shell community-hero-content"><p className="kicker light">VSI IN THE COMMUNITY</p><h1>Turning knowledge into <em>action.</em></h1><p>Youth Growth Project · Luanshya, Copperbelt Province</p></div></section>
@@ -37,9 +46,10 @@ export default function CommunityPage() {
 
     <section className="community-stats"><div className="section-shell community-stats-grid"><article><strong>2,610</strong><span>learners reached</span></article><article><strong>10</strong><span>school clubs</span></article><article><strong>1,870</strong><span>girls reached</span></article><article><strong>740</strong><span>boys reached</span></article></div></section>
 
-    <section className="community-story section-shell"><div className="community-story-copy"><p className="kicker">FROM LEARNING TO ACTION</p><h2>Young people putting learning into practice.</h2><p>Project activities connected classroom learning with practical community participation. Learners took part in community service activities and discussions designed to strengthen understanding of mental health, volunteerism and responsible citizenship.</p><p>Community cleaning activities were conducted in Roan Market, Luanshya CBD and Mpatamatu Market, turning service into a visible expression of participation.</p></div><div className="community-story-image"><Image src={photos[1][0]} alt={photos[1][1]} fill sizes="(max-width: 900px) 100vw, 55vw" /></div></section>
+    <div className="section-shell"><StoryScroll eyebrow="THE PROJECT JOURNEY" title="From learning to action." intro="Scroll through the moments where the Youth Growth Project created space for learners to learn, connect, serve and share what they had learned." items={communityScroll} ariaLabel="Youth Growth Project journey" /></div>
 
-    <section className="community-feature"><div className="section-shell community-feature-grid"><div className="community-feature-image"><Image src={photos[2][0]} alt={photos[2][1]} fill sizes="(max-width: 900px) 100vw, 55vw" /></div><div><p className="kicker light">COMMUNITY & WELLBEING</p><h2>Building confidence to talk, support and participate.</h2><p>The project created spaces where learners could discuss mental health with peers, guidance teachers and family members, while developing practical experience through community service and volunteerism.</p></div></div></section>
+    <div className="community-mobile-story"><section className="community-story community-story-mobile section-shell"><div className="community-story-copy"><p className="kicker">FROM LEARNING TO ACTION</p><h2>Young people putting learning into practice.</h2><p>Project activities connected classroom learning with practical community participation. Learners took part in community service activities and discussions designed to strengthen understanding of mental health, volunteerism and responsible citizenship.</p><p>Community cleaning activities were conducted in Roan Market, Luanshya CBD and Mpatamatu Market, turning service into a visible expression of participation.</p></div><div className="community-story-image"><Image src={photos[1][0]} alt={photos[1][1]} fill sizes="(max-width: 900px) 100vw, 55vw" /></div></section>
+    <section className="community-feature community-feature-mobile"><div className="section-shell community-feature-grid"><div className="community-feature-image"><Image src={photos[2][0]} alt={photos[2][1]} fill sizes="(max-width: 900px) 100vw, 55vw" /></div><div><p className="kicker light">COMMUNITY & WELLBEING</p><h2>Building confidence to talk, support and participate.</h2><p>The project created spaces where learners could discuss mental health with peers, guidance teachers and family members, while developing practical experience through community service and volunteerism.</p></div></div></section></div>
 
     <section className="community-gallery section-shell"><div className="section-heading-row"><div><p className="kicker">THE PROJECT IN PICTURES</p><h2>People, participation and community action.</h2></div></div><div className="community-gallery-grid">{photos.map(([src,alt])=><figure key={src}><Image src={src} alt={alt} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" /></figure>)}</div></section>
 
