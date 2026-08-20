@@ -15,6 +15,7 @@ const navLinks = [
   ["Our work", "/#work"],
   ["Our story", "/story"],
   ["Community", "/community"],
+  ["VSI News", "https://web.facebook.com/vsizambia"],
   ["Volunteer", "/volunteer"],
   ["Contact", "/#contact"],
 ];
@@ -39,7 +40,7 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
           <Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority />
         </a>
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {navLinks.map(([label, href]) => <a key={label} href={href}>{label}</a>)}
+          {navLinks.map(([label, href]) => <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined}>{label}</a>)}
         </nav>
         <a className="nav-cta" href={ctaHref}>
           {ctaLabel} <span aria-hidden="true">↗</span>
@@ -47,7 +48,7 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
         <details className="mobile-menu">
           <summary aria-label="Open navigation menu"><span /></summary>
           <nav className="mobile-menu-panel" aria-label="Mobile navigation">
-            {navLinks.map(([label, href]) => <a key={label} href={href}>{label}</a>)}
+            {navLinks.map(([label, href]) => <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined}>{label}</a>)}
           </nav>
         </details>
       </div>
@@ -63,14 +64,14 @@ export function SiteFooter({ includeNews = true }) {
           <Image src={whiteLogo} alt="Visionary Students Initiative" width={250} height={94} />
           <p>Promoting policies and initiatives that place students at the centre of national development.</p>
         </div>
-        <nav aria-label="Footer navigation">
+        <nav aria-label="Footer navigation" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-start"}}>
           <p className="footer-title">Explore</p>
           <a href="/">Home</a>
           <a href="/discover">Discover VSI</a>
           <a href="/#work">Our work</a>
           <a href="/story">Our story</a>
           <a href="/community">VSI in the Community</a>
-          {includeNews && <a href="/news">News</a>}
+          {includeNews && <a href="https://web.facebook.com/vsizambia" target="_blank" rel="noopener noreferrer">VSI News <span aria-hidden="true">↗</span></a>}
           <a href="/volunteer">Volunteer</a>
         </nav>
         <div>
