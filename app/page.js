@@ -4,7 +4,7 @@ import "./focus-story.css";
 import { SiteHeader, SiteFooter } from "./components/SiteChrome";
 
 export const metadata = {
-  title: "Home",
+  title: "Visionary Students Initiative | Zambia",
   description: "Visionary Students Initiative promotes policies and initiatives that place students and young people at the centre of national development in Zambia.",
   alternates: { canonical: "/" },
   openGraph: { title: "Visionary Students Initiative | Zambia", description: "Promoting policies and initiatives that place students at the centre of national development.", url: "https://www.vsizambia.org" },
@@ -34,7 +34,7 @@ export default function Home() {
       </div>
     </section>
     <section className="values"><div className="section-shell values-grid"><div><p className="kicker light">OUR APPROACH</p><h2>Young people deserve a seat at the table.</h2></div><div><p>We value integrity, inclusion, service, learning, accountability and meaningful participation. Our approach is collaborative and grounded in the realities of students and communities.</p><a className="button button-yellow" href="/volunteer">Join the movement <span aria-hidden="true">↗</span></a></div></div></section>
-    <section className="partners section-shell" id="contact" aria-labelledby="partners-heading"><div className="section-heading-row partners-heading"><div><p className="kicker">OUR PARTNERS</p><h2 id="partners-heading">Working together for young people and Zambia's future.</h2></div></div><div className="partners-carousel" role="region" aria-label="VSI partners carousel"><div className="partners-track">{carouselPartners.map(([name, src], index) => <div className="partner-logo" key={`${name}-${index}`} aria-hidden={index >= partners.length}><Image src={src} alt={`${name} partner logo`} width={280} height={130} /></div>)}</div></div></section>
+    <section className="partners section-shell" aria-labelledby="partners-heading"><div className="section-heading-row partners-heading"><div><p className="kicker">OUR PARTNERS</p><h2 id="partners-heading">Working together for young people and Zambia's future.</h2></div></div><div className="partners-carousel" role="region" aria-label="VSI partners carousel"><div className="partners-track">{carouselPartners.map(([name, src], index) => <div className="partner-logo" key={`${name}-${index}`} aria-hidden={index >= partners.length}><Image src={src} alt={`${name} partner logo`} width={280} height={130} /></div>)}</div></div></section>
     <SiteFooter />
   </main>;
 }
