@@ -14,6 +14,7 @@ const navLinks = [
   ["Discover VSI", "/discover"],
   ["Our work", "/#work"],
   ["Our story", "/story"],
+  ["Community", "/community"],
   ["Volunteer", "/volunteer"],
   ["Contact", "/#contact"],
 ];
@@ -56,7 +57,7 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
 
 export function SiteFooter({ includeNews = true }) {
   return (
-    <footer>
+    <footer id="contact">
       <div className="section-shell footer-grid">
         <div className="footer-brand">
           <Image src={whiteLogo} alt="Visionary Students Initiative" width={250} height={94} />
@@ -68,6 +69,7 @@ export function SiteFooter({ includeNews = true }) {
           <a href="/discover">Discover VSI</a>
           <a href="/#work">Our work</a>
           <a href="/story">Our story</a>
+          <a href="/community">VSI in the Community</a>
           {includeNews && <a href="/news">News</a>}
           <a href="/volunteer">Volunteer</a>
         </nav>

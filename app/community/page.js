@@ -6,6 +6,18 @@ export const metadata = {
   title: "VSI in the Community | Youth Growth Project",
   description: "A story from the Youth Growth Project in Luanshya, supporting learners through mental health awareness, community service and volunteerism.",
   alternates: { canonical: "/community" },
+  openGraph: {
+    title: "VSI in the Community | Youth Growth Project",
+    description: "A story from the Youth Growth Project in Luanshya, supporting learners through mental health awareness, community service and volunteerism.",
+    url: "https://www.vsizambia.org/community",
+    images: [{ url: "/images/IMG_0090.JPG", alt: "Learners taking part in the Youth Growth Project" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "VSI in the Community | Youth Growth Project",
+    description: "A story from the Youth Growth Project in Luanshya, supporting learners through mental health awareness, community service and volunteerism.",
+    images: ["/images/IMG_0090.JPG"],
+  },
 };
 
 const photos = [

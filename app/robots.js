@@ -1,5 +1,5 @@
 export default function robots() {
-  const baseUrl = "https://vsizambia.org";
+  const baseUrl = "https://www.vsizambia.org";
 
   return {
     rules: [{ userAgent: "*", allow: "/" }],
