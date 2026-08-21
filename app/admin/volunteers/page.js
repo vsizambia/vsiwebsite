@@ -44,7 +44,7 @@ export default function VolunteerAdmin() {
 
   async function logout() {
     await fetch("/api/admin/login", { method: "DELETE" });
-    setAuthenticated(false); setApplications([]);
+    setAuthenticated(false); setApplications([]); setSelectedId(null); setError("");
   }
 
   async function updateStatus(id, nextStatus) {
@@ -87,7 +87,7 @@ export default function VolunteerAdmin() {
     <>
       <SiteHeader ctaLabel="Public site" ctaHref="/" />
       <main className={styles.page}><div className={styles.shell}>
-        <div className={styles.topline}><span>VSI VOLUNTEER MANAGEMENT</span><div><button onClick={loadApplications}>Refresh <span aria-hidden="true">↻</span></button><button onClick={logout}>Sign out</button></div></div>
+        <div className={styles.topline}><span>VSI VOLUNTEER MANAGEMENT</span><div className={styles.topActions}><button onClick={loadApplications}>Refresh <span aria-hidden="true">↻</span></button><button className={styles.logoutButton} onClick={logout}>Log out <span aria-hidden="true">↪</span></button></div></div>
         <header className={styles.header}><div><p className="kicker">ADMIN · PEOPLE &amp; COMMUNITY</p><h1>Volunteer applications</h1><p>Review incoming applications, explore applicant details and manage volunteer status.</p></div><div className={styles.headerBadge}><span>LIVE</span><small>Application pipeline</small></div></header>
         <div className={styles.stats}>
           <button className={styles.stat} onClick={() => setStatus("all")}><strong>{applications.length}</strong><span>Total applications</span></button>
