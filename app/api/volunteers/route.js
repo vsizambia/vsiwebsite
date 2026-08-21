@@ -50,6 +50,10 @@ export async function POST(request) {
     return NextResponse.json({ ok: true, id: result.rows[0].id }, { status: 201 });
   } catch (error) {
     console.error("Volunteer application error:", error);
-    return NextResponse.json({ error: "We could not submit your application. Please try again." }, { status: 500 });
+    const detail = process.env.NODE_ENV === "development" && error instanceof Error ? error.message : undefined;
+    return NextResponse.json(
+      { error: "We could not submit your application. Please try again.", ...(detail ? { detail } : {}) },
+      { status: 500 },
+    );
   }
 }
