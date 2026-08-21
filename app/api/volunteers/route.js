@@ -1,7 +1,24 @@
 import { NextResponse } from "next/server";
+import { put } from "@vercel/blob";
 import { ensureVolunteerTable, pool } from "../../../lib/db";
 
 const clean = (value) => typeof value === "string" ? value.trim() : null;
+
+async function storeProfilePicture(dataUrl, volunteerId) {
+  if (!dataUrl) return null;
+  const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
+  if (!match) throw new Error("Invalid profile picture format.");
+  const contentType = match[1] === "image/png" ? "image/png" : "image/jpeg";
+  const extension = contentType === "image/png" ? "png" : "jpg";
+  const buffer = Buffer.from(match[2], "base64");
+  if (buffer.length > 1000000) throw new Error("Please upload a smaller profile picture (maximum 1 MB).");
+  const blob = await put(`volunteers/${volunteerId}/profile.${extension}`, buffer, {
+    access: "private",
+    contentType,
+    addRandomSuffix: true,
+  });
+  return blob.url;
+}
 
 export async function POST(request) {
   try {
@@ -28,8 +45,18 @@ export async function POST(request) {
        (full_name, age, nationality, gender, faith, email, phone, province, district, constituency, ward, location, current_occupation, education, category, skills, availability, hours_per_week, motivation, volunteering_elsewhere, other_volunteering_details, past_volunteer_positions, reference_name, reference_organization, reference_phone, reference_email, criminal_conviction, criminal_offence_details, disability, disability_certificate, disability_certificate_name, profile_picture, emergency_name, emergency_phone, consent)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30,$31,$32,$33,$34,$35)
        RETURNING id, created_at`,
-      [clean(body.fullName), age, clean(body.nationality), clean(body.gender), clean(body.faith), clean(body.email)?.toLowerCase(), clean(body.phone), clean(body.province), clean(body.district), clean(body.constituency), clean(body.ward), clean(body.location) || [clean(body.district), clean(body.province)].filter(Boolean).join(", "), clean(body.currentOccupation), clean(body.education), clean(body.category), clean(body.skills), clean(body.availability), hoursPerWeek, clean(body.motivation), elsewhere, clean(body.otherVolunteeringDetails), clean(body.pastVolunteerPositions), clean(body.referenceName), clean(body.referenceOrganization), clean(body.referencePhone), clean(body.referenceEmail)?.toLowerCase(), convicted, clean(body.criminalOffenceDetails), disability, disability ? body.disabilityCertificate : null, disability ? clean(body.disabilityCertificateName) : null, body.profilePicture || null, clean(body.emergencyName), clean(body.emergencyPhone), true]
+      [clean(body.fullName), age, clean(body.nationality), clean(body.gender), clean(body.faith), clean(body.email)?.toLowerCase(), clean(body.phone), clean(body.province), clean(body.district), clean(body.constituency), clean(body.ward), clean(body.location) || [clean(body.district), clean(body.province)].filter(Boolean).join(", "), clean(body.currentOccupation), clean(body.education), clean(body.category), clean(body.skills), clean(body.availability), hoursPerWeek, clean(body.motivation), elsewhere, clean(body.otherVolunteeringDetails), clean(body.pastVolunteerPositions), clean(body.referenceName), clean(body.referenceOrganization), clean(body.referencePhone), clean(body.referenceEmail)?.toLowerCase(), convicted, clean(body.criminalOffenceDetails), disability, disability ? body.disabilityCertificate : null, disability ? clean(body.disabilityCertificateName) : null, null, clean(body.emergencyName), clean(body.emergencyPhone), true]
     );
+
+    let profilePicture = null;
+    try {
+      profilePicture = await storeProfilePicture(body.profilePicture, result.rows[0].id);
+      if (profilePicture) await pool.query("UPDATE volunteer_applications SET profile_picture = $1 WHERE id = $2", [profilePicture, result.rows[0].id]);
+    } catch (photoError) {
+      await pool.query("DELETE FROM volunteer_applications WHERE id = $1", [result.rows[0].id]);
+      throw photoError;
+    }
+
     return NextResponse.json({ ok: true, id: result.rows[0].id }, { status: 201 });
   } catch (error) {
     console.error("Volunteer application error:", error);
