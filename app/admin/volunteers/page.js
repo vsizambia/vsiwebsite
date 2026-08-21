@@ -1,171 +1,54 @@
 "use client";
-
-import { useEffect, useMemo, useState } from "react";
-import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
+import {useEffect,useMemo,useState} from "react";
+import {SiteFooter,SiteHeader} from "../../components/SiteChrome";
+import {DIRECTORATES,PROGRAMMES,PROJECTS,ACTIVITIES,PROGRAMME_REGISTER} from "./programmes";
 import styles from "./admin.module.css";
 
-const statusOptions = ["pending", "approved", "rejected", "inactive"];
-const rejectionReasons = [
-  ["age_eligibility", "Age / eligibility"],
-  ["recruitment_closed", "Recruitment closed"],
-  ["incomplete_application", "Incomplete application"],
-  ["role_fit", "Role / skills fit"],
-  ["safeguarding", "Safeguarding / verification"],
-  ["capacity", "Current programme capacity"],
-  ["other", "Other documented reason"],
-];
+const statuses=["pending","approved","rejected","inactive"];
+const rejectionReasons=[["age_eligibility","Age / eligibility"],["recruitment_closed","Recruitment closed"],["incomplete_application","Incomplete application"],["role_fit","Role / skills fit"],["safeguarding","Safeguarding / verification"],["capacity","Current programme capacity"],["other","Other documented reason"]];
+const blankAssignment={directorate:"",programme:"",project:"",activity:"",lineManagerName:"",lineManagerTitle:"",lineManagerPhone:"",lineManagerEmail:""};
+const editFields=["full_name","age","nationality","email","phone","province","district","constituency","ward","current_occupation","education","category","skills","availability","motivation","other_volunteering_details","past_volunteer_positions","reference_name","reference_organization","reference_phone","reference_email","criminal_offence_details","emergency_name","emergency_phone"];
 
-export default function VolunteerAdmin() {
-  const [authenticated, setAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-  const [applications, setApplications] = useState([]);
-  const [status, setStatus] = useState("all");
-  const [category, setCategory] = useState("all");
-  const [query, setQuery] = useState("");
-  const [selectedId, setSelectedId] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [savingId, setSavingId] = useState(null);
-  const [reviewReason, setReviewReason] = useState("");
-  const [reviewNote, setReviewNote] = useState("");
-
-  async function loadApplications() {
-    setLoading(true); setError("");
-    try {
-      const response = await fetch("/api/admin/volunteers", { cache: "no-store" });
-      const data = await response.json();
-      if (response.status === 401) { setAuthenticated(false); return; }
-      if (!response.ok) throw new Error(data.error || "Unable to load applications.");
-      setAuthenticated(true); setApplications(data.applications || []);
-    } catch (err) { setError(err.message); }
-    finally { setLoading(false); }
-  }
-
-  useEffect(() => { loadApplications(); }, []);
-
-  async function login(event) {
-    event.preventDefault(); setLoginError("");
-    try {
-      const response = await fetch("/api/admin/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ password }) });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Unable to sign in.");
-      setPassword(""); setAuthenticated(true); loadApplications();
-    } catch (err) { setLoginError(err.message); }
-  }
-
-  async function logout() {
-    await fetch("/api/admin/login", { method: "DELETE" });
-    setAuthenticated(false); setApplications([]); setSelectedId(null); setError("");
-  }
-
-  function selectApplicant(item) {
-    const opening = selectedId !== item.id;
-    setSelectedId(opening ? item.id : null);
-    if (opening) {
-      setReviewReason(item.rejection_reason || "");
-      setReviewNote(item.rejection_note || "");
-    }
-  }
-
-  async function updateStatus(id, nextStatus) {
-    if (nextStatus === "rejected") {
-      const item = applications.find((entry) => entry.id === id);
-      setSelectedId(id); setReviewReason(item?.rejection_reason || ""); setReviewNote(item?.rejection_note || "");
-      return;
-    }
-    await saveReview(id, nextStatus, "", "");
-  }
-
-  async function saveReview(id, nextStatus, rejectionReason, rejectionNote) {
-    setSavingId(id); setError("");
-    try {
-      const response = await fetch("/api/admin/volunteers", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, status: nextStatus, rejectionReason, rejectionNote }) });
-      const data = await response.json();
-      if (response.status === 401) { setAuthenticated(false); return; }
-      if (!response.ok) throw new Error(data.error || "Unable to update application.");
-      setApplications((current) => current.map((item) => item.id === id ? { ...item, ...data.volunteer } : item));
-      setReviewReason(data.volunteer.rejection_reason || "");
-      setReviewNote(data.volunteer.rejection_note || "");
-    } catch (err) { setError(err.message); }
-    finally { setSavingId(null); }
-  }
-
-  const categories = useMemo(() => [...new Set(applications.map((item) => item.category).filter(Boolean))].sort(), [applications]);
-  const filtered = useMemo(() => applications.filter((item) => {
-    const matchesStatus = status === "all" || item.status === status;
-    const matchesCategory = category === "all" || item.category === category;
-    const haystack = `${item.full_name} ${item.email} ${item.location} ${item.category} ${item.current_occupation || ""}`.toLowerCase();
-    return matchesStatus && matchesCategory && haystack.includes(query.toLowerCase());
-  }), [applications, status, category, query]);
-  const counts = statusOptions.reduce((acc, key) => ({ ...acc, [key]: applications.filter((item) => item.status === key).length }), {});
-  const selected = applications.find((item) => item.id === selectedId);
-
-  if (!authenticated) return (
-    <>
-      <SiteHeader ctaLabel="Back to site" ctaHref="/" />
-      <main className={styles.loginPage}><div className={styles.loginShell}>
-        <div className={styles.loginMark}>VSI</div>
-        <p className="kicker">ADMIN ACCESS</p><h1>Volunteer applications</h1>
-        <p>Sign in to review and manage volunteer applications.</p>
-        <form onSubmit={login} className={styles.loginForm}>
-          <label htmlFor="admin-password">Admin password</label>
-          <input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-          {loginError && <div className={styles.error}>{loginError}</div>}
-          <button type="submit">Sign in <span aria-hidden="true">↗</span></button>
-        </form>
-      </div></main>
-      <SiteFooter />
-    </>
-  );
-
-  const activeCount = counts.approved || 0;
-  const pendingCount = counts.pending || 0;
-
-  return (
-    <>
-      <SiteHeader ctaLabel="Public site" ctaHref="/" />
-      <main className={styles.page}><div className={styles.shell}>
-        <div className={styles.topline}><span>VSI IMS <b>/</b> Volunteer Management</span><div><span className={styles.connected}><i /> Connected</span><button onClick={loadApplications}>Refresh ↻</button><button onClick={logout}>Log out ↪</button></div></div>
-
-        <section className={styles.hero}>
-          <div><p className="kicker light">PEOPLE &amp; DELIVERY</p><h1>Volunteer Management</h1><p>Manage VSI volunteers, readiness and recruitment across programmes and activities.</p></div>
-          <div className={styles.heroOrb}><span>V</span></div>
-        </section>
-
-        <section className={styles.stats} aria-label="Volunteer overview">
-          <button className={`${styles.stat} ${styles.statNavy}`} onClick={() => setStatus("approved")}><span className={styles.statIcon}>♟</span><small>ACTIVE VOLUNTEERS</small><strong>{activeCount}</strong><b>Approved volunteers</b><em>Current volunteer register</em></button>
-          <button className={`${styles.stat} ${styles.statBlue}`} onClick={() => setStatus("pending")}><span className={styles.statIcon}>+</span><small>APPLICANTS</small><strong>{applications.length}</strong><b>Applications received</b><em>{pendingCount} awaiting review</em></button>
-          <button className={`${styles.stat} ${styles.statYellow}`} onClick={() => setStatus("pending")}><span className={styles.statIcon}>↗</span><small>PENDING REVIEW</small><strong>{pendingCount}</strong><b>Need a decision</b><em>Review and document outcome</em></button>
-          <button className={`${styles.stat} ${styles.statWhite}`} onClick={() => setStatus("all")}><span className={styles.statIcon}>#</span><small>REGISTER</small><strong>{applications.length}</strong><b>Total volunteer records</b><em>Applicants, approved, inactive and rejected</em></button>
-        </section>
-
-        <section className={styles.registerPanel}>
-          <div className={styles.registerHeader}><div><p className="kicker">VOLUNTEER REGISTER</p><h2>Volunteers</h2></div><strong>{filtered.length} shown</strong></div>
-          <div className={styles.toolbar}><div className={styles.searchWrap}><span aria-hidden="true">⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name, email, location, occupation..." aria-label="Search applications" /></div><select value={status} onChange={(event) => setStatus(event.target.value)} aria-label="Filter by status"><option value="all">All statuses</option>{statusOptions.map((item) => <option key={item} value={item}>{item}</option>)}</select><select value={category} onChange={(event) => setCategory(event.target.value)} aria-label="Filter by volunteer area"><option value="all">All volunteer areas</option>{categories.map((item) => <option key={item} value={item}>{item}</option>)}</select><button className={styles.clearButton} onClick={() => { setQuery(""); setStatus("all"); setCategory("all"); }}>Clear</button></div>
-          {error && <div className={styles.error}>{error}</div>}
-          {loading ? <div className={styles.empty}>Loading volunteer register<span className={styles.loadingDots}>...</span></div> : filtered.length === 0 ? <div className={styles.empty}>No volunteer records match your filters.</div> : <div className={styles.list}>{filtered.map((item) => {
-            const initials = item.full_name.split(" ").map((part) => part[0]).join("").slice(0, 2).toUpperCase();
-            const isSelected = selectedId === item.id;
-            return <article className={`${styles.card} ${isSelected ? styles.cardSelected : ""}`} key={item.id}>
-              <button className={styles.cardButton} onClick={() => selectApplicant(item)} aria-expanded={isSelected}>
-                <div className={styles.cardMain}><div className={styles.avatar}>{initials}</div><div><h3>{item.full_name}</h3><p>{item.age ? `${item.age} years · ` : ""}{item.current_occupation || "Occupation not provided"} · {item.location}</p><p>{item.email} · {item.category}</p></div></div>
-                <div className={styles.cardSide}><span className={`${styles.badge} ${styles[item.status]}`}>{item.status}</span><span className={styles.chevron}>{isSelected ? "−" : "+"}</span></div>
-              </button>
-              {isSelected && <div className={styles.details}>
-                <div className={styles.detailGrid}>
-                  <div><span>Full name</span><strong>{item.full_name}</strong></div><div><span>Age</span><strong>{item.age || "—"}</strong></div><div><span>Current occupation / status</span><strong>{item.current_occupation || "—"}</strong></div><div><span>Education / qualification</span><strong>{item.education || "—"}</strong></div><div><span>Email</span><a href={`mailto:${item.email}`}>{item.email}</a></div><div><span>Phone</span><a href={`tel:${item.phone}`}>{item.phone}</a></div><div><span>Location</span><strong>{item.location || "—"}</strong></div><div><span>Volunteer area</span><strong>{item.category || "—"}</strong></div><div><span>Availability</span><strong>{item.availability || "—"}</strong></div><div><span>Applied</span><strong>{new Date(item.created_at).toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" })}</strong></div></div>
-                <div className={styles.longFields}><div><span>Skills, experience &amp; qualifications</span><p>{item.skills || "—"}</p></div><div><span>Motivation</span><p>{item.motivation || "—"}</p></div><div><span>Emergency contact</span><p>{item.emergency_name || "—"} · {item.emergency_phone || "—"}</p></div></div>
-                <div className={styles.reviewPanel}><div className={styles.reviewHeader}><div><span>APPLICATION DECISION</span><strong>Review &amp; document outcome</strong></div>{item.reviewed_at && <small>Reviewed {new Date(item.reviewed_at).toLocaleDateString()}</small>}</div><div className={styles.reviewControls}><label>Status<select value={item.status} onChange={(event) => updateStatus(item.id, event.target.value)}>{statusOptions.map((option) => <option key={option}>{option}</option>)}</select></label></div>
-                  {item.status === "rejected" && <div className={styles.rejectionBox}><label>Reason for rejection *<select value={reviewReason} onChange={(event) => setReviewReason(event.target.value)}><option value="">Select a documented reason</option>{rejectionReasons.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label><label>Reviewer note (recommended)<textarea rows="3" value={reviewNote} onChange={(event) => setReviewNote(event.target.value)} placeholder="Briefly record the decision context and any useful follow-up." /></label><p className={styles.policyNote}>Record objective programme or eligibility reasons only. Do not use political affiliation, political opinion, ethnicity, religion or other protected characteristics as a rejection basis.</p><button className={styles.saveReview} disabled={savingId === item.id || !reviewReason} onClick={() => saveReview(item.id, "rejected", reviewReason, reviewNote)}>{savingId === item.id ? "Saving…" : "Save rejection decision"}</button></div>}
-                  {item.status !== "rejected" && item.rejection_reason && <p className={styles.previousReason}>Previous rejection reason: {rejectionReasons.find(([value])=>value===item.rejection_reason)?.[1] || item.rejection_reason}</p>}
-                </div>
-              </div>}
-            </article>;
-          })}</div>}
-        </section>
-      </div></main>
-      <SiteFooter />
-    </>
-  );
+export default function VolunteerAdmin(){
+ const[authenticated,setAuthenticated]=useState(false),[password,setPassword]=useState(""),[loginError,setLoginError]=useState(""),[applications,setApplications]=useState([]),[status,setStatus]=useState("all"),[category,setCategory]=useState("all"),[directorate,setDirectorate]=useState("all"),[programme,setProgramme]=useState("all"),[project,setProject]=useState("all"),[activity,setActivity]=useState("all"),[query,setQuery]=useState(""),[selectedId,setSelectedId]=useState(null),[loading,setLoading]=useState(true),[error,setError]=useState(""),[savingId,setSavingId]=useState(null),[editing,setEditing]=useState(false),[editForm,setEditForm]=useState({}),[reviewReason,setReviewReason]=useState(""),[reviewNote,setReviewNote]=useState(""),[assignment,setAssignment]=useState(blankAssignment),[chart,setChart]=useState("directorate");
+ async function loadApplications(){setLoading(true);setError("");try{const r=await fetch("/api/admin/volunteers",{cache:"no-store"}),d=await r.json();if(r.status===401){setAuthenticated(false);return;}if(!r.ok)throw new Error(d.error||"Unable to load applications.");setAuthenticated(true);setApplications(d.applications||[]);}catch(e){setError(e.message)}finally{setLoading(false)}}
+ useEffect(()=>{loadApplications()},[]);
+ async function login(e){e.preventDefault();setLoginError("");try{const r=await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({password})}),d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to sign in.");setPassword("");setAuthenticated(true);loadApplications()}catch(e){setLoginError(e.message)}}
+ async function logout(){await fetch("/api/admin/login",{method:"DELETE"});setAuthenticated(false);setApplications([]);setSelectedId(null);setEditing(false)}
+ const selected=applications.find(x=>x.id===selectedId);
+ function openApplicant(item){const opening=selectedId!==item.id;setSelectedId(opening?item.id:null);setEditing(false);if(opening){setReviewReason(item.rejection_reason||"");setReviewNote(item.rejection_note||"");setAssignment({directorate:item.directorate||"",programme:item.programme||"",project:item.project||"",activity:item.activity||"",lineManagerName:item.line_manager_name||"",lineManagerTitle:item.line_manager_title||"",lineManagerPhone:item.line_manager_phone||"",lineManagerEmail:item.line_manager_email||""})}}
+ function startEdit(){if(!selected)return;const next={};editFields.forEach(f=>next[f]=selected[f]??"");next.volunteering_elsewhere=!!selected.volunteering_elsewhere;next.criminal_conviction=!!selected.criminal_conviction;next.profile_picture=selected.profile_picture||"";setEditForm(next);setEditing(true)}
+ function editChange(e){const{name,value,type,checked}=e.target;setEditForm(x=>({...x,[name]:type==="checkbox"?checked:value}))}
+ async function saveEdit(){if(!selected)return;setSavingId(selected.id);setError("");try{const r=await fetch("/api/admin/volunteers",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:selected.id,...editForm})}),d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to save changes.");setApplications(xs=>xs.map(x=>x.id===selected.id?d.volunteer:x));setEditing(false)}catch(e){setError(e.message)}finally{setSavingId(null)}}
+ async function deleteApplicant(){if(!selected||!window.confirm(`Delete ${selected.full_name}'s volunteer record permanently? This cannot be undone.`))return;setSavingId(selected.id);try{const r=await fetch("/api/admin/volunteers",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:selected.id})}),d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to delete record.");setApplications(xs=>xs.filter(x=>x.id!==selected.id));setSelectedId(null)}catch(e){setError(e.message)}finally{setSavingId(null)}}
+ async function saveStatus(nextStatus){if(!selected)return;if(nextStatus==="rejected"){setReviewReason(selected.rejection_reason||"");setReviewNote(selected.rejection_note||"");return;}if(nextStatus==="approved")return;await sendStatus(nextStatus)}
+ async function sendStatus(nextStatus){setSavingId(selected.id);setError("");try{const r=await fetch("/api/admin/volunteers",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:selected.id,status:nextStatus,rejectionReason:reviewReason,rejectionNote:reviewNote,...assignment})}),d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to update status.");setApplications(xs=>xs.map(x=>x.id===selected.id?d.volunteer:x))}catch(e){setError(e.message)}finally{setSavingId(null)}}
+ async function approve(){await sendStatus("approved")}
+ function assignmentChange(e){setAssignment(x=>({...x,[e.target.name]:e.target.value}))}
+ function editPhoto(e){const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>setEditForm(x=>({...x,profile_picture:reader.result}));reader.readAsDataURL(file)}
+ const categories=useMemo(()=>[...new Set(applications.map(x=>x.category).filter(Boolean))].sort(),[applications]);
+ const filtered=useMemo(()=>applications.filter(x=>{const hay=`${x.full_name} ${x.email} ${x.phone} ${x.current_occupation||""} ${x.nationality||""} ${x.province||""} ${x.district||""}`.toLowerCase();return(status==="all"||x.status===status)&&(category==="all"||x.category===category)&&(directorate==="all"||x.directorate===directorate)&&(programme==="all"||x.programme===programme)&&(project==="all"||x.project===project)&&(activity==="all"||x.activity===activity)&&hay.includes(query.toLowerCase())}),[applications,status,category,directorate,programme,project,activity,query]);
+ const counts=Object.fromEntries(statuses.map(s=>[s,applications.filter(x=>x.status===s).length]));
+ const chartData=useMemo(()=>{let key=chart;if(key==="category")return categories.map(k=>[k,applications.filter(x=>x.category===k).length]);return applications.filter(x=>x.status==="approved").reduce((m,x)=>{const val=x[key]||"Unassigned";m[val]=(m[val]||0)+1;return m},{});},[applications,chart,categories]);
+ const chartEntries=Array.isArray(chartData)?chartData:Object.entries(chartData); const topChart=chartEntries.sort((a,b)=>b[1]-a[1]).slice(0,7); const maxChart=Math.max(1,...topChart.map(x=>x[1]));
+ if(!authenticated)return <><SiteHeader ctaLabel="Back to site" ctaHref="/"/><main className={styles.loginPage}><div className={styles.loginShell}><div className={styles.loginMark}>VSI</div><p className="kicker">ADMIN ACCESS</p><h1>Volunteer Management</h1><p>Sign in to review, edit, assign and manage the VSI volunteer register.</p><form onSubmit={login} className={styles.loginForm}><label htmlFor="admin-password">Admin password</label><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/>{loginError&&<div className={styles.error}>{loginError}</div>}<button type="submit">Sign in <span>↗</span></button></form></div></main><SiteFooter/></>;
+ return <><SiteHeader ctaLabel="Public site" ctaHref="/"/><main className={styles.page}><div className={styles.shell}>
+  <div className={styles.topline}><span>VSI IMS <b>/</b> Volunteer Management</span><div><span className={styles.connected}><i/> Connected</span><button onClick={loadApplications}>Refresh ↻</button><button onClick={logout}>Log out ↪</button></div></div>
+  <section className={styles.hero}><div><p className="kicker light">PEOPLE &amp; DELIVERY</p><h1>Volunteer Management</h1><p>Manage VSI volunteers, readiness, deployment and recruitment across programmes and activities.</p></div><div className={styles.heroOrb}>V</div></section>
+  <section className={styles.stats}><button className={`${styles.stat} ${styles.statNavy}`} onClick={()=>setStatus("approved")}><span className={styles.statIcon}>♟</span><small>ACTIVE VOLUNTEERS</small><strong>{counts.approved||0}</strong><b>Approved volunteers</b><em>Current register</em></button><button className={`${styles.stat} ${styles.statBlue}`} onClick={()=>setStatus("pending")}><span className={styles.statIcon}>+</span><small>APPLICANTS</small><strong>{applications.length}</strong><b>Applications received</b><em>{counts.pending||0} awaiting review</em></button><button className={`${styles.stat} ${styles.statYellow}`} onClick={()=>setStatus("pending")}><span className={styles.statIcon}>↗</span><small>PENDING REVIEW</small><strong>{counts.pending||0}</strong><b>Need a decision</b><em>Document every outcome</em></button><button className={`${styles.stat} ${styles.statWhite}`} onClick={()=>setStatus("all")}><span className={styles.statIcon}>#</span><small>REGISTER</small><strong>{applications.length}</strong><b>Total records</b><em>Applicants, active, inactive and rejected</em></button></section>
+  <section className={styles.analytics}><div className={styles.analyticsHead}><div><p className="kicker">VOLUNTEER DISTRIBUTION</p><h2>Where volunteers are deployed</h2></div><select value={chart} onChange={e=>setChart(e.target.value)}><option value="category">Volunteer area</option><option value="directorate">Directorate</option><option value="programme">Programme</option><option value="project">Project</option><option value="activity">Activity</option></select></div><div className={styles.chart}>{topChart.length?topChart.map(([label,value])=><div className={styles.barRow} key={label}><div className={styles.barLabel}><span>{label}</span><b>{value}</b></div><div className={styles.barTrack}><i style={{width:`${Math.max(6,(value/maxChart)*100)}%`}}/></div></div>):<div className={styles.empty}>Approved volunteers will appear here once they are assigned.</div>}</div></section>
+  <section className={styles.registerPanel}><div className={styles.registerHeader}><div><p className="kicker">VOLUNTEER REGISTER</p><h2>Volunteers</h2></div><strong>{filtered.length} shown</strong></div>
+   <div className={styles.toolbar}><div className={styles.searchWrap}><span>⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search name, email, phone, occupation..."/></div><select value={status} onChange={e=>setStatus(e.target.value)}><option value="all">All statuses</option>{statuses.map(s=><option key={s}>{s}</option>)}</select><select value={category} onChange={e=>setCategory(e.target.value)}><option value="all">All volunteer areas</option>{categories.map(x=><option key={x}>{x}</option>)}</select><select value={directorate} onChange={e=>setDirectorate(e.target.value)}><option value="all">All directorates</option>{DIRECTORATES.map(x=><option key={x}>{x}</option>)}</select><select value={programme} onChange={e=>setProgramme(e.target.value)}><option value="all">All programmes</option>{PROGRAMMES.map(x=><option key={x}>{x}</option>)}</select><select value={project} onChange={e=>setProject(e.target.value)}><option value="all">All projects</option>{PROJECTS.map(x=><option key={x}>{x}</option>)}</select><select value={activity} onChange={e=>setActivity(e.target.value)}><option value="all">All activities</option>{ACTIVITIES.map(x=><option key={x}>{x}</option>)}</select><button className={styles.clearButton} onClick={()=>{setQuery("");setStatus("all");setCategory("all");setDirectorate("all");setProgramme("all");setProject("all");setActivity("all")}}>Clear</button></div>
+   {error&&<div className={styles.error}>{error}</div>}
+   {loading?<div className={styles.empty}>Loading volunteer register<span className={styles.loadingDots}>...</span></div>:filtered.length===0?<div className={styles.empty}>No volunteer records match your filters.</div>:<div className={styles.list}>{filtered.map(item=>{const initials=item.full_name.split(" ").map(p=>p[0]).join("").slice(0,2).toUpperCase(),open=selectedId===item.id;return <article className={`${styles.card} ${open?styles.cardSelected:""}`} key={item.id}><button className={styles.cardButton} onClick={()=>openApplicant(item)} aria-expanded={open}><div className={styles.cardMain}>{item.profile_picture?<img className={styles.avatarPhoto} src={item.profile_picture} alt=""/>:<div className={styles.avatar}>{initials}</div>}<div><h3>{item.full_name}</h3><p>{item.age?`${item.age} years · `:""}{item.current_occupation||"Occupation not provided"} · {item.nationality||"Nationality not provided"}</p><p>{item.province||item.location} · {item.category}</p></div></div><div className={styles.cardSide}><span className={`${styles.badge} ${styles[item.status]}`}>{item.status}</span><span className={styles.chevron}>{open?"−":"+"}</span></div></button>{open&&<div className={styles.details}>
+    <div className={styles.actionRow}><div><span className={styles.kickerSmall}>RECORD ACTIONS</span><strong>{item.status==='approved'?'Approved volunteer':'Volunteer applicant'}</strong></div><div><button className={styles.secondaryButton} onClick={startEdit}>{editing?"Close edit":"Edit record"}</button><button className={styles.dangerButton} onClick={deleteApplicant} disabled={savingId===item.id}>Delete</button></div></div>
+    {editing?<div className={styles.editPanel}><div className={styles.editGrid}>{editFields.map(f=><label key={f}>{f.replaceAll("_"," ")}<input name={f} value={editForm[f]??""} onChange={editChange}/></label>)}<label>Profile picture<input type="file" accept="image/*" onChange={editPhoto}/></label></div><label className={styles.fullEdit}>Currently volunteering elsewhere?<select name="volunteering_elsewhere" value={editForm.volunteering_elsewhere?"yes":"no"} onChange={e=>setEditForm(x=>({...x,volunteering_elsewhere:e.target.value==="yes"}))}><option value="no">No</option><option value="yes">Yes</option></select></label><label className={styles.fullEdit}>Criminal conviction disclosed?<select name="criminal_conviction" value={editForm.criminal_conviction?"yes":"no"} onChange={e=>setEditForm(x=>({...x,criminal_conviction:e.target.value==="yes"}))}><option value="no">No</option><option value="yes">Yes</option></select></label><div className={styles.editActions}><button className={styles.saveReview} onClick={saveEdit} disabled={savingId===item.id}>{savingId===item.id?"Saving…":"Save changes"}</button></div></div>:<>
+     <div className={styles.profileGrid}>{item.profile_picture&&<img className={styles.profileLarge} src={item.profile_picture} alt={`${item.full_name} profile`}/>}<div className={styles.detailGrid}><div><span>Full name</span><strong>{item.full_name}</strong></div><div><span>Age</span><strong>{item.age||"—"}</strong></div><div><span>Nationality</span><strong>{item.nationality||"—"}</strong></div><div><span>Occupation / status</span><strong>{item.current_occupation||"—"}</strong></div><div><span>Education</span><strong>{item.education||"—"}</strong></div><div><span>Email</span><a href={`mailto:${item.email}`}>{item.email}</a></div><div><span>Phone</span><a href={`tel:${item.phone}`}>{item.phone}</a></div><div><span>Province</span><strong>{item.province||"—"}</strong></div><div><span>District</span><strong>{item.district||"—"}</strong></div><div><span>Constituency</span><strong>{item.constituency||"—"}</strong></div><div><span>Ward</span><strong>{item.ward||"—"}</strong></div><div><span>Volunteer area</span><strong>{item.category||"—"}</strong></div></div></div>
+     <div className={styles.longFields}><div><span>Skills / experience</span><p>{item.skills||"—"}</p></div><div><span>Motivation</span><p>{item.motivation||"—"}</p></div><div><span>Current / past volunteering</span><p>{item.volunteering_elsewhere?item.other_volunteering_details||"Currently volunteers elsewhere":"Not currently volunteering elsewhere"}{item.past_volunteer_positions?`\n\nPast: ${item.past_volunteer_positions}`:""}</p></div><div><span>Reference</span><p>{item.reference_name} · {item.reference_organization}<br/>{item.reference_phone} · {item.reference_email}</p></div><div><span>Criminal disclosure</span><p>{item.criminal_conviction?item.criminal_offence_details||"Disclosed; details not supplied":"No conviction disclosed"}</p></div><div><span>Emergency contact</span><p>{item.emergency_name} · {item.emergency_phone}</p></div></div>
+     <div className={styles.reviewPanel}><div className={styles.reviewHeader}><div><span>APPLICATION DECISION</span><strong>Review &amp; document outcome</strong></div>{item.reviewed_at&&<small>Reviewed {new Date(item.reviewed_at).toLocaleDateString()}</small>}</div><label>Status<select value={item.status} onChange={e=>saveStatus(e.target.value)}>{statuses.map(s=><option key={s}>{s}</option>)}</select></label>{item.status==='rejected'&&<div className={styles.rejectionBox}><label>Reason for rejection *<select value={reviewReason} onChange={e=>setReviewReason(e.target.value)}><option value="">Select a documented reason</option>{rejectionReasons.map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label><label>Reviewer note<textarea rows="3" value={reviewNote} onChange={e=>setReviewNote(e.target.value)}/></label><p className={styles.policyNote}>Use objective programme, eligibility or safeguarding reasons only.</p><button className={styles.saveReview} disabled={!reviewReason||savingId===item.id} onClick={()=>sendStatus("rejected")}>Save rejection decision</button></div>}
+     {item.status!=='rejected'&&<div className={styles.assignmentPanel}><div className={styles.reviewHeader}><div><span>VSI DEPLOYMENT</span><strong>{item.status==='approved'?"Assignment &amp; reporting line":"Complete this when approving"}</strong></div></div><div className={styles.assignmentGrid}><label>Directorate<select name="directorate" value={assignment.directorate} onChange={assignmentChange}><option value="">Select directorate</option>{DIRECTORATES.map(x=><option key={x}>{x}</option>)}</select></label><label>Programme<select name="programme" value={assignment.programme} onChange={assignmentChange}><option value="">Select programme</option>{PROGRAMMES.map(x=><option key={x}>{x}</option>)}</select></label><label>Project<select name="project" value={assignment.project} onChange={assignmentChange}><option value="">Select project</option>{PROJECTS.map(x=><option key={x}>{x}</option>)}</select></label><label>Activity<select name="activity" value={assignment.activity} onChange={assignmentChange}><option value="">Select activity</option>{ACTIVITIES.map(x=><option key={x}>{x}</option>)}</select></label><label>Line manager / coordinator name<input name="lineManagerName" value={assignment.lineManagerName} onChange={assignmentChange}/></label><label>Title / role<input name="lineManagerTitle" value={assignment.lineManagerTitle} onChange={assignmentChange}/></label><label>Manager phone<input name="lineManagerPhone" value={assignment.lineManagerPhone} onChange={assignmentChange}/></label><label>Manager email<input type="email" name="lineManagerEmail" value={assignment.lineManagerEmail} onChange={assignmentChange}/></label></div>{item.status!=='approved'&&<button className={styles.approveButton} onClick={approve} disabled={savingId===item.id}>{savingId===item.id?"Saving…":"Approve & assign volunteer"}</button>}</div>}
+     </div></>}
+   </div>}</article>})}</div>}
+  </section>
+ </div></main><SiteFooter/></>;
 }
