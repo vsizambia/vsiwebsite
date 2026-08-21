@@ -23,32 +23,31 @@ jobs:
           from pathlib import Path
           import re
 
-          path = Path('app/admin/volunteers/page.js')
+          path = Path("app/admin/volunteers/page.js")
           text = path.read_text()
 
-          marker = 'export default function VolunteerAdmin(){'
-          if 'function VolunteerHours' not in text:
+          marker = "export default function VolunteerAdmin(){"
+          if "function VolunteerHours" not in text:
               component = r'''function VolunteerHours({volunteerId}){
- const [data,setData]=useState({activities:[],week:0,total:0});
- useEffect(()=>{let alive=true;fetch(`/api/admin/activity?volunteerId=${volunteerId}`,{cache:"no-store"}).then(r=>r.json()).then(d=>{if(alive)setData({activities:d.activities||[],week:Number(d.week_hours||0),total:Number(d.total_hours||0)})}).catch(()=>{});return()=>{alive=false}},[volunteerId]);
- const target=6, percent=Math.min(100,(data.week/target)*100);
- return <div className={styles.hoursBlock}>
-  <div className={styles.hoursSummary}><div><span>THIS WEEK</span><strong>{data.week.toFixed(2)} / {target} hrs</strong></div><div><span>TOTAL HOURS</span><strong>{data.total.toFixed(2)} hrs</strong></div><div><span>ACTIVITIES</span><strong>{data.activities.length}</strong></div></div>
-  <div className={styles.hoursTrack}><i style={{width:`${percent}%`}}/></div>
-  <div className={styles.activityHistory}><div className={styles.historyHead}><span>ACTIVITY HISTORY</span><a href="/admin/activities">Open Activity Register ↗</a></div>{data.activities.length===0?<p>No activity has been recorded yet.</p>:<div className={styles.historyList}>{data.activities.slice(0,8).map(a=><div className={styles.historyItem} key={a.id}><div><strong>{a.activity_name}</strong><span>{a.activity_date} · {a.start_time?.slice(0,5)}–{a.end_time?.slice(0,5)}</span></div><div><b>{Number(a.hours).toFixed(2)} hrs</b><em className={a.verified?styles.verified:styles.unverified}>{a.verified?"Verified":"Unverified"}</em></div></div>)}</div>}</div>
- </div>;
-}
+           const [data,setData]=useState({activities:[],week:0,total:0});
+           useEffect(()=>{let alive=true;fetch(`/api/admin/activity?volunteerId=${volunteerId}`,{cache:"no-store"}).then(r=>r.json()).then(d=>{if(alive)setData({activities:d.activities||[],week:Number(d.week_hours||0),total:Number(d.total_hours||0)})}).catch(()=>{});return()=>{alive=false}},[volunteerId]);
+           const target=6, percent=Math.min(100,(data.week/target)*100);
+           return <div className={styles.hoursBlock}>
+            <div className={styles.hoursSummary}><div><span>THIS WEEK</span><strong>{data.week.toFixed(2)} / {target} hrs</strong></div><div><span>TOTAL HOURS</span><strong>{data.total.toFixed(2)} hrs</strong></div><div><span>ACTIVITIES</span><strong>{data.activities.length}</strong></div></div>
+            <div className={styles.hoursTrack}><i style={{width:`${percent}%`}}/></div>
+            <div className={styles.activityHistory}><div className={styles.historyHead}><span>ACTIVITY HISTORY</span><a href="/admin/activities">Open Activity Register ↗</a></div>{data.activities.length===0?<p>No activity has been recorded yet.</p>:<div className={styles.historyList}>{data.activities.slice(0,8).map(a=><div className={styles.historyItem} key={a.id}><div><strong>{a.activity_name}</strong><span>{a.activity_date} · {a.start_time?.slice(0,5)}–{a.end_time?.slice(0,5)}</span></div><div><b>{Number(a.hours).toFixed(2)} hrs</b><em className={a.verified?styles.verified:styles.unverified}>{a.verified?"Verified":"Unverified"}</em></div></div>)}</div>}</div>
+           </div>;
+          }
 
-'''
+          '''
               text = text.replace(marker, component + marker, 1)
 
-          if 'className={styles.hoursInline}' not in text:
-              pattern = r'(<div className=\{styles\.cardSide\}>)(.*?)((?:<span className=\{\`\$\{styles\.badge\}.*?</span>)|(?:<span className=\{styles\.badge\}.*?</span>))'
-              def add_hours(m):
-                  return m.group(1) + '<div className={styles.hoursInline}><strong>{Number(item.week_hours||0).toFixed(2)} / 6 hrs</strong><span>This week</span></div>' + m.group(2) + m.group(3)
-              text, _ = re.subn(pattern, add_hours, text, count=1)
+          if "className={styles.hoursInline}" not in text:
+              pattern = r'(<div className=\{styles\.cardSide\}>)'
+              replacement = r'\1<div className={styles.hoursInline}><strong>{Number(item.week_hours||0).toFixed(2)} / 6 hrs</strong><span>This week</span></div>'
+              text, _ = re.subn(pattern, replacement, text, count=1)
 
-          if '<VolunteerHours volunteerId={item.id}' not in text:
+          if "<VolunteerHours volunteerId={item.id}" not in text:
               needle = '<div className={styles.details}>'
               text = text.replace(needle, needle + '<VolunteerHours volunteerId={item.id}/>', 1)
 
