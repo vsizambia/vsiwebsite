@@ -20,7 +20,15 @@ const navLinks = [
   ["Contact", "/#contact"],
 ];
 
+const adminLinks = [
+  ["Volunteer Management", "/admin/volunteers"],
+  ["Activity Register", "/admin/activities"],
+  ["Performance", "/admin/performance"],
+];
+
 export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
+  const isAdmin = ctaHref.startsWith("/admin");
+
   return (
     <header className="site-header">
       <nav className="vsi-top-ribbon" aria-label="VSI social links">
@@ -52,6 +60,42 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
           </nav>
         </details>
       </div>
+      {isAdmin && (
+        <nav
+          aria-label="Admin navigation"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "8px",
+            flexWrap: "wrap",
+            padding: "10px 20px",
+            background: "#f4f7fa",
+            borderTop: "1px solid rgba(11,48,82,.08)",
+            borderBottom: "1px solid rgba(11,48,82,.10)",
+          }}
+        >
+          {adminLinks.map(([label, href]) => (
+            <a
+              key={label}
+              href={href}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "8px 14px",
+                borderRadius: "999px",
+                background: href === ctaHref ? "#0B3052" : "white",
+                color: href === ctaHref ? "white" : "#0B3052",
+                border: "1px solid rgba(11,48,82,.14)",
+                fontSize: "13px",
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }
