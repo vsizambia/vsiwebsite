@@ -21,6 +21,11 @@ export async function POST(request) {
       return NextResponse.json({ error: "Please complete all required fields." }, { status: 400 });
     }
 
+    const age = Number(body.age);
+    if (!Number.isInteger(age) || age < 13 || age > 100) {
+      return NextResponse.json({ error: "Please enter a valid age." }, { status: 400 });
+    }
+
     if (body.consent !== true) {
       return NextResponse.json({ error: "Consent is required." }, { status: 400 });
     }
@@ -29,14 +34,17 @@ export async function POST(request) {
 
     const result = await pool.query(
       `INSERT INTO volunteer_applications
-        (full_name, email, phone, location, category, skills, availability, motivation, emergency_name, emergency_phone, consent)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+        (full_name, age, email, phone, location, current_occupation, education, category, skills, availability, motivation, emergency_name, emergency_phone, consent)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
        RETURNING id, created_at`,
       [
         body.fullName.trim(),
+        age,
         body.email.trim().toLowerCase(),
         body.phone.trim(),
         body.location.trim(),
+        typeof body.currentOccupation === "string" ? body.currentOccupation.trim() : null,
+        typeof body.education === "string" ? body.education.trim() : null,
         body.category.trim(),
         body.skills.trim(),
         body.availability.trim(),
