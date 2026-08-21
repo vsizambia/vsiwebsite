@@ -1,6 +1,9 @@
 name: Connect volunteer hours UI
 
 on:
+  push:
+    branches:
+      - feature/volunteer-hours-activity-v2
   workflow_dispatch:
 
 jobs:
@@ -39,14 +42,12 @@ jobs:
 '''
               text = text.replace(marker, component + marker, 1)
 
-          # Add weekly hours to each volunteer card without disturbing existing actions/status.
           if 'className={styles.hoursInline}' not in text:
               pattern = r'(<div className=\{styles\.cardSide\}>)(.*?)((?:<span className=\{\`\$\{styles\.badge\}.*?</span>)|(?:<span className=\{styles\.badge\}.*?</span>))'
               def add_hours(m):
                   return m.group(1) + '<div className={styles.hoursInline}><strong>{Number(item.week_hours||0).toFixed(2)} / 6 hrs</strong><span>This week</span></div>' + m.group(2) + m.group(3)
-              text, n = re.subn(pattern, add_hours, text, count=1)
+              text, _ = re.subn(pattern, add_hours, text, count=1)
 
-          # Insert detailed hours/history immediately inside each expanded details panel.
           if '<VolunteerHours volunteerId={item.id}' not in text:
               needle = '<div className={styles.details}>'
               text = text.replace(needle, needle + '<VolunteerHours volunteerId={item.id}/>', 1)
