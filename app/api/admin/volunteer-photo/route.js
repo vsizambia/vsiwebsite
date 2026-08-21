@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { get } from "@vercel/blob";
-import { isAdminAuthenticated } from "../../../../../lib/admin-auth";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
 
 const unauthorized = () => NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
 
