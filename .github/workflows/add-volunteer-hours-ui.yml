@@ -54,11 +54,23 @@ jobs:
           path.write_text(text)
           PY
 
+      - name: Style hours and activity history
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          path = Path("app/admin/volunteers/admin.module.css")
+          text = path.read_text()
+          marker = "\n/* Volunteer activity hours */"
+          if marker not in text:
+              text += '''\n\n/* Volunteer activity hours */\n.hoursInline{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:92px}.hoursInline strong{font-size:12px;color:#0b3052;white-space:nowrap}.hoursInline span{font-size:9px;color:#829ab1;text-transform:uppercase;letter-spacing:.08em;font-weight:900}.hoursBlock{margin:0 0 22px;padding:18px;background:#fff;border:1px solid #d9e2ec;border-radius:14px;box-shadow:0 4px 14px rgba(11,48,82,.035)}.hoursSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.hoursSummary>div{display:flex;flex-direction:column;gap:4px}.hoursSummary span{font-size:9px;color:#829ab1;text-transform:uppercase;letter-spacing:.1em;font-weight:900}.hoursSummary strong{font-size:15px;color:#0b3052}.hoursTrack{height:8px;margin:14px 0 18px;background:#edf2f7;border-radius:999px;overflow:hidden}.hoursTrack i{display:block;height:100%;background:linear-gradient(90deg,#0b3052,#4978a6,#ffd220);border-radius:999px;transition:width .5s ease}.activityHistory{border-top:1px solid #e8edf2;padding-top:14px}.historyHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.historyHead span{font-size:10px;color:#829ab1;letter-spacing:.1em;font-weight:900}.historyHead a{font-size:10px;color:#0b3052;font-weight:850;text-decoration:none}.historyHead a:hover{text-decoration:underline}.activityHistory>p{margin:0;color:#829ab1;font-size:12px}.historyList{display:grid;gap:8px}.historyItem{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 12px;background:#f8fafc;border:1px solid #e8edf2;border-radius:10px}.historyItem>div:first-child{display:flex;flex-direction:column;gap:3px;min-width:0}.historyItem strong{color:#102a43;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.historyItem span{color:#829ab1;font-size:10px}.historyItem>div:last-child{display:flex;align-items:center;gap:8px;white-space:nowrap}.historyItem b{color:#0b3052;font-size:11px}.historyItem em{font-style:normal;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900}.verified{background:#e6f7ed;color:#146c43}.unverified{background:#fff4cc;color:#7a5b00}@media(max-width:700px){.hoursSummary{grid-template-columns:1fr 1fr}.hoursSummary>div:last-child{grid-column:1/-1}.hoursInline{display:none}.historyItem{align-items:flex-start}.historyItem>div:last-child{flex-direction:column;align-items:flex-end;gap:4px}}\n'''
+              path.write_text(text)
+          PY
+
       - name: Commit changes
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/admin/volunteers/page.js
+          git add app/admin/volunteers/page.js app/admin/volunteers/admin.module.css
           git diff --cached --quiet && exit 0
           git commit -m "Connect volunteer register to live activity hours"
           git push origin feature/volunteer-hours-activity-v2
