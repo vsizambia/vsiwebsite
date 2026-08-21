@@ -16,14 +16,14 @@ export default function VolunteerPerformance(){
  useEffect(()=>{load()},[]);
  const top=useMemo(()=>data?.volunteers||[],[data]);
  if(!data)return <><SiteHeader ctaLabel="Volunteer Register" ctaHref="/admin/volunteers"/><main className={styles.page}><div className={styles.shell}><div className={styles.topline}><span>VSI IMS <b>/</b> Volunteer Performance</span><button onClick={load}>Refresh ↻</button></div><div className={styles.empty}>{error||"Loading performance report…"}</div></div></main><SiteFooter/></>;
- const s=data.summary, rate=s.approved?Math.round((s.target_met/s.approved)*100):0;
+ const s=data.summary, rate=s.approved?Math.round((s.target_met/s.approved)*100):0, average=s.approved?s.week_hours/s.approved:0;
  return <><SiteHeader ctaLabel="Volunteer Register" ctaHref="/admin/volunteers"/><main className={styles.page}><div className={styles.shell}>
   <div className={styles.topline}><span>VSI IMS <b>/</b> Volunteer Performance</span><button onClick={load}>Refresh ↻</button></div>
   <section className={styles.hero}><div><p className="kicker light">HOURS &amp; PERFORMANCE</p><h1>Volunteer Performance</h1><p>Monitor verified volunteer hours against VSI's recommended six-hour weekly commitment.</p></div></section>
   {error&&<div className={styles.error}>{error}</div>}
   <section className={styles.stats}>
    <div className={`${styles.stat} ${styles.statNavy}`}><small>ACTIVE VOLUNTEERS</small><strong>{s.approved}</strong><b>Approved volunteers</b><em>{s.pending} pending applications</em></div>
-   <div className={`${styles.stat} ${styles.statYellow}`}><small>THIS WEEK</small><strong>{s.week_hours.toFixed(2)}</strong><b>Verified hours</b><em>{s.approved?s.week_hours/s.approved.toFixed:0} average per active volunteer</em></div>
+   <div className={`${styles.stat} ${styles.statYellow}`}><small>THIS WEEK</small><strong>{s.week_hours.toFixed(2)}</strong><b>Verified hours</b><em>{average.toFixed(2)} average per active volunteer</em></div>
    <div className={`${styles.stat} ${styles.statBlue}`}><small>TARGET MET</small><strong>{s.target_met}</strong><b>Volunteers at 6+ hrs</b><em>{rate}% of active volunteers</em></div>
    <div className={`${styles.stat} ${styles.statWhite}`}><small>BELOW TARGET</small><strong>{s.below_target}</strong><b>Need attention</b><em>Under the 6-hour weekly target</em></div>
   </section>
