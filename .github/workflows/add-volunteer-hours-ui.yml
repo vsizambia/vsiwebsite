@@ -1,0 +1,76 @@
+name: Connect volunteer hours UI
+
+on:
+  push:
+    branches:
+      - feature/volunteer-hours-activity-v2
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/volunteer-hours-activity-v2
+          fetch-depth: 0
+
+      - name: Add live hours and activity history
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          path = Path("app/admin/volunteers/page.js")
+          text = path.read_text()
+
+          marker = "export default function VolunteerAdmin(){"
+          if "function VolunteerHours" not in text:
+              component = r'''function VolunteerHours({volunteerId}){
+           const [data,setData]=useState({activities:[],week:0,total:0});
+           useEffect(()=>{let alive=true;fetch(`/api/admin/activity?volunteerId=${volunteerId}`,{cache:"no-store"}).then(r=>r.json()).then(d=>{if(alive)setData({activities:d.activities||[],week:Number(d.week_hours||0),total:Number(d.total_hours||0)})}).catch(()=>{});return()=>{alive=false}},[volunteerId]);
+           const target=6, percent=Math.min(100,(data.week/target)*100);
+           return <div className={styles.hoursBlock}>
+            <div className={styles.hoursSummary}><div><span>THIS WEEK</span><strong>{data.week.toFixed(2)} / {target} hrs</strong></div><div><span>TOTAL HOURS</span><strong>{data.total.toFixed(2)} hrs</strong></div><div><span>ACTIVITIES</span><strong>{data.activities.length}</strong></div></div>
+            <div className={styles.hoursTrack}><i style={{width:`${percent}%`}}/></div>
+            <div className={styles.activityHistory}><div className={styles.historyHead}><span>ACTIVITY HISTORY</span><a href="/admin/activities">Open Activity Register ↗</a></div>{data.activities.length===0?<p>No activity has been recorded yet.</p>:<div className={styles.historyList}>{data.activities.slice(0,8).map(a=><div className={styles.historyItem} key={a.id}><div><strong>{a.activity_name}</strong><span>{a.activity_date} · {a.start_time?.slice(0,5)}–{a.end_time?.slice(0,5)}</span></div><div><b>{Number(a.hours).toFixed(2)} hrs</b><em className={a.verified?styles.verified:styles.unverified}>{a.verified?"Verified":"Unverified"}</em></div></div>)}</div>}</div>
+           </div>;
+          }
+
+          '''
+              text = text.replace(marker, component + marker, 1)
+
+          if "className={styles.hoursInline}" not in text:
+              pattern = r'(<div className=\{styles\.cardSide\}>)'
+              replacement = r'\1<div className={styles.hoursInline}><strong>{Number(item.week_hours||0).toFixed(2)} / 6 hrs</strong><span>This week</span></div>'
+              text, _ = re.subn(pattern, replacement, text, count=1)
+
+          if "<VolunteerHours volunteerId={item.id}" not in text:
+              needle = '<div className={styles.details}>'
+              text = text.replace(needle, needle + '<VolunteerHours volunteerId={item.id}/>', 1)
+
+          path.write_text(text)
+          PY
+
+      - name: Style hours and activity history
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+          path = Path("app/admin/volunteers/admin.module.css")
+          text = path.read_text()
+          marker = "\n/* Volunteer activity hours */"
+          if marker not in text:
+              text += '''\n\n/* Volunteer activity hours */\n.hoursInline{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:92px}.hoursInline strong{font-size:12px;color:#0b3052;white-space:nowrap}.hoursInline span{font-size:9px;color:#829ab1;text-transform:uppercase;letter-spacing:.08em;font-weight:900}.hoursBlock{margin:0 0 22px;padding:18px;background:#fff;border:1px solid #d9e2ec;border-radius:14px;box-shadow:0 4px 14px rgba(11,48,82,.035)}.hoursSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.hoursSummary>div{display:flex;flex-direction:column;gap:4px}.hoursSummary span{font-size:9px;color:#829ab1;text-transform:uppercase;letter-spacing:.1em;font-weight:900}.hoursSummary strong{font-size:15px;color:#0b3052}.hoursTrack{height:8px;margin:14px 0 18px;background:#edf2f7;border-radius:999px;overflow:hidden}.hoursTrack i{display:block;height:100%;background:linear-gradient(90deg,#0b3052,#4978a6,#ffd220);border-radius:999px;transition:width .5s ease}.activityHistory{border-top:1px solid #e8edf2;padding-top:14px}.historyHead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}.historyHead span{font-size:10px;color:#829ab1;letter-spacing:.1em;font-weight:900}.historyHead a{font-size:10px;color:#0b3052;font-weight:850;text-decoration:none}.historyHead a:hover{text-decoration:underline}.activityHistory>p{margin:0;color:#829ab1;font-size:12px}.historyList{display:grid;gap:8px}.historyItem{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:10px 12px;background:#f8fafc;border:1px solid #e8edf2;border-radius:10px}.historyItem>div:first-child{display:flex;flex-direction:column;gap:3px;min-width:0}.historyItem strong{color:#102a43;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.historyItem span{color:#829ab1;font-size:10px}.historyItem>div:last-child{display:flex;align-items:center;gap:8px;white-space:nowrap}.historyItem b{color:#0b3052;font-size:11px}.historyItem em{font-style:normal;padding:4px 7px;border-radius:999px;font-size:9px;font-weight:900}.verified{background:#e6f7ed;color:#146c43}.unverified{background:#fff4cc;color:#7a5b00}@media(max-width:700px){.hoursSummary{grid-template-columns:1fr 1fr}.hoursSummary>div:last-child{grid-column:1/-1}.hoursInline{display:none}.historyItem{align-items:flex-start}.historyItem>div:last-child{flex-direction:column;align-items:flex-end;gap:4px}}\n'''
+              path.write_text(text)
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/admin/volunteers/page.js app/admin/volunteers/admin.module.css
+          git diff --cached --quiet && exit 0
+          git commit -m "Connect volunteer register to live activity hours"
+          git push origin feature/volunteer-hours-activity-v2
