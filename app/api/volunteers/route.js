@@ -22,7 +22,7 @@ export async function POST(request) {
     }
 
     const age = Number(body.age);
-    if (!Number.isInteger(age) || age < 13 || age > 100) {
+    if (!Number.isInteger(age) || age < 1 || age > 120) {
       return NextResponse.json({ error: "Please enter a valid age." }, { status: 400 });
     }
 
