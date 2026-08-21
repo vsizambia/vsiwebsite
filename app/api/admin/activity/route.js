@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { ensureVolunteerTable, pool } from "../../../../../lib/db";
-import { isAdminAuthenticated } from "../../../../../lib/admin-auth";
+import { ensureVolunteerTable, pool } from "../../../../lib/db";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
 
 const unauthorized=()=>NextResponse.json({error:"Admin authentication required."},{status:401});
 function hoursBetween(start,end){const [sh,sm]=String(start).split(":").map(Number);const [eh,em]=String(end).split(":").map(Number);let minutes=(eh*60+em)-(sh*60+sm);if(minutes<0)minutes+=1440;return Number((minutes/60).toFixed(2));}
