@@ -17,6 +17,11 @@ export const metadata = {
   },
   description: "Promoting policies and initiatives that place students at the centre of national development.",
   alternates: { canonical: "/" },
+  icons: {
+    icon: "/images/vsi logo blue text.png",
+    shortcut: "/images/vsi logo blue text.png",
+    apple: "/images/vsi logo blue text.png",
+  },
   openGraph: {
     type: "website",
     siteName: "Visionary Students Initiative",
