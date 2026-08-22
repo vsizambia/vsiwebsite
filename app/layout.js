@@ -6,6 +6,7 @@ import "./polish.css";
 import "./mobile.css";
 import "./accessibility.css";
 import "./qa.css";
+import "./admin-dob.css";
 
 const siteUrl = "https://www.vsizambia.org";
 
