@@ -1,0 +1,3 @@
+/* Admin volunteer register: show the stored date of birth consistently. */
+.detailGrid > div:nth-child(3) > span{font-size:0}
+.detailGrid > div:nth-child(3) > span::after{content:"DATE OF BIRTH";font-size:10px}
