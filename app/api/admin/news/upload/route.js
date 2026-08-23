@@ -10,6 +10,14 @@ export async function POST(request) {
       return NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
     }
 
+    const storeId = process.env.NEWS_STORE_ID || process.env.NEWS_BLOB_STORE_ID;
+    const token = process.env.NEWS_BLOB_READ_WRITE_TOKEN;
+
+    if (!storeId || !token) {
+      console.error("News Blob configuration is missing.");
+      return NextResponse.json({ error: "News image storage is not configured. Please contact the VSI administrator." }, { status: 500 });
+    }
+
     const formData = await request.formData();
     const file = formData.get("file");
     if (!file || typeof file.arrayBuffer !== "function") {
@@ -27,6 +35,8 @@ export async function POST(request) {
     const originalName = String(file.name || "image").replace(/[^a-zA-Z0-9._-]/g, "-");
     const blob = await put(`news/${Date.now()}-${originalName}`, file, {
       access: "public",
+      token,
+      storeId,
       addRandomSuffix: true,
       contentType: file.type,
       cacheControlMaxAge: 31536000,
