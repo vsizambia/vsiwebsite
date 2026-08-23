@@ -1,3 +1,5 @@
+import "./news.module.css";
+
 export const metadata = {
   title: "News & Updates",
   description: "Stories, updates and highlights from Visionary Students Initiative's work with students, communities and partners.",
