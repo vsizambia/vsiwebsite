@@ -1,34 +1,40 @@
 import { NextResponse } from "next/server";
-import { handleUpload } from "@vercel/blob/client";
+import { put } from "@vercel/blob";
 import { isAdminAuthenticated } from "../../../../../lib/admin-auth";
+
+export const runtime = "nodejs";
 
 export async function POST(request) {
   try {
-    const body = await request.json();
-    const jsonResponse = await handleUpload({
-      body,
-      request,
-      onBeforeGenerateToken: async (pathname) => {
-        // Only the browser's token-generation request should require the
-        // VSI admin session. The completion webhook comes from Vercel Blob
-        // and does not carry the browser's auth cookie.
-        if (!isAdminAuthenticated(request)) {
-          throw new Error("Admin authentication required.");
-        }
-        return {
-          allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
-          maximumSizeInBytes: 8 * 1024 * 1024,
-          addRandomSuffix: true,
-          tokenPayload: JSON.stringify({ admin: true, pathname }),
-        };
-      },
-      onUploadCompleted: async ({ blob }) => {
-        console.log("VSI news image uploaded", blob.url);
-      },
+    if (!isAdminAuthenticated(request)) {
+      return NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
+    }
+
+    const formData = await request.formData();
+    const file = formData.get("file");
+    if (!file || typeof file.arrayBuffer !== "function") {
+      return NextResponse.json({ error: "Please select an image." }, { status: 400 });
+    }
+
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      return NextResponse.json({ error: "Please choose a JPG, PNG or WebP image." }, { status: 400 });
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      return NextResponse.json({ error: "Image must be 8 MB or smaller." }, { status: 400 });
+    }
+
+    const originalName = String(file.name || "image").replace(/[^a-zA-Z0-9._-]/g, "-");
+    const blob = await put(`news/${Date.now()}-${originalName}`, file, {
+      access: "public",
+      addRandomSuffix: true,
+      contentType: file.type,
+      cacheControlMaxAge: 31536000,
     });
-    return NextResponse.json(jsonResponse);
+
+    return NextResponse.json({ url: blob.url });
   } catch (error) {
     console.error("News image upload error:", error);
-    return NextResponse.json({ error: error?.message || "Unable to prepare image upload." }, { status: 400 });
+    return NextResponse.json({ error: error?.message || "Unable to upload image." }, { status: 500 });
   }
 }
