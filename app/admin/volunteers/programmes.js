@@ -31,6 +31,6 @@ export const DIRECTORATES=[
   "Monitoring, Evaluation, Accountability and Learning (MEAL)",
   "Directorate of Legal and Compliance"
 ];
-export const PROGRAMMES=[...new Set(PROGRAMME_REGISTER.map(x=>x.programme))];
-export const PROJECTS=[...new Set(PROGRAMME_REGISTER.map(x=>x.project))];
+export const PROGRAMMES=[...new Set([...PROGRAMME_REGISTER.map(x=>x.programme),"Other"] )];
+export const PROJECTS=[...new Set([...PROGRAMME_REGISTER.map(x=>x.project),"Other"] )];
 export const ACTIVITIES=[...new Set(PROGRAMME_REGISTER.flatMap(x=>x.activities))];
