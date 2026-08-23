@@ -15,7 +15,7 @@ const navLinks = [
   ["Our work", "/#work"],
   ["Our story", "/story"],
   ["Community", "/community"],
-  ["VSI News", "https://web.facebook.com/vsizambia"],
+  ["VSI News", "/news"],
   ["Volunteer", "/volunteer"],
   ["Contact", "/#contact"],
 ];
@@ -23,6 +23,7 @@ const navLinks = [
 const adminLinks = [
   ["Volunteer Management", "/admin/volunteers"],
   ["Activity Register", "/admin/activities"],
+  ["News Publishing", "/admin/news"],
   ["Performance", "/admin/performance"],
 ];
 
@@ -48,7 +49,7 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
           <Image src={logo} alt="Visionary Students Initiative" width={188} height={71} priority />
         </a>
         <nav className="desktop-nav" aria-label="Primary navigation">
-          {navLinks.map(([label, href]) => <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined}>{label}</a>)}
+          {navLinks.map(([label, href]) => <a key={label} href={href}>{label}</a>)}
         </nav>
         <a className="nav-cta" href={ctaHref}>
           {ctaLabel} <span aria-hidden="true">↗</span>
@@ -56,7 +57,7 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
         <details className="mobile-menu">
           <summary aria-label="Open navigation menu"><span /></summary>
           <nav className="mobile-menu-panel" aria-label="Mobile navigation">
-            {navLinks.map(([label, href]) => <a key={label} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel={href.startsWith("http") ? "noopener noreferrer" : undefined}>{label}</a>)}
+            {navLinks.map(([label, href]) => <a key={label} href={href}>{label}</a>)}
           </nav>
         </details>
       </div>
@@ -115,7 +116,7 @@ export function SiteFooter({ includeNews = true }) {
           <a href="/#work">Our work</a>
           <a href="/story">Our story</a>
           <a href="/community">VSI in the Community</a>
-          {includeNews && <a href="https://web.facebook.com/vsizambia" target="_blank" rel="noopener noreferrer">VSI News <span aria-hidden="true">↗</span></a>}
+          {includeNews && <a href="/news">VSI News <span aria-hidden="true">↗</span></a>}
           <a href="/volunteer">Volunteer</a>
         </nav>
         <div>
