@@ -66,5 +66,5 @@ export default function VolunteerAdmin(){
      </div></>}
    </div>}</article>})}</div>}
   </section>
- </div></main><SiteFooter/>;
+ </div></main><SiteFooter/></>;
 }
