@@ -23,7 +23,14 @@ export const PROGRAMME_REGISTER = [
   {directorate:"Communications, Partnerships & Resource Mobilisation",programme:"Resource Mobilisation",project:"Grants and Donor Relations",activities:["Grant-pipeline management","Grant applications","Grant negotiations","Donor stewardship","Grant reporting","Donor visibility"]}
 ];
 
-export const DIRECTORATES=[...new Set(PROGRAMME_REGISTER.map(x=>x.directorate))];
+export const DIRECTORATES=[
+  "Programmes",
+  "Policy, Advocacy & Research",
+  "Communications and Public Relations",
+  "Finance and Administration",
+  "Monitoring, Evaluation, Accountability and Learning (MEAL)",
+  "Directorate of Legal and Compliance"
+];
 export const PROGRAMMES=[...new Set(PROGRAMME_REGISTER.map(x=>x.programme))];
 export const PROJECTS=[...new Set(PROGRAMME_REGISTER.map(x=>x.project))];
 export const ACTIVITIES=[...new Set(PROGRAMME_REGISTER.flatMap(x=>x.activities))];
