@@ -3,18 +3,25 @@ import { handleUpload } from "@vercel/blob/client";
 import { isAdminAuthenticated } from "../../../../../lib/admin-auth";
 
 export async function POST(request) {
-  if (!isAdminAuthenticated(request)) return NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
   try {
     const body = await request.json();
     const jsonResponse = await handleUpload({
       body,
       request,
-      onBeforeGenerateToken: async (pathname) => ({
-        allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
-        maximumSizeInBytes: 8 * 1024 * 1024,
-        addRandomSuffix: true,
-        tokenPayload: JSON.stringify({ admin: true, pathname }),
-      }),
+      onBeforeGenerateToken: async (pathname) => {
+        // Only the browser's token-generation request should require the
+        // VSI admin session. The completion webhook comes from Vercel Blob
+        // and does not carry the browser's auth cookie.
+        if (!isAdminAuthenticated(request)) {
+          throw new Error("Admin authentication required.");
+        }
+        return {
+          allowedContentTypes: ["image/jpeg", "image/png", "image/webp"],
+          maximumSizeInBytes: 8 * 1024 * 1024,
+          addRandomSuffix: true,
+          tokenPayload: JSON.stringify({ admin: true, pathname }),
+        };
+      },
       onUploadCompleted: async ({ blob }) => {
         console.log("VSI news image uploaded", blob.url);
       },
