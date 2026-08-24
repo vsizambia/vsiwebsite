@@ -3,7 +3,7 @@ import Link from "next/link";
 import {SiteFooter,SiteHeader} from "../components/SiteChrome";
 import styles from "./events.module.css";
 
-async function getEvents(){try{const base=process.env.NEXT_PUBLIC_SITE_URL||"https://www.vsizambia.org";const r=await fetch(`${base}/api/events`,{next:{revalidate:60}});if(!r.ok)return [];const d=await r.json();return d.events||[];}catch{return [];}}
+async function getEvents(){try{const r=await fetch("https://www.vsizambia.org/api/events",{cache:"no-store"});if(!r.ok)return [];const d=await r.json();return Array.isArray(d.events)?d.events:[];}catch{return [];}}
 function dateParts(value){const d=new Date(`${String(value).slice(0,10)}T00:00:00`);return {day:d.toLocaleDateString("en-GB",{day:"2-digit"}),month:d.toLocaleDateString("en-GB",{month:"short"}).toUpperCase(),full:d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})};}
 function timeRange(a){if(!a.start_time)return "";const f=v=>new Date(`1970-01-01T${String(v).slice(0,8)}`).toLocaleTimeString("en-GB",{hour:"numeric",minute:"2-digit"});return a.end_time?`${f(a.start_time)} – ${f(a.end_time)}`:f(a.start_time);}
 
