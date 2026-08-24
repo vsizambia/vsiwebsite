@@ -1,0 +1,4 @@
+import {NextResponse} from "next/server";
+import {ensureEventsTable,pool} from "../../../../lib/db";
+import {isAdminAuthenticated} from "../../../../lib/admin-auth";
+export async function GET(request){if(!isAdminAuthenticated(request))return NextResponse.json({error:"Admin authentication required."},{status:401});try{const id=Number(new URL(request.url).searchParams.get("event_id"));if(!id)return NextResponse.json({error:"Event ID is required."},{status:400});await ensureEventsTable();const r=await pool.query("SELECT id,full_name,email,phone,organization,fee_label,fee_amount,created_at FROM vsi_event_registrations WHERE event_id=$1 ORDER BY created_at DESC",[id]);return NextResponse.json({registrations:r.rows})}catch(e){console.error(e);return NextResponse.json({error:"Unable to load registrations."},{status:500})}}
