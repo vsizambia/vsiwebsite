@@ -10,14 +10,17 @@ export async function POST(request) {
       return NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
     }
 
-    // Vercel uses the custom prefix chosen when the public News Blob store
-    // was connected. The current store was created with the `News` prefix.
+    // Vercel's News Blob store was connected with the custom `News` prefix.
+    // The store ID is exposed as News_STORE_ID and its read/write credential
+    // is exposed as News_READ_WRITE_TOKEN.
     const storeId =
       process.env.News_STORE_ID ||
       process.env.NEWS_STORE_ID ||
       process.env.News_BLOB_STORE_ID ||
       process.env.NEWS_BLOB_STORE_ID;
     const token =
+      process.env.News_READ_WRITE_TOKEN ||
+      process.env.NEWS_READ_WRITE_TOKEN ||
       process.env.News_BLOB_READ_WRITE_TOKEN ||
       process.env.NEWS_BLOB_READ_WRITE_TOKEN;
 
