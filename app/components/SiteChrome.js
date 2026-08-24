@@ -16,6 +16,7 @@ const navLinks = [
   ["Our story", "/story"],
   ["Community", "/community"],
   ["VSI News", "/news"],
+  ["Events", "/events"],
   ["Volunteer", "/volunteer"],
   ["Contact", "/#contact"],
 ];
@@ -24,6 +25,7 @@ const adminLinks = [
   ["Volunteer Management", "/admin/volunteers"],
   ["Activity Register", "/admin/activities"],
   ["News Publishing", "/admin/news"],
+  ["Events Publishing", "/admin/events"],
   ["Performance", "/admin/performance"],
 ];
 
@@ -62,39 +64,8 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
         </details>
       </div>
       {isAdmin && (
-        <nav
-          aria-label="Admin navigation"
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "8px",
-            flexWrap: "wrap",
-            padding: "10px 20px",
-            background: "#f4f7fa",
-            borderTop: "1px solid rgba(11,48,82,.08)",
-            borderBottom: "1px solid rgba(11,48,82,.10)",
-          }}
-        >
-          {adminLinks.map(([label, href]) => (
-            <a
-              key={label}
-              href={href}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                padding: "8px 14px",
-                borderRadius: "999px",
-                background: href === ctaHref ? "#0B3052" : "white",
-                color: href === ctaHref ? "white" : "#0B3052",
-                border: "1px solid rgba(11,48,82,.14)",
-                fontSize: "13px",
-                fontWeight: 700,
-                textDecoration: "none",
-              }}
-            >
-              {label}
-            </a>
-          ))}
+        <nav aria-label="Admin navigation" style={{display:"flex",justifyContent:"center",gap:"8px",flexWrap:"wrap",padding:"10px 20px",background:"#f4f7fa",borderTop:"1px solid rgba(11,48,82,.08)",borderBottom:"1px solid rgba(11,48,82,.10)"}}>
+          {adminLinks.map(([label, href]) => <a key={label} href={href} style={{display:"inline-flex",alignItems:"center",padding:"8px 14px",borderRadius:"999px",background:href===ctaHref?"#0B3052":"white",color:href===ctaHref?"white":"#0B3052",border:"1px solid rgba(11,48,82,.14)",fontSize:"13px",fontWeight:700,textDecoration:"none"}}>{label}</a>)}
         </nav>
       )}
     </header>
@@ -117,6 +88,7 @@ export function SiteFooter({ includeNews = true }) {
           <a href="/story">Our story</a>
           <a href="/community">VSI in the Community</a>
           {includeNews && <a href="/news">VSI News <span aria-hidden="true">↗</span></a>}
+          <a href="/events">Events <span aria-hidden="true">↗</span></a>
           <a href="/volunteer">Volunteer</a>
         </nav>
         <div>
