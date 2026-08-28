@@ -1,8 +1,8 @@
 "use client";
 import {useEffect,useState} from "react";
 import {useParams,useRouter} from "next/navigation";
-import {SiteFooter,SiteHeader} from "../../../components/SiteChrome";
-import styles from "../../volunteers/admin.module.css";
+import {SiteFooter,SiteHeader} from "../../../../components/SiteChrome";
+import styles from "../../../volunteers/admin.module.css";
 import formStyles from "../../add/add.module.css";
 const initial={activityDate:"",activityName:"",activityCode:"",project:"",directorate:"",sdgs:"",auAgenda:"",location:"",startTime:"",endTime:"",description:"",supervisorName:"",verified:false};
 function hoursBetween(s,e){if(!s||!e)return 0;const [sh,sm]=s.split(":").map(Number),[eh,em]=e.split(":").map(Number);let m=eh*60+em-(sh*60+sm);if(m<0)m+=1440;return Number((m/60).toFixed(2));}
