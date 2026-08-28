@@ -1,1 +1,12 @@
 .vsi-admin-brand-mark{position:fixed;top:76px;left:24px;z-index:20;display:flex;align-items:center;justify-content:center;padding:7px 12px;border-radius:12px;background:rgba(255,255,255,.94);box-shadow:0 8px 24px rgba(11,48,82,.08);border:1px solid rgba(188,204,220,.65);backdrop-filter:blur(10px);transition:transform .25s ease,box-shadow .25s ease}.vsi-admin-brand-mark:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(11,48,82,.12)}.vsi-admin-root .site-header{position:relative;z-index:30}.vsi-admin-root .page,.vsi-admin-root .loginPage{padding-top:92px}@media(max-width:700px){.vsi-admin-brand-mark{top:68px;left:14px;padding:5px 9px}.vsi-admin-brand-mark img{width:112px;height:auto}.vsi-admin-root .page,.vsi-admin-root .loginPage{padding-top:76px}}@media(prefers-reduced-motion:reduce){.vsi-admin-brand-mark{transition:none}}
+
+/* Activity Register visual hierarchy */
+.vsi-admin-root main [class*="registerPanel"] table thead tr{background:#0b3052}
+.vsi-admin-root main [class*="registerPanel"] table thead th{background:#0b3052!important;color:#fff!important;border-bottom:0!important;font-weight:850}
+.vsi-admin-root main [class*="registerPanel"] table tbody td:last-child [class*="secondaryButton"]{border:0!important;color:#fff!important;box-shadow:0 4px 10px rgba(11,48,82,.10);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+.vsi-admin-root main [class*="registerPanel"] table tbody td:last-child [class*="secondaryButton"]:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06);box-shadow:0 7px 14px rgba(11,48,82,.16)}
+.vsi-admin-root main [class*="registerPanel"] table tbody td:last-child [class*="secondaryButton"]:nth-child(1){background:#0b4678!important}
+.vsi-admin-root main [class*="registerPanel"] table tbody td:last-child [class*="secondaryButton"]:nth-child(2){background:#d99000!important}
+.vsi-admin-root main [class*="registerPanel"] table tbody td:last-child [class*="secondaryButton"]:nth-child(3){background:#4978a6!important}
+.vsi-admin-root main [class*="registerPanel"] table tbody td:last-child [class*="clearButton"]{border:0!important;background:#c0392b!important;color:#fff!important;border-radius:9px;padding:9px 13px;margin-left:8px;box-shadow:0 4px 10px rgba(192,57,43,.16);transition:transform .18s ease,box-shadow .18s ease,filter .18s ease}
+.vsi-admin-root main [class*="registerPanel"] table tbody td:last-child [class*="clearButton"]:hover:not(:disabled){transform:translateY(-1px);filter:brightness(1.06);box-shadow:0 7px 14px rgba(192,57,43,.22)}
