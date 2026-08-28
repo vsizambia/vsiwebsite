@@ -1,4 +1,5 @@
 import "./admin-brand.css";
+import "./activity-register.css";
 
 export const metadata = {
   title: "Volunteer Management | Admin",
