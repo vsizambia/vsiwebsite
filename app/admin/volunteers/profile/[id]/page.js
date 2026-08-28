@@ -1,11 +1,11 @@
 "use client";
 import {useEffect,useState} from "react";
 import {useParams,useRouter} from "next/navigation";
-import {SiteFooter,SiteHeader} from "../../../components/SiteChrome";
-import styles from "../admin.module.css";
+import {SiteFooter,SiteHeader} from "../../../../components/SiteChrome";
+import styles from "../../admin.module.css";
 export default function VolunteerProfile(){
  const {id}=useParams(),router=useRouter(); const [volunteer,setVolunteer]=useState(null),[activities,setActivities]=useState([]),[hours,setHours]=useState({week:0,total:0}),[error,setError]=useState("");
- useEffect(()=>{let alive=true;(async()=>{try{const r=await fetch("/api/admin/volunteers",{cache:"no-store"}),d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to load volunteer profile.");const v=(d.applications||[]).find(x=>String(x.id)===String(id));if(!v)throw new Error("Volunteer profile not found.");const ar=await fetch(`/api/admin/activity?volunteerId=${encodeURIComponent(id)}`,{cache:"no-store"}),ad=await ar.json();if(alive){setVolunteer(v);setActivities(ad.activities||[]);setHours({week:Number(ad.week_hours||0),total:Number(ad.total_hours||0)})}}catch(e){if(alive)setError(e.message)}})();return()=>{alive=false}},[id]);
+ useEffect(()=>{let alive=true;(async()=>{try{const r=await fetch("/api/admin/volunteers",{cache:"no-store"}),d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to load volunteer profile.");const v=(d.applications||[]).find(x=>String(x.id)===String(id));if(!v)throw new Error("Volunteer profile not found.");const ar=await fetch(`/api/admin/activity?volunteerId=${encodeURIComponent(id)}`,{cache:"no-store"}),ad=await ar.json();if(!ar.ok)throw new Error(ad.error||"Unable to load activity history.");if(alive){setVolunteer(v);setActivities(ad.activities||[]);setHours({week:Number(ad.week_hours||0),total:Number(ad.total_hours||0)})}}catch(e){if(alive)setError(e.message)}})();return()=>{alive=false}},[id]);
  if(error)return <><SiteHeader ctaLabel="Volunteer Register" ctaHref="/admin/volunteers"/><main className={styles.page}><div className={styles.shell}><div className={styles.empty}>{error}<br/><button className={styles.saveReview} onClick={()=>router.push("/admin/volunteers")}>Back to Volunteer Register</button></div></div></main><SiteFooter/></>;
  if(!volunteer)return <><SiteHeader ctaLabel="Volunteer Register" ctaHref="/admin/volunteers"/><main className={styles.page}><div className={styles.shell}><div className={styles.empty}>Loading volunteer profile…</div></div></main><SiteFooter/></>;
  const initials=volunteer.full_name.split(" ").map(x=>x[0]).join("").slice(0,2).toUpperCase();
