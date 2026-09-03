@@ -4,7 +4,7 @@ import {ACTIVITY_CATALOGUE} from "../../../../app/admin/activities/add/activity-
 
 const hours=(s,e)=>{const[a,b]=String(s).split(":").map(Number),[c,d]=String(e).split(":").map(Number);let m=c*60+d-(a*60+b);if(m<0)m+=1440;return +(m/60).toFixed(2)};
 const clean=v=>typeof v==="string"?v.trim():"";
-const catalogueByCode=new Map(ACTIVITY_CATALOGUE.map(([code,name,project,directorate,sdgs,auAgenda])=>[String(code).trim().toUpperCase(),{code:String(code).trim(),name,project,directorate,sdgs,auAgenda}]));
+const catalogueByCode=new Map(ACTIVITY_CATALOGUE.map(entry=>{const [code,name,project,directorate,sdgs,auAgenda]=Array.isArray(entry)?entry:[entry.code,entry.name,entry.project,entry.directorate,entry.sdgs,entry.auAgenda];return [String(code).trim().toUpperCase(),{code:String(code).trim(),name,project,directorate,sdgs,auAgenda}]}));
 
 export async function GET(request){
  try{
