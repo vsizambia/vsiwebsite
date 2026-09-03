@@ -1,8 +1,49 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { ensureVolunteerTable, pool } from "../../../lib/db";
+import crypto from "node:crypto";
 
 const clean = (value) => typeof value === "string" ? value.trim() : null;
+const RATE_LIMIT = 5;
+const RATE_WINDOW_MS = 60 * 60 * 1000;
+
+function getClientIp(request) {
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
+  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  return forwarded || "unknown";
+}
+
+function hashRateKey(ip) {
+  const secret = process.env.ADMIN_SESSION_SECRET || "vsi-volunteer-rate-limit";
+  return crypto.createHmac("sha256", secret).update(ip).digest("hex");
+}
+
+async function allowVolunteerApplication(request) {
+  const ip = getClientIp(request);
+  const keyHash = hashRateKey(ip);
+  await pool.query(`CREATE TABLE IF NOT EXISTS volunteer_application_rate_limits (id BIGSERIAL PRIMARY KEY, key_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
+  await pool.query(`CREATE INDEX IF NOT EXISTS volunteer_application_rate_limits_key_created_idx ON volunteer_application_rate_limits(key_hash,created_at)`);
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [keyHash]);
+    await client.query("DELETE FROM volunteer_application_rate_limits WHERE created_at < NOW() - INTERVAL '1 hour'");
+    const count = await client.query("SELECT COUNT(*)::int AS count FROM volunteer_application_rate_limits WHERE key_hash = $1 AND created_at >= NOW() - INTERVAL '1 hour'", [keyHash]);
+    if (count.rows[0].count >= RATE_LIMIT) {
+      await client.query("ROLLBACK");
+      return false;
+    }
+    await client.query("INSERT INTO volunteer_application_rate_limits (key_hash) VALUES ($1)", [keyHash]);
+    await client.query("COMMIT");
+    return true;
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
+}
 
 async function storeProfilePicture(dataUrl, volunteerId) {
   if (!dataUrl) return null;
@@ -53,6 +94,7 @@ export async function POST(request) {
     if (disability && (!body.disabilityCertificate || !body.disabilityCertificate.startsWith("data:"))) return NextResponse.json({ error: "Please upload your disability certificate." }, { status: 400 });
     if (body.profilePicture && (typeof body.profilePicture !== "string" || !body.profilePicture.startsWith("data:image/") || body.profilePicture.length > 1200000)) return NextResponse.json({ error: "Please upload a smaller profile picture (maximum 1 MB)." }, { status: 400 });
     if (body.disabilityCertificate && (typeof body.disabilityCertificate !== "string" || body.disabilityCertificate.length > 2500000)) return NextResponse.json({ error: "Please upload a smaller disability certificate (maximum 2 MB)." }, { status: 400 });
+    if (!await allowVolunteerApplication(request)) return NextResponse.json({ error: "Too many application attempts. Please try again later." }, { status: 429 });
 
     await ensureVolunteerTable();
     const result = await pool.query(
