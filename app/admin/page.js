@@ -8,7 +8,7 @@ import summaryStyles from "./dashboard-summary.module.css";
 
 const modules=[
   {title:"Volunteer Management",text:"Review applications, manage the volunteer register, assignments and profiles.",href:"/admin/volunteers",featured:true,summaryKey:"volunteers",metrics:[["approved","APPROVED VOLUNTEERS"],["pending","PENDING REVIEW"],["verifiedHours","TOTAL VERIFIED VOLUNTEER HOURS"]]},
-  {title:"News Publishing",text:"Create, edit, publish and manage VSI news stories and media.",href:"/admin/news",summaryKey:"news",metrics:[["published","PUBLISHED"],["total","TOTAL STORIES"]]},
+  {title:"News Publishing",text:"Create, edit, publish and manage VSI news stories and media.",href:"/admin/news",summaryKey:"news",metrics:[["published","PUBLISHED"],["drafts","DRAFTS"],["total","TOTAL STORIES"]]},
   {title:"Events",text:"Manage VSI events and event registrations.",href:"/admin/events",events:true,summaryKey:"events",metrics:[["upcoming","UPCOMING EVENTS"],["registrations","REGISTRATIONS"],["completed","COMPLETED EVENTS"]]},
   {title:"Master Activity Catalogue",text:"Manage the approved Directorate → Project → Activity library.",href:"/admin/activity-catalogue",summaryKey:"catalogue",metrics:[["activities","ACTIVITIES"],["projects","PROJECTS"],["directorates","DIRECTORATES"]]}
 ];
