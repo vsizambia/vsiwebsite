@@ -1,22 +1,36 @@
 import {NextResponse} from "next/server";
 import {pool} from "../../../../lib/db";
 import {isAdminAuthenticated} from "../../../../lib/admin-auth";
-import {ACTIVITY_CATALOGUE} from "../../../admin/activities/add/activity-catalogue";
+import * as catalogueModule from "../../../admin/activities/add/activity-catalogue";
 
 const unauthorized=()=>NextResponse.json({error:"Admin authentication required."},{status:401});
 
 async function seedCatalogue(){
   const marker=await pool.query("SELECT value FROM vsi_master_activity_catalogue_meta WHERE key=$1",["seeded"]);
   if(marker.rowCount)return;
-  await pool.query("BEGIN");
-  try{
-    for(const row of ACTIVITY_CATALOGUE){
-      const [activityCode,activity,project,directorate,sdgs,au]=row;
-      await pool.query(`INSERT INTO vsi_master_activity_catalogue (directorate,programme,project,activity_code,activity,sdgs,au_agenda_2063) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (activity_code) DO NOTHING`,[directorate,null,project,activityCode,activity,sdgs,au]);
-    }
-    await pool.query("INSERT INTO vsi_master_activity_catalogue_meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO NOTHING",["seeded",new Date().toISOString()]);
-    await pool.query("COMMIT");
-  }catch(e){await pool.query("ROLLBACK");throw e;}
+
+  const source=Array.isArray(catalogueModule.ACTIVITY_CATALOGUE)
+    ? catalogueModule.ACTIVITY_CATALOGUE
+    : Array.isArray(catalogueModule.default)
+      ? catalogueModule.default
+      : [];
+
+  if(!source.length)throw new Error("Official VSI activity catalogue could not be loaded for seeding.");
+
+  for(const row of source){
+    if(!Array.isArray(row)||row.length<6)continue;
+    const [activityCode,activity,project,directorate,sdgs,au]=row;
+    if(!activityCode||!activity||!directorate)continue;
+    await pool.query(
+      `INSERT INTO vsi_master_activity_catalogue (directorate,programme,project,activity_code,activity,sdgs,au_agenda_2063) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (activity_code) DO NOTHING`,
+      [directorate,null,project,activityCode,activity,sdgs,au]
+    );
+  }
+
+  await pool.query(
+    "INSERT INTO vsi_master_activity_catalogue_meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO NOTHING",
+    ["seeded",new Date().toISOString()]
+  );
 }
 
 function clean(value){return typeof value==="string"?value.trim():value??null}
