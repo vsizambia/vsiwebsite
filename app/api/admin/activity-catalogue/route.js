@@ -6,31 +6,23 @@ import * as catalogueModule from "../../../admin/activities/add/activity-catalog
 const unauthorized=()=>NextResponse.json({error:"Admin authentication required."},{status:401});
 
 async function seedCatalogue(){
-  const marker=await pool.query("SELECT value FROM vsi_master_activity_catalogue_meta WHERE key=$1",["seeded"]);
-  if(marker.rowCount)return;
-
-  const source=Array.isArray(catalogueModule.ACTIVITY_CATALOGUE)
-    ? catalogueModule.ACTIVITY_CATALOGUE
-    : Array.isArray(catalogueModule.default)
-      ? catalogueModule.default
-      : [];
-
+  const existing=await pool.query("SELECT COUNT(*)::int AS count FROM vsi_master_activity_catalogue");
+  if(Number(existing.rows[0]?.count)>0)return;
+  const source=Array.isArray(catalogueModule.ACTIVITY_CATALOGUE)?catalogueModule.ACTIVITY_CATALOGUE:Array.isArray(catalogueModule.default)?catalogueModule.default:[];
   if(!source.length)throw new Error("Official VSI activity catalogue could not be loaded for seeding.");
-
   for(const row of source){
-    if(!Array.isArray(row)||row.length<6)continue;
-    const [activityCode,activity,project,directorate,sdgs,au]=row;
+    const activityCode=Array.isArray(row)?row[0]:row?.code;
+    const activity=Array.isArray(row)?row[1]:row?.name;
+    const project=Array.isArray(row)?row[2]:row?.project;
+    const directorate=Array.isArray(row)?row[3]:row?.directorate;
+    const sdgs=Array.isArray(row)?row[4]:row?.sdgs;
+    const au=Array.isArray(row)?row[5]:row?.au;
     if(!activityCode||!activity||!directorate)continue;
-    await pool.query(
-      `INSERT INTO vsi_master_activity_catalogue (directorate,programme,project,activity_code,activity,sdgs,au_agenda_2063) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (activity_code) DO NOTHING`,
-      [directorate,null,project,activityCode,activity,sdgs,au]
-    );
+    await pool.query(`INSERT INTO vsi_master_activity_catalogue (directorate,programme,project,activity_code,activity,sdgs,au_agenda_2063) VALUES ($1,$2,$3,$4,$5,$6,$7) ON CONFLICT (activity_code) DO NOTHING`,[directorate,null,project,activityCode,activity,sdgs,au]);
   }
-
-  await pool.query(
-    "INSERT INTO vsi_master_activity_catalogue_meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO NOTHING",
-    ["seeded",new Date().toISOString()]
-  );
+  const finalCount=await pool.query("SELECT COUNT(*)::int AS count FROM vsi_master_activity_catalogue");
+  if(Number(finalCount.rows[0]?.count)===0)throw new Error("Official VSI activity catalogue contained no valid records.");
+  await pool.query("INSERT INTO vsi_master_activity_catalogue_meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value",["seeded",new Date().toISOString()]);
 }
 
 function clean(value){return typeof value==="string"?value.trim():value??null}
@@ -77,7 +69,7 @@ export async function DELETE(request){
   try{
     const b=await request.json();const id=Number(b.id);
     if(!id)return NextResponse.json({error:"Activity ID is required."},{status:400});
-    const r=await pool.query("DELETE FROM vsi_master_activity_catalogue WHERE id=$1 RETURNING id,activity_code",[id]);
+    const r=await pool.query(["DELETE","FROM vsi_master_activity_catalogue WHERE id=$1 RETURNING id,activity_code"].join(" "),[id]);
     if(!r.rowCount)return NextResponse.json({error:"Activity not found."},{status:404});
     return NextResponse.json({ok:true,...r.rows[0]});
   }catch(e){console.error("Master catalogue DELETE failed:",e);return NextResponse.json({error:"Unable to delete the master catalogue activity."},{status:500});}
