@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useState} from "react";
-import {SiteFooter,SiteHeader} from "../../../components/SiteChrome";
+import {SiteFooter,SiteHeader} from "../../components/SiteChrome";
 
 export default function AdminAuthenticatorSetup(){
   const [data,setData]=useState(null),[error,setError]=useState(""),[copied,setCopied]=useState(false);
