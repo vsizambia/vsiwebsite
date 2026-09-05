@@ -1,4 +1,5 @@
 import Image from "next/image";
+import CookieConsent from "./CookieConsent";
 
 const logo = "/images/vsi logo blue text.png";
 const whiteLogo = "/images/VSI LOGO white.png";
@@ -74,34 +75,41 @@ export function SiteHeader({ ctaLabel = "Volunteer", ctaHref = "/volunteer" }) {
 
 export function SiteFooter({ includeNews = true }) {
   return (
-    <footer id="contact">
-      <div className="section-shell footer-grid">
-        <div className="footer-brand">
-          <Image src={whiteLogo} alt="Visionary Students Initiative" width={250} height={94} />
-          <p>Promoting policies and initiatives that place students at the centre of national development.</p>
+    <>
+      <footer id="contact">
+        <div className="section-shell footer-grid">
+          <div className="footer-brand">
+            <Image src={whiteLogo} alt="Visionary Students Initiative" width={250} height={94} />
+            <p>Promoting policies and initiatives that place students at the centre of national development.</p>
+          </div>
+          <nav aria-label="Footer navigation" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-start"}}>
+            <p className="footer-title">Explore</p>
+            <a href="/">Home</a>
+            <a href="/discover">Discover VSI</a>
+            <a href="/#work">Our work</a>
+            <a href="/story">Our story</a>
+            <a href="/community">VSI in the Community</a>
+            {includeNews && <a href="/news">VSI News <span aria-hidden="true">↗</span></a>}
+            <a href="/events">Events <span aria-hidden="true">↗</span></a>
+            <a href="/volunteer">Volunteer</a>
+          </nav>
+          <div>
+            <p className="footer-title">Contact</p>
+            <a href="mailto:vsizambia@gmail.com">vsizambia@gmail.com</a>
+            <a href="tel:+260968623786">+260 968 623 786</a>
+            <span>Plot No. 9173, Ben Bella Road<br />Peace Embassy Building, 1st Floor<br />Lusaka, Zambia</span>
+          </div>
         </div>
-        <nav aria-label="Footer navigation" style={{display:"flex",flexDirection:"column",gap:10,alignItems:"flex-start"}}>
-          <p className="footer-title">Explore</p>
-          <a href="/">Home</a>
-          <a href="/discover">Discover VSI</a>
-          <a href="/#work">Our work</a>
-          <a href="/story">Our story</a>
-          <a href="/community">VSI in the Community</a>
-          {includeNews && <a href="/news">VSI News <span aria-hidden="true">↗</span></a>}
-          <a href="/events">Events <span aria-hidden="true">↗</span></a>
-          <a href="/volunteer">Volunteer</a>
-        </nav>
-        <div>
-          <p className="footer-title">Contact</p>
-          <a href="mailto:vsizambia@gmail.com">vsizambia@gmail.com</a>
-          <a href="tel:+260968623786">+260 968 623 786</a>
-          <span>Plot No. 9173, Ben Bella Road<br />Peace Embassy Building, 1st Floor<br />Lusaka, Zambia</span>
+        <div className="section-shell footer-bottom">
+          <span>© {new Date().getFullYear()} Visionary Students Initiative</span>
+          <span>Made for youth-led change in Zambia.</span>
         </div>
+      </footer>
+      <div className="vsi-legal-footer-links" style={{display:"flex",justifyContent:"center",gap:"18px",flexWrap:"wrap",padding:"14px 20px",background:"#002d55",borderTop:"1px solid rgba(255,255,255,.12)"}}>
+        <a href="/privacy-policy" style={{color:"#fff",fontSize:"12px",fontWeight:700,textDecoration:"none"}}>Privacy Policy</a>
+        <a href="/data-protection" style={{color:"#fff",fontSize:"12px",fontWeight:700,textDecoration:"none"}}>Data Protection</a>
       </div>
-      <div className="section-shell footer-bottom">
-        <span>© {new Date().getFullYear()} Visionary Students Initiative</span>
-        <span>Made for youth-led change in Zambia.</span>
-      </div>
-    </footer>
+      <CookieConsent />
+    </>
   );
 }
