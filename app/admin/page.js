@@ -5,6 +5,7 @@ import Link from "next/link";
 import {SiteFooter,SiteHeader} from "../components/SiteChrome";
 import styles from "./dashboard.module.css";
 import summaryStyles from "./dashboard-summary.module.css";
+import "./dashboard-vsi-colours.css";
 
 const modules=[
   {title:"Volunteer Management",text:"Review applications, manage the volunteer register, assignments and profiles.",href:"/admin/volunteers",featured:true,summaryKey:"volunteers",metrics:[["approved","APPROVED VOLUNTEERS"],["pending","PENDING REVIEW"],["verifiedHours","TOTAL VERIFIED VOLUNTEER HOURS"],["professionalDevelopmentHours","PROFESSIONAL DEVELOPMENT HOURS"]]},
