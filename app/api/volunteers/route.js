@@ -61,6 +61,14 @@ async function storeProfilePicture(dataUrl, volunteerId) {
   return blob.url;
 }
 
+function ageOnToday(dateOfBirth) {
+  const [year, month, day] = dateOfBirth.split("-").map(Number);
+  const today = new Date();
+  let age = today.getFullYear() - year;
+  if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) age--;
+  return age;
+}
+
 function parseDateOfBirth(value) {
   const raw = clean(value);
   if (!raw) return null;
@@ -85,7 +93,14 @@ export async function POST(request) {
     if (!dateOfBirth) return NextResponse.json({ error: "Please enter a valid date of birth in DD/MM/YYYY format." }, { status: 400 });
     if (!Number.isInteger(hoursPerWeek) || hoursPerWeek < 1 || hoursPerWeek > 40) return NextResponse.json({ error: "Please select a valid number of volunteer hours per week." }, { status: 400 });
     if (body.membershipFeeAccepted !== true) return NextResponse.json({ error: "Please confirm the VSI membership fee of ZMW 30 monthly." }, { status: 400 });
-    if (body.consent !== true) return NextResponse.json({ error: "Consent is required." }, { status: 400 });
+    if (body.consent !== true) return NextResponse.json({ error: "Please acknowledge the Privacy Policy and volunteer data-processing notice." }, { status: 400 });
+    if (body.photoProcessingConsent !== true) return NextResponse.json({ error: "Consent is required to process the profile photograph for volunteer administration." }, { status: 400 });
+    const applicantAge = ageOnToday(dateOfBirth);
+    if (applicantAge < 18) {
+      if (!clean(body.guardianName) || !clean(body.guardianRelationship) || !clean(body.guardianPhone) || body.guardianConsent !== true) {
+        return NextResponse.json({ error: "Applicants under 18 require parent or legal guardian details and consent before submission." }, { status: 400 });
+      }
+    }
     const elsewhere = body.volunteeringElsewhere === true;
     const convicted = body.criminalConviction === true;
     const disability = body.disability === true;
@@ -99,11 +114,22 @@ export async function POST(request) {
     await ensureVolunteerTable();
     const result = await pool.query(
       `INSERT INTO volunteer_applications
-       (full_name, date_of_birth, nationality, gender, faith, email, phone, province, district, constituency, ward, location, current_occupation, education, category, skills, availability, hours_per_week, motivation, volunteering_elsewhere, other_volunteering_details, past_volunteer_positions, reference_name, reference_organization, reference_phone, reference_email, criminal_conviction, criminal_offence_details, disability, disability_certificate, disability_certificate_name, profile_picture, emergency_name, emergency_phone, membership_fee_acknowledged, consent)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36)
+       (full_name, date_of_birth, nationality, gender, faith, email, phone, province, district, constituency, ward, location, current_occupation, education, category, skills, availability, hours_per_week, motivation, volunteering_elsewhere, other_volunteering_details, past_volunteer_positions, reference_name, reference_organization, reference_phone, reference_email, criminal_conviction, criminal_offence_details, disability, disability_certificate, disability_certificate_name, profile_picture, emergency_name, emergency_phone, membership_fee_acknowledged, consent, privacy_policy_version, privacy_notice_accepted_at, photo_processing_consent, public_media_consent, guardian_name, guardian_relationship, guardian_phone, guardian_email, guardian_consent, guardian_consent_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, NOW(), $38, $39, $40, $41, $42, $43, $44, $45, CASE WHEN $45 THEN NOW() ELSE NULL END)
        RETURNING id, created_at`,
-      [clean(body.fullName), dateOfBirth, clean(body.nationality), clean(body.gender), clean(body.faith), clean(body.email)?.toLowerCase(), clean(body.phone), clean(body.province), clean(body.district), clean(body.constituency), clean(body.ward), clean(body.location) || [clean(body.district), clean(body.province)].filter(Boolean).join(", "), clean(body.currentOccupation), clean(body.education), clean(body.category), clean(body.skills), clean(body.availability), hoursPerWeek, clean(body.motivation), elsewhere, clean(body.otherVolunteeringDetails), clean(body.pastVolunteerPositions), clean(body.referenceName), clean(body.referenceOrganization), clean(body.referencePhone), clean(body.referenceEmail)?.toLowerCase(), convicted, clean(body.criminalOffenceDetails), disability, disability ? body.disabilityCertificate : null, disability ? clean(body.disabilityCertificateName) : null, null, clean(body.emergencyName), clean(body.emergencyPhone), true, true]
+      [clean(body.fullName), dateOfBirth, clean(body.nationality), clean(body.gender), clean(body.faith), clean(body.email)?.toLowerCase(), clean(body.phone), clean(body.province), clean(body.district), clean(body.constituency), clean(body.ward), clean(body.location) || [clean(body.district), clean(body.province)].filter(Boolean).join(", "), clean(body.currentOccupation), clean(body.education), clean(body.category), clean(body.skills), clean(body.availability), hoursPerWeek, clean(body.motivation), elsewhere, clean(body.otherVolunteeringDetails), clean(body.pastVolunteerPositions), clean(body.referenceName), clean(body.referenceOrganization), clean(body.referencePhone), clean(body.referenceEmail)?.toLowerCase(), convicted, clean(body.criminalOffenceDetails), disability, disability ? body.disabilityCertificate : null, disability ? clean(body.disabilityCertificateName) : null, null, clean(body.emergencyName), clean(body.emergencyPhone), true, true, clean(body.privacyPolicyVersion) || '2026-09', body.photoProcessingConsent === true, body.publicMediaConsent === true, applicantAge < 18 ? clean(body.guardianName) : null, applicantAge < 18 ? clean(body.guardianRelationship) : null, applicantAge < 18 ? clean(body.guardianPhone) : null, applicantAge < 18 ? clean(body.guardianEmail)?.toLowerCase() : null, applicantAge < 18 && body.guardianConsent === true]
     );
+
+    await pool.query(
+      `INSERT INTO data_protection_consent_log (subject_type,subject_id,consent_type,policy_version,granted) VALUES
+       ('volunteer', $1, 'privacy_notice', $2, TRUE),
+       ('volunteer', $1, 'profile_photo_processing', $2, TRUE),
+       ('volunteer', $1, 'public_media', $2, $3)`,
+      [result.rows[0].id, clean(body.privacyPolicyVersion) || '2026-09', body.publicMediaConsent === true]
+    );
+    if (applicantAge < 18) {
+      await pool.query(`INSERT INTO data_protection_consent_log (subject_type,subject_id,consent_type,policy_version,granted) VALUES ('volunteer',$1,'parent_or_guardian_consent',$2,TRUE)`, [result.rows[0].id, clean(body.privacyPolicyVersion) || '2026-09']);
+    }
 
     let profilePicture = null;
     try {
