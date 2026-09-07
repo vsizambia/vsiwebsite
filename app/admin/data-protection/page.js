@@ -87,9 +87,25 @@ export default function DataProtectionCompliancePage() {
       <Link href="/admin">← VSI Administration</Link>
 
       <h1>Data Protection Compliance Register</h1>
-      <p>Manage data-subject requests, consent records and data-protection incidents.</p>
+      <p>Manage data-subject requests, consent records, incidents and retention controls.</p>
 
       {error && <p>{error}</p>}
+
+      <h2>Retention &amp; Deletion Controls</h2>
+      <p>Retention rules automatically flag records that are due for review. No personal data is automatically deleted; authorised review is required before a destructive action.</p>
+      <table>
+        <thead><tr><th>Record type</th><th>Retention period</th><th>Default action</th><th>Total</th><th>Due for review</th></tr></thead>
+        <tbody>{data.retention.map((item) => (
+          <tr key={item.id}>
+            <td>{item.label}</td>
+            <td>{item.retention_months} months</td>
+            <td>{item.action}</td>
+            <td>{item.total}</td>
+            <td>{item.due}</td>
+          </tr>
+        ))}</tbody>
+      </table>
+      <p><strong>{data.retention.reduce((sum,item)=>sum+Number(item.due||0),0)}</strong> records are currently due for retention review across the tracked categories.</p>
 
       <h2>Data-subject requests ({data.requests.length})</h2>
       <table>
