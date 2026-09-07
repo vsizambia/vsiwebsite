@@ -35,7 +35,7 @@ function ElementContent({ element }) {
   if (type === "hero") return <><p className="builder-kicker">VISIONARY STUDENTS INITIATIVE</p>{title && <h1>{title}</h1>}{text && <p className="builder-lead">{text}</p>}<div className="builder-actions"><a href={element.buttonHref || "/discover"} className="builder-button builder-button-primary">{element.buttonLabel || "Discover VSI"} <span aria-hidden="true">↗</span></a></div></>;
   if (type === "heading") return title ? <h2>{title}</h2> : null;
   if (type === "text block" || type === "text") return text ? <p>{text}</p> : null;
-  if (type === "image") return element.image ? <div className="builder-image"><Image src={element.image} alt={element.imageAlt || title || "VSI"} fill sizes="(max-width: 900px) 100vw, 50vw" /></div> : null;
+  if (type === "image") return element.image ? <div className="builder-image"><Image src={element.image} alt={element.imageAlt || title || "VSI"} fill sizes="(max-width: 900px) 100vw, 50vw" />}</div> : null;
   if (type === "button" || type === "call to action") return <div className="builder-actions"><a href={element.buttonHref || "/contact"} className="builder-button builder-button-primary">{element.buttonLabel || title || "Learn more"} <span aria-hidden="true">↗</span></a></div>;
   if (type === "divider") return <hr className="builder-divider" />;
   if (type === "cards") return <div className="builder-card"><h3>{title}</h3><p>{text}</p></div>;
@@ -43,32 +43,17 @@ function ElementContent({ element }) {
   return <>{title && <h2>{title}</h2>}{text && <p>{text}</p>}</>;
 }
 
-function renderColumnElements(section) {
-  if (Array.isArray(section.columns)) {
-    return section.columns.map((column, columnIndex) => (
-      <div className="builder-column" key={column.id || columnIndex}>
-        {(Array.isArray(column.elements) ? column.elements : []).map((element, elementIndex) => (
-          <ElementContent element={element} key={element.id || elementIndex} />
-        ))}
-      </div>
-    ));
-  }
-
-  return <div className="builder-column"><ElementContent element={section} /></div>;
-}
-
 export default function WebsiteBuilderRenderer({ page }) {
   return <main className="website-builder-page">
     {page.published_content.map((section, index) => {
-      const columns = layoutColumns[section.layout] || layoutColumns["100"];
-      const style = {
-        "--builder-bg": section.bg || "#ffffff",
-        "--builder-color": section.color || "#173b58",
-      };
-      const contentColumns = Array.isArray(section.columns) ? section.columns : null;
+      const widths = layoutColumns[section.layout] || layoutColumns["100"];
+      const style = { "--builder-bg": section.bg || "#ffffff", "--builder-color": section.color || "#173b58" };
+      const columns = Array.isArray(section.columns) ? section.columns : [{ elements: [section] }];
       return <section className={`builder-section ${String(section.type || "Section").toLowerCase().replace(/\s+/g, "-")}`} style={style} key={section.id || index}>
         <div className="builder-shell"><div className="builder-columns">
-          {contentColumns ? renderColumnElements(section) : <div className="builder-column" style={{ width: columns[0] }}><ElementContent element={section} /></div>}
+          {columns.map((column, columnIndex) => <div className="builder-column" style={{ width: widths[columnIndex] || `${100 / columns.length}%` }} key={column.id || columnIndex}>
+            {(Array.isArray(column.elements) ? column.elements : []).map((element, elementIndex) => <ElementContent element={element} key={element.id || elementIndex} />)}
+          </div>)}
         </div></div>
       </section>;
     })}
