@@ -592,7 +592,19 @@ export default function WebsiteManagerPage() {
             </div>
             <div className={styles.tabs}>
               {[["structure", "Structure"], ["settings", "Settings"], ["preview", "Preview"], ["versions", "Versions"]].map(([key, label]) => (
-                <button key={key} className={tab === key ? styles.active : ""} onClick={() => setTab(key)}>{label}</button>
+                <button
+                  key={key}
+                  className={tab === key ? styles.active : ""}
+                  onClick={() => {
+                    if (key === "preview") {
+                      window.location.href = `/admin/website-manager/preview?slug=${encodeURIComponent(slugify(selectedPage))}`;
+                      return;
+                    }
+                    setTab(key);
+                  }}
+                >
+                  {label}
+                </button>
               ))}
             </div>
           </div>
