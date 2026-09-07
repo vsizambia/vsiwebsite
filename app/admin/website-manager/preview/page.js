@@ -2,8 +2,8 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { pool } from "../../../../lib/db";
 import { isAdminAuthenticated } from "../../../../lib/admin-auth";
-import { SiteHeader, SiteFooter } from "../../../../components/SiteChrome";
-import WebsiteBuilderRenderer from "../../../../components/WebsiteBuilderRenderer";
+import { SiteHeader, SiteFooter } from "../../../components/SiteChrome";
+import WebsiteBuilderRenderer from "../../../components/WebsiteBuilderRenderer";
 
 export const metadata = {
   title: "Website Builder Preview | VSI",
