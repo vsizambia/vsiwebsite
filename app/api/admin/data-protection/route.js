@@ -1,4 +1,5 @@
 import {NextResponse} from "next/server";
+import {del as deleteBlob} from "@vercel/blob";
 import {ensureDataProtectionTables,pool} from "../../../../lib/db";
 import {isAdminAuthenticated} from "../../../../lib/admin-auth";
 const unauthorized=()=>NextResponse.json({error:"Admin authentication required."},{status:401});
@@ -53,7 +54,48 @@ export async function PATCH(request){
 export async function POST(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{await ensureDataProtectionTables();const b=await request.json();
- if(b.kind==="retention_action"){const action=String(b.action||"");const type=String(b.recordType||"");const id=Number(b.recordId);if(!type||!Number.isFinite(id)||!["retain","review","archive","anonymise","delete"].includes(action))return NextResponse.json({error:"Invalid retention action."},{status:400});const r=await pool.query("INSERT INTO data_retention_actions (record_type,record_id,action,reason,performed_by) VALUES ($1,$2,$3,$4,$5) RETURNING *",[type,id,action,String(b.reason||"").trim()||null,"admin"]);return NextResponse.json({action:r.rows[0]},{status:201});}
+ if(b.kind==="retention_action"){
+  const action=String(b.action||"");const type=String(b.recordType||"");const id=Number(b.recordId);
+  if(!type||!Number.isFinite(id)||!["retain","review","archive","anonymise","delete"].includes(action))return NextResponse.json({error:"Invalid retention action."},{status:400});
+  if(["anonymise","delete"].includes(action)&&b.confirmation!=="CONFIRM")return NextResponse.json({error:"Type CONFIRM before anonymising or deleting a record."},{status:400});
+  const client=await pool.connect();
+  try{
+    await client.query("BEGIN");
+    let metadata={};
+    if(action==="anonymise"){
+      if(type==="volunteer_application"){
+        const current=await client.query("SELECT id,profile_picture FROM volunteer_applications WHERE id=$1 FOR UPDATE",[id]);
+        if(!current.rows[0])throw new Error("Volunteer record not found.");
+        const photo=current.rows[0].profile_picture;
+        await client.query("UPDATE volunteer_applications SET full_name='Anonymised Volunteer #' || id,email='deleted+' || id || '@anonymised.invalid',phone='ANONYMISED',nationality=NULL,gender=NULL,faith=NULL,province=NULL,district=NULL,constituency=NULL,ward=NULL,location=NULL,current_occupation=NULL,education=NULL,skills='Anonymised',availability='Anonymised',motivation='Anonymised',other_volunteering_details=NULL,past_volunteer_positions=NULL,reference_name=NULL,reference_organization=NULL,reference_phone=NULL,reference_email=NULL,criminal_offence_details=NULL,disability_certificate=NULL,disability_certificate_name=NULL,profile_picture=NULL,emergency_name='Anonymised',emergency_phone='ANONYMISED',guardian_name=NULL,guardian_relationship=NULL,guardian_phone=NULL,guardian_email=NULL,guardian_consent=FALSE,updated_at=NOW() WHERE id=$1",[id]);
+        if(photo){try{await deleteBlob(photo);metadata.profilePhotoDeleted=true;}catch{metadata.profilePhotoDeleted=false;metadata.profilePhotoCleanup="manual review required";}}
+      }else if(type==="data_subject_request"){
+        await client.query("UPDATE data_protection_requests SET requester_name='Anonymised Requester #' || id,requester_email='deleted+' || id || '@anonymised.invalid',details=NULL WHERE id=$1",[id]);
+      }else if(type==="data_protection_incident"){
+        await client.query("UPDATE data_protection_incidents SET summary='Anonymised incident record',containment_action=NULL WHERE id=$1",[id]);
+      }else return NextResponse.json({error:"Anonymisation is not yet supported for this record type."},{status:400});
+    }
+    if(action==="delete"){
+      if(type==="volunteer_application"){
+        const current=await client.query("SELECT profile_picture FROM volunteer_applications WHERE id=$1 FOR UPDATE",[id]);
+        if(!current.rows[0])throw new Error("Volunteer record not found.");
+        const photo=current.rows[0].profile_picture;
+        await client.query("DELETE FROM data_protection_consent_log WHERE subject_type='volunteer_application' AND subject_id=$1",[id]);
+        await client.query("DELETE FROM volunteer_applications WHERE id=$1",[id]);
+        if(photo){try{await deleteBlob(photo);metadata.profilePhotoDeleted=true;}catch{metadata.profilePhotoDeleted=false;metadata.profilePhotoCleanup="manual review required";}}
+      }else if(type==="volunteer_activity"){
+        await client.query("DELETE FROM volunteer_activity_register WHERE id=$1",[id]);
+      }else if(type==="data_subject_request"){
+        await client.query("DELETE FROM data_protection_requests WHERE id=$1",[id]);
+      }else if(type==="data_protection_incident"){
+        await client.query("DELETE FROM data_protection_incidents WHERE id=$1",[id]);
+      }else return NextResponse.json({error:"Deletion is not yet supported for this record type."},{status:400});
+    }
+    const r=await client.query("INSERT INTO data_retention_actions (record_type,record_id,action,reason,performed_by,metadata) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *",[type,id,action,String(b.reason||"").trim()||null,"admin",JSON.stringify(metadata)]);
+    await client.query("COMMIT");return NextResponse.json({action:r.rows[0]},{status:201});
+  }catch(error){await client.query("ROLLBACK");console.error(error);return NextResponse.json({error:error.message||"Unable to perform retention action."},{status:500});}
+  finally{client.release();}
+}
  const type=String(b.incidentType||"").trim(),summary=String(b.summary||"").trim();if(!type||!summary)return NextResponse.json({error:"Incident type and summary are required."},{status:400});const r=await pool.query("INSERT INTO data_protection_incidents (incident_type,summary,personal_data_affected,containment_action) VALUES ($1,$2,$3,$4) RETURNING *",[type,summary,b.personalDataAffected===true,String(b.containmentAction||"").trim()||null]);return NextResponse.json({incident:r.rows[0]},{status:201});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to record compliance action."},{status:500});}
 }
