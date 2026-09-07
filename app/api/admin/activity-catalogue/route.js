@@ -1,14 +1,14 @@
 import {NextResponse} from "next/server";
 import {pool} from "../../../../lib/db";
 import {isAdminAuthenticated} from "../../../../lib/admin-auth";
-import * as catalogueModule from "../../../admin/activities/add/activity-catalogue";
+import {ACTIVITY_CATALOGUE} from "../../../admin/activities/add/activity-catalogue";
 
 const unauthorized=()=>NextResponse.json({error:"Admin authentication required."},{status:401});
 
 async function seedCatalogue(){
   const existing=await pool.query("SELECT COUNT(*)::int AS count FROM vsi_master_activity_catalogue");
   if(Number(existing.rows[0]?.count)>0)return;
-  const source=Array.isArray(catalogueModule.ACTIVITY_CATALOGUE)?catalogueModule.ACTIVITY_CATALOGUE:Array.isArray(catalogueModule.default)?catalogueModule.default:[];
+  const source=Array.isArray(ACTIVITY_CATALOGUE)?ACTIVITY_CATALOGUE:[];
   if(!source.length)throw new Error("Official VSI activity catalogue could not be loaded for seeding.");
   for(const row of source){
     const activityCode=Array.isArray(row)?row[0]:row?.code;
@@ -44,8 +44,7 @@ export async function POST(request){
   if(!isAdminAuthenticated(request))return unauthorized();
   try{
     await seedCatalogue();
-    const b=await request.json();
-    const directorate=clean(b.directorate),programme=clean(b.programme),project=clean(b.project),activityCode=clean(b.activityCode),activity=clean(b.activity),sdgs=clean(b.sdgs),au=clean(b.auAgenda2063);
+    const b=await request.json();const directorate=clean(b.directorate),programme=clean(b.programme),project=clean(b.project),activityCode=clean(b.activityCode),activity=clean(b.activity),sdgs=clean(b.sdgs),au=clean(b.auAgenda2063);
     if(!directorate||!activityCode||!activity)return NextResponse.json({error:"Directorate, activity code and activity are required."},{status:400});
     const r=await pool.query(`INSERT INTO vsi_master_activity_catalogue (directorate,programme,project,activity_code,activity,sdgs,au_agenda_2063) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,[directorate,programme,project,activityCode,activity,sdgs,au]);
     return NextResponse.json({activity:r.rows[0]},{status:201});
@@ -55,8 +54,7 @@ export async function POST(request){
 export async function PUT(request){
   if(!isAdminAuthenticated(request))return unauthorized();
   try{
-    const b=await request.json();const id=Number(b.id);
-    const directorate=clean(b.directorate),programme=clean(b.programme),project=clean(b.project),activityCode=clean(b.activityCode),activity=clean(b.activity),sdgs=clean(b.sdgs),au=clean(b.auAgenda2063);
+    const b=await request.json();const id=Number(b.id);const directorate=clean(b.directorate),programme=clean(b.programme),project=clean(b.project),activityCode=clean(b.activityCode),activity=clean(b.activity),sdgs=clean(b.sdgs),au=clean(b.auAgenda2063);
     if(!id||!directorate||!activityCode||!activity)return NextResponse.json({error:"ID, directorate, activity code and activity are required."},{status:400});
     const r=await pool.query(`UPDATE vsi_master_activity_catalogue SET directorate=$1,programme=$2,project=$3,activity_code=$4,activity=$5,sdgs=$6,au_agenda_2063=$7,updated_at=NOW() WHERE id=$8 RETURNING *`,[directorate,programme,project,activityCode,activity,sdgs,au,id]);
     if(!r.rowCount)return NextResponse.json({error:"Activity not found."},{status:404});
