@@ -1,4 +1,3 @@
-import Image from "next/image";
 import "./website-builder-renderer.css";
 import { pool } from "../../lib/db";
 
@@ -24,7 +23,7 @@ function ElementContent({element}) {
   if(type==="hero") return <><p className="builder-kicker">VISIONARY STUDENTS INITIATIVE</p>{title&&<h1>{title}</h1>}{text&&<p className="builder-lead">{text}</p>}<div className="builder-actions"><a href={element.buttonHref||"/discover"} className="builder-button builder-button-primary">{element.buttonLabel||"Discover VSI"} <span aria-hidden="true">↗</span></a></div></>;
   if(type==="heading") return title?<h2>{title}</h2>:null;
   if(type==="text block"||type==="text") return text?<p>{text}</p>:null;
-  if(type==="image") return (element.imageUrl||element.image)?<div className="builder-image"><Image src={element.imageUrl||element.image} alt={element.imageAlt||title||"VSI"} fill sizes="(max-width: 900px) 100vw, 50vw" /></div>:null;
+  if(type==="image") return (element.imageUrl||element.image)?<div className="builder-image"><img src={element.imageUrl||element.image} alt={element.imageAlt||title||"VSI"} /></div>:null;
   if(type==="button"||type==="call to action") return <div className="builder-actions"><a href={element.buttonHref||"/contact"} className="builder-button builder-button-primary">{element.buttonLabel||title||"Learn more"} <span aria-hidden="true">↗</span></a></div>;
   if(type==="divider") return <hr className="builder-divider" />;
   if(type==="cards") return <div className="builder-card"><h3>{title}</h3><p>{text}</p></div>;
