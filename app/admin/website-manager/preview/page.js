@@ -15,10 +15,8 @@ async function ensureWebsiteBuilderTables() {
 }
 
 export default async function WebsiteBuilderPreview({ searchParams }) {
-  const cookieStore = await cookies();
-  const request = new Request("https://www.vsizambia.org/admin/website-manager/preview", {
-    headers: { cookie: cookieStore.toString() },
-  });
+  const cookieStore = cookies();
+  const request = { cookies: cookieStore };
 
   if (!isAdminAuthenticated(request)) {
     return (
