@@ -51,10 +51,15 @@ export default function DataProtectionCompliancePage() {
   const retentionAction = async (item, action) => {
     const reason = window.prompt(`Reason for ${action} action (optional):`, retentionReason);
     if (reason === null) return;
+    let confirmation = "";
+    if (action === "anonymise" || action === "delete") {
+      confirmation = window.prompt(`This performs a real ${action} operation. Type CONFIRM to continue:`, "") || "";
+      if (confirmation !== "CONFIRM") return;
+    }
     const response = await fetch("/api/admin/data-protection", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ kind: "retention_action", recordType: item.recordType, recordId: item.recordId, action, reason }),
+      body: JSON.stringify({ kind: "retention_action", recordType: item.recordType, recordId: item.recordId, action, reason, confirmation }),
     });
     if (!response.ok) {
       const result = await response.json().catch(() => ({}));
