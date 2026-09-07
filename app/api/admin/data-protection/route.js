@@ -13,16 +13,30 @@ async function retentionSummary(){
   return rules.map(rule=>({...rule,total:Number(counts[rule.record_type]?.total||0),due:Number(counts[rule.record_type]?.due||0)}));
 }
 
+async function retentionQueue(){
+  const rows=[];
+  const volunteers=await pool.query("SELECT id,full_name,status,created_at,created_at + INTERVAL '60 months' due_at FROM volunteer_applications WHERE created_at + INTERVAL '60 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
+  volunteers.rows.forEach(r=>rows.push({recordType:"volunteer_application",recordId:r.id,label:r.full_name||"Volunteer application",status:r.status,createdAt:r.created_at,dueAt:r.due_at}));
+  const activities=await pool.query("SELECT id,volunteer_id,activity_name,created_at,created_at + INTERVAL '84 months' due_at FROM volunteer_activity_register WHERE created_at + INTERVAL '84 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
+  activities.rows.forEach(r=>rows.push({recordType:"volunteer_activity",recordId:r.id,label:r.activity_name||("Volunteer activity #"+r.id),status:"verified history",createdAt:r.created_at,dueAt:r.due_at,volunteerId:r.volunteer_id}));
+  const requests=await pool.query("SELECT id,request_type,requester_name,status,received_at,received_at + INTERVAL '36 months' due_at FROM data_protection_requests WHERE received_at + INTERVAL '36 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
+  requests.rows.forEach(r=>rows.push({recordType:"data_subject_request",recordId:r.id,label:r.request_type+" — "+r.requester_name,status:r.status,createdAt:r.received_at,dueAt:r.due_at}));
+  const incidents=await pool.query("SELECT id,incident_type,status,reported_at,reported_at + INTERVAL '84 months' due_at FROM data_protection_incidents WHERE reported_at + INTERVAL '84 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
+  incidents.rows.forEach(r=>rows.push({recordType:"data_protection_incident",recordId:r.id,label:r.incident_type,status:r.status,createdAt:r.reported_at,dueAt:r.due_at}));
+  return rows.sort((a,b)=>new Date(a.dueAt)-new Date(b.dueAt)).slice(0,200);
+}
+
 export async function GET(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{await ensureDataProtectionTables();
- const [requests,incidents,consents,retention,recentActions]=await Promise.all([
+ const [requests,incidents,consents,retention,recentActions,retentionQueueRecords]=await Promise.all([
  pool.query("SELECT * FROM data_protection_requests ORDER BY received_at DESC LIMIT 100"),
  pool.query("SELECT * FROM data_protection_incidents ORDER BY reported_at DESC LIMIT 100"),
  pool.query("SELECT consent_type,COUNT(*) FILTER(WHERE granted) granted,COUNT(*) total FROM data_protection_consent_log GROUP BY consent_type ORDER BY consent_type"),
  retentionSummary(),
- pool.query("SELECT * FROM data_retention_actions ORDER BY performed_at DESC LIMIT 50")]);
- return NextResponse.json({requests:requests.rows,incidents:incidents.rows,consents:consents.rows,retention,recentActions:recentActions.rows});
+ pool.query("SELECT * FROM data_retention_actions ORDER BY performed_at DESC LIMIT 50"),
+ retentionQueue()]);
+ return NextResponse.json({requests:requests.rows,incidents:incidents.rows,consents:consents.rows,retention,recentActions:recentActions.rows,retentionQueue:retentionQueueRecords});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to load compliance records."},{status:500});}
 }
 
