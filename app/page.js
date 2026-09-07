@@ -5,6 +5,7 @@ import "./latest-news.css";
 import { SiteHeader, SiteFooter } from "./components/SiteChrome";
 import LatestNews from "./components/LatestNews";
 import UpcomingEvents from "./components/UpcomingEvents";
+import WebsiteBuilderRenderer, { getPublishedBuilderPage } from "./components/WebsiteBuilderRenderer";
 
 export const metadata = {
   title: "Visionary Students Initiative | Zambia",
@@ -23,7 +24,7 @@ const focusAreas = [
 ];
 const partners = [["GRZ", "/images/vsi partner grz.jpg"], ["IAYSP", "/images/vsi partner iaysp.jpg"], ["VicTalk", "/images/vsi partner victalk.jpg"], ["ZYDF", "/images/vsi partner zydf.jpg"]];
 
-export default function Home() {
+function LegacyHome() {
   const carouselPartners = [...partners, ...partners];
   return <main>
     <SiteHeader />
@@ -40,4 +41,9 @@ export default function Home() {
     <UpcomingEvents />
     <SiteFooter />
   </main>;
+}
+
+export default async function Home() {
+  const published = await getPublishedBuilderPage("home");
+  return published ? <><SiteHeader /><WebsiteBuilderRenderer page={published} /><SiteFooter /></> : <LegacyHome />;
 }
