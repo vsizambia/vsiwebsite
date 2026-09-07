@@ -37,7 +37,10 @@ export async function GET(request){
  retentionSummary(),
  pool.query("SELECT * FROM data_retention_actions ORDER BY performed_at DESC LIMIT 50"),
  retentionQueue()]);
- return NextResponse.json({requests:requests.rows,incidents:incidents.rows,consents:consents.rows,retention,recentActions:recentActions.rows,retentionQueue:retentionQueueRecords});
+ const dueCount=retentionQueueRecords.length;
+ const overdueCount=retentionQueueRecords.filter(item=>new Date(item.dueAt)<new Date()).length;
+ const recentActionCount=recentActions.rows.filter(item=>["delete","anonymise"].includes(item.action)).length;
+ return NextResponse.json({requests:requests.rows,incidents:incidents.rows,consents:consents.rows,retention,recentActions:recentActions.rows,retentionQueue:retentionQueueRecords,kpis:{dueCount,overdueCount,recentActionCount}});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to load compliance records."},{status:500});}
 }
 
