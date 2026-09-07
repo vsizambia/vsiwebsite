@@ -10,8 +10,12 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
+async function ensureWebsiteBuilderTables() {
+  await pool.query(`CREATE TABLE IF NOT EXISTS website_pages (id BIGSERIAL PRIMARY KEY,slug TEXT NOT NULL UNIQUE,title TEXT NOT NULL,status TEXT NOT NULL DEFAULT 'draft' CHECK(status IN ('draft','published')),draft_content JSONB NOT NULL DEFAULT '[]'::jsonb,published_content JSONB NOT NULL DEFAULT '[]'::jsonb,updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),published_at TIMESTAMPTZ)`);
+}
+
 export default async function WebsiteBuilderPreview({ searchParams }) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const request = new Request("https://www.vsizambia.org/admin/website-manager/preview", {
     headers: { cookie: cookieStore.toString() },
   });
@@ -28,7 +32,9 @@ export default async function WebsiteBuilderPreview({ searchParams }) {
     );
   }
 
-  const slug = String(searchParams?.slug || "home").trim().toLowerCase();
+  const params = await searchParams;
+  const slug = String(params?.slug || "home").trim().toLowerCase();
+  await ensureWebsiteBuilderTables();
   const result = await pool.query(
     "SELECT id, slug, title, draft_content, updated_at FROM website_pages WHERE slug = $1 LIMIT 1",
     [slug]
