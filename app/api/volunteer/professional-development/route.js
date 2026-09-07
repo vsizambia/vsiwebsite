@@ -1,5 +1,5 @@
 import {NextResponse} from "next/server";
-import {ensureVolunteerTable,pool} from "../../../../../lib/db";
+import {ensureVolunteerTable,pool} from "../../../../lib/db";
 
 async function ensureTable(){
  await ensureVolunteerTable();
