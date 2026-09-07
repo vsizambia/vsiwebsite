@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import styles from "./data-protection.module.css";
 
 export default function DataProtectionCompliancePage() {
   const [data, setData] = useState(null);
@@ -97,26 +98,25 @@ export default function DataProtectionCompliancePage() {
 
   if (!data) {
     return (
-      <main style={{ padding: 40, fontFamily: "Arial, sans-serif" }}>
+      <main className={styles.page}><div className={styles.shell}>
         <Link href="/admin">← VSI Administration</Link>
         <h1>Data Protection Compliance Register</h1>
         <p>{error || "Loading compliance records..."}</p>
-      </main>
+      </div></main>
     );
   }
 
   return (
-    <main style={{ maxWidth: 1200, margin: "0 auto", padding: "36px 20px", fontFamily: "Arial, sans-serif" }}>
-      <Link href="/admin">← VSI Administration</Link>
+    <main className={styles.page}><div className={styles.shell}>
+      <div className={styles.topline}><Link href="/admin">← VSI Administration</Link><span className={styles.connected}><i/> Compliance controls active</span></div>
+      <section className={styles.hero}><div><p className={styles.kicker}>VSI IMS / GOVERNANCE &amp; COMPLIANCE</p><h1>Data Protection Compliance</h1><p>Manage data-subject requests, consent records, incidents, retention reviews and accountable data lifecycle controls.</p></div><div className={styles.heroMark}>DP</div></section>
+      <section className={styles.stats}><div className={styles.stat}><small>DATA REQUESTS</small><strong>{data.requests.length}</strong><span>Registered requests</span></div><div className={styles.stat}><small>OPEN INCIDENTS</small><strong>{data.incidents.filter(item=>item.status!=="resolved").length}</strong><span>Require attention</span></div><div className={styles.stat}><small>RETENTION DUE</small><strong>{data.retentionQueue.length}</strong><span>Records for review</span></div><div className={styles.stat}><small>RECENT ACTIONS</small><strong>{data.recentActions.length}</strong><span>Audit history</span></div></section>
 
-      <h1>Data Protection Compliance Register</h1>
-      <p>Manage data-subject requests, consent records, incidents and retention controls.</p>
+      {error && <div className={styles.error}>{error}</div>}
 
-      {error && <p>{error}</p>}
-
-      <h2>Retention &amp; Deletion Controls</h2>
+      <section className={styles.panel}><h2>Retention &amp; Deletion Controls</h2>
       <p>Retention rules automatically flag records that are due for review. No personal data is automatically deleted; authorised review is required before a destructive action.</p>
-      <table>
+      <div className={styles.tableWrap}><table>
         <thead><tr><th>Record type</th><th>Retention period</th><th>Default action</th><th>Total</th><th>Due for review</th></tr></thead>
         <tbody>{data.retention.map((item) => (
           <tr key={item.id}>
@@ -127,12 +127,11 @@ export default function DataProtectionCompliancePage() {
             <td>{item.due}</td>
           </tr>
         ))}</tbody>
-      </table>
-      <p><strong>{data.retention.reduce((sum,item)=>sum+Number(item.due||0),0)}</strong> records are currently due for retention review across the tracked categories.</p>
+      </table></div><p className={styles.note}><strong>{data.retention.reduce((sum,item)=>sum+Number(item.due||0),0)}</strong> records are currently due for retention review across the tracked categories.</p></section>
 
-      <h2>Records due for retention review ({data.retentionQueue.length})</h2>
+      <section className={styles.panel}><h2>Records due for retention review ({data.retentionQueue.length})</h2>
       <p>Review each individual record before taking action. Actions are logged for accountability; this queue does not automatically destroy personal data.</p>
-      <table>
+      <div className={styles.tableWrap}><table>
         <thead><tr><th>Record</th><th>Category</th><th>Status</th><th>Created / received</th><th>Due date</th><th>Actions</th></tr></thead>
         <tbody>
           {data.retentionQueue.length === 0 ? (
@@ -145,27 +144,25 @@ export default function DataProtectionCompliancePage() {
               <td>{new Date(item.createdAt).toLocaleDateString()}</td>
               <td>{new Date(item.dueAt).toLocaleDateString()}</td>
               <td>
-                <button type="button" onClick={() => retentionAction(item, "retain")}>Retain</button>{" "}
-                <button type="button" onClick={() => retentionAction(item, "review")}>Review</button>{" "}
-                <button type="button" onClick={() => retentionAction(item, "archive")}>Archive</button>{" "}
-                <button type="button" onClick={() => retentionAction(item, "anonymise")}>Anonymise</button>{" "}
-                <button type="button" onClick={() => retentionAction(item, "delete")}>Delete</button>
+                <button className={styles.actionButton} type="button" onClick={() => retentionAction(item, "retain")}>Retain</button>{" "}
+                <button className={styles.actionButton} type="button" onClick={() => retentionAction(item, "review")}>Review</button>{" "}
+                <button className={styles.actionButton} type="button" onClick={() => retentionAction(item, "archive")}>Archive</button>{" "}
+                <button className={styles.actionButton} type="button" onClick={() => retentionAction(item, "anonymise")}>Anonymise</button>{" "}
+                <button className={styles.actionButton} type="button" onClick={() => retentionAction(item, "delete")}>Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
-      </table>
-
-      <h2>Recent retention actions</h2>
-      <table>
+      </table></div></section>
+      <section className={styles.panel}><h2>Recent retention actions</h2>
+      <div className={styles.tableWrap}><table>
         <thead><tr><th>Record type</th><th>Record ID</th><th>Action</th><th>Reason</th><th>Performed</th></tr></thead>
         <tbody>{data.recentActions.length === 0 ? <tr><td colSpan="5">No retention actions recorded yet.</td></tr> : data.recentActions.map((item) => (
           <tr key={item.id}><td>{item.record_type.replaceAll("_"," ")}</td><td>{item.record_id}</td><td>{item.action}</td><td>{item.reason || "—"}</td><td>{new Date(item.performed_at).toLocaleString()}</td></tr>
         ))}</tbody>
-      </table>
-
-      <h2>Data-subject requests ({data.requests.length})</h2>
-      <table>
+      </table></div></section>
+      <section className={styles.panel}><h2>Data-subject requests ({data.requests.length})</h2>
+      <div className={styles.tableWrap}><table>
         <thead>
           <tr>
             <th>Type</th>
@@ -195,10 +192,9 @@ export default function DataProtectionCompliancePage() {
             </tr>
           ))}
         </tbody>
-      </table>
-
-      <h2>Consent records</h2>
-      <table>
+      </table></div></section>
+      <section className={styles.panel}><h2>Consent records</h2>
+      <div className={styles.tableWrap}><table>
         <thead>
           <tr>
             <th>Consent type</th>
@@ -215,10 +211,9 @@ export default function DataProtectionCompliancePage() {
             </tr>
           ))}
         </tbody>
-      </table>
-
-      <h2>Record data-protection incident</h2>
-      <form onSubmit={addIncident}>
+      </table></div></section>
+      <section className={styles.panel}><h2>Record data-protection incident</h2>
+      <form className={styles.incidentForm} onSubmit={addIncident}>
         <input
           required
           placeholder="Incident type"
@@ -248,11 +243,10 @@ export default function DataProtectionCompliancePage() {
           onChange={(event) => setForm({ ...form, containmentAction: event.target.value })}
         />
         <br />
-        <button type="submit">Record incident</button>
-      </form>
-
-      <h2>Incident register ({data.incidents.length})</h2>
-      <table>
+        <button className={styles.primaryButton} type="submit">Record incident</button>
+      </form></section>
+      <section className={styles.panel}><h2>Incident register ({data.incidents.length})</h2>
+      <div className={styles.tableWrap}><table>
         <thead>
           <tr>
             <th>Reported</th>
@@ -283,6 +277,6 @@ export default function DataProtectionCompliancePage() {
           ))}
         </tbody>
       </table>
-    </main>
+    </section></div></main>
   );
 }
