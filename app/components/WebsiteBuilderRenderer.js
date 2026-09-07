@@ -28,19 +28,33 @@ const layoutColumns = {
   "25-50-25": ["25%", "50%", "25%"],
 };
 
-function ElementContent({ section }) {
-  const type = String(section.type || "Section").toLowerCase();
-  const title = section.title || "";
-  const text = section.text || "";
-  if (type === "hero") return <><p className="builder-kicker">VISIONARY STUDENTS INITIATIVE</p>{title && <h1>{title}</h1>}{text && <p className="builder-lead">{text}</p>}<div className="builder-actions"><a href={section.buttonHref || "/discover"} className="builder-button builder-button-primary">{section.buttonLabel || "Discover VSI"} <span aria-hidden="true">↗</span></a></div></>;
+function ElementContent({ element }) {
+  const type = String(element.type || "Section").toLowerCase();
+  const title = element.title || "";
+  const text = element.text || "";
+  if (type === "hero") return <><p className="builder-kicker">VISIONARY STUDENTS INITIATIVE</p>{title && <h1>{title}</h1>}{text && <p className="builder-lead">{text}</p>}<div className="builder-actions"><a href={element.buttonHref || "/discover"} className="builder-button builder-button-primary">{element.buttonLabel || "Discover VSI"} <span aria-hidden="true">↗</span></a></div></>;
   if (type === "heading") return title ? <h2>{title}</h2> : null;
   if (type === "text block" || type === "text") return text ? <p>{text}</p> : null;
-  if (type === "image") return section.image ? <div className="builder-image"><Image src={section.image} alt={section.imageAlt || title || "VSI"} fill sizes="(max-width: 900px) 100vw, 50vw" /></div> : null;
-  if (type === "button" || type === "call to action") return <div className="builder-actions"><a href={section.buttonHref || "/contact"} className="builder-button builder-button-primary">{section.buttonLabel || title || "Learn more"} <span aria-hidden="true">↗</span></a></div>;
+  if (type === "image") return element.image ? <div className="builder-image"><Image src={element.image} alt={element.imageAlt || title || "VSI"} fill sizes="(max-width: 900px) 100vw, 50vw" /></div> : null;
+  if (type === "button" || type === "call to action") return <div className="builder-actions"><a href={element.buttonHref || "/contact"} className="builder-button builder-button-primary">{element.buttonLabel || title || "Learn more"} <span aria-hidden="true">↗</span></a></div>;
   if (type === "divider") return <hr className="builder-divider" />;
   if (type === "cards") return <div className="builder-card"><h3>{title}</h3><p>{text}</p></div>;
   if (type === "latest news" || type === "news") return <><h2>{title || "Latest news"}</h2><p>{text || "Latest VSI stories and updates."}</p><a href="/news" className="builder-text-link">View latest news →</a></>;
   return <>{title && <h2>{title}</h2>}{text && <p>{text}</p>}</>;
+}
+
+function renderColumnElements(section) {
+  if (Array.isArray(section.columns)) {
+    return section.columns.map((column, columnIndex) => (
+      <div className="builder-column" key={column.id || columnIndex}>
+        {(Array.isArray(column.elements) ? column.elements : []).map((element, elementIndex) => (
+          <ElementContent element={element} key={element.id || elementIndex} />
+        ))}
+      </div>
+    ));
+  }
+
+  return <div className="builder-column"><ElementContent element={section} /></div>;
 }
 
 export default function WebsiteBuilderRenderer({ page }) {
@@ -51,9 +65,10 @@ export default function WebsiteBuilderRenderer({ page }) {
         "--builder-bg": section.bg || "#ffffff",
         "--builder-color": section.color || "#173b58",
       };
+      const contentColumns = Array.isArray(section.columns) ? section.columns : null;
       return <section className={`builder-section ${String(section.type || "Section").toLowerCase().replace(/\s+/g, "-")}`} style={style} key={section.id || index}>
         <div className="builder-shell"><div className="builder-columns">
-          {columns.map((width, columnIndex) => <div className="builder-column" style={{ width }} key={columnIndex}>{columnIndex === 0 ? <ElementContent section={section} /> : null}</div>)}
+          {contentColumns ? renderColumnElements(section) : <div className="builder-column" style={{ width: columns[0] }}><ElementContent element={section} /></div>}
         </div></div>
       </section>;
     })}
