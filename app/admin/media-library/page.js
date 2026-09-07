@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { SiteHeader, SiteFooter } from "../../components/SiteChrome";
 import styles from "./media-library.module.css";
 
@@ -56,7 +55,7 @@ export default function MediaLibraryPage() {
     </section>
     {notice && <p className={styles.notice}>{notice}</p>}
     <section className={styles.library}>
-      {loading ? <p>Loading media…</p> : blobs.length === 0 ? <div className={styles.empty}><h2>No images yet</h2><p>Upload your first website image to begin building the media library.</p></div> : <div className={styles.grid}>{blobs.map(blob => <article className={styles.card} key={blob.url}><div className={styles.image}><Image src={blob.url} alt={blob.pathname.split("/").pop() || "Website image"} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 33vw, 25vw" /></div><div className={styles.info}><strong>{blob.pathname.split("/").pop()}</strong><button onClick={() => navigator.clipboard?.writeText(blob.url).then(() => setNotice("Image URL copied."))}>Copy image URL</button></div></article>)}</div>}
+      {loading ? <p>Loading media…</p> : blobs.length === 0 ? <div className={styles.empty}><h2>No images yet</h2><p>Upload your first website image to begin building the media library.</p></div> : <div className={styles.grid}>{blobs.map(blob => <article className={styles.card} key={blob.url}><div className={styles.image}><img src={blob.url} alt={blob.pathname.split("/").pop() || "Website image"} loading="lazy" /></div><div className={styles.info}><strong>{blob.pathname.split("/").pop()}</strong><button onClick={() => navigator.clipboard?.writeText(blob.url).then(() => setNotice("Image URL copied."))}>Copy image URL</button></div></article>)}</div>}
     </section>
     <div className={styles.help}><strong>Next builder step:</strong> images from this library will be selectable directly from the Image element inspector instead of pasting URLs.</div>
   </div></main><SiteFooter /></>;
