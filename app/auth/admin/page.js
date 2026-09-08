@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const styles={
   page:{minHeight:"100vh",display:"grid",placeItems:"center",padding:"24px",background:"#f4f7f9"},
@@ -20,7 +20,6 @@ const styles={
 
 export default function AdminAuthPage(){
   const router=useRouter();
-  const searchParams=useSearchParams();
   const [authStep,setAuthStep]=useState("password");
   const [password,setPassword]=useState("");
   const [authCode,setAuthCode]=useState("");
@@ -35,7 +34,7 @@ export default function AdminAuthPage(){
       const d=await r.json();
       if(!r.ok)throw new Error(d.error||"Unable to sign in.");
       if(d.requiresAuthenticator){setAuthStep("code");setAuthCode("");return}
-      const next=searchParams.get("next");
+      const next=new URLSearchParams(window.location.search).get("next");
       router.replace(next&&next.startsWith("/admin")?next:"/admin");
       router.refresh();
     }catch(e){setError(e.message)}finally{setLoading(false)}
