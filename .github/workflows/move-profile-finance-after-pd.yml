@@ -1,6 +1,9 @@
 name: Move volunteer profile finance after professional development
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/admin/volunteers/profile/[id]/page.js'
 permissions:
   contents: write
 jobs:
@@ -17,6 +20,9 @@ jobs:
           import re
           p=Path('app/admin/volunteers/profile/[id]/page.js')
           s=p.read_text(encoding='utf-8')
+          if s.index('VOLUNTEER FINANCE') > s.index('ProfessionalDevelopment volunteerId'):
+              print('Finance already follows ProfessionalDevelopment; no change needed.')
+              raise SystemExit(0)
           pattern=r'( <section className=\{styles\.registerPanel\} style=\{\{marginTop:18\}\}><div className=\{styles\.registerHeader\}><div><p className="kicker">VOLUNTEER FINANCE</p>.*?</section>) <section className=\{styles\.registerPanel\} style=\{\{marginTop:18\}\}><div className=\{styles\.registerHeader\}><div><p className="kicker">PROFILE ACTIONS</p>'
           m=re.search(pattern,s,re.S)
           if not m:
