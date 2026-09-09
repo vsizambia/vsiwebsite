@@ -1,0 +1,22 @@
+name: Restore volunteer profile
+on:
+  push:
+    paths:
+      - .github/workflows/restore-volunteer-profile.yml
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore profile from known-good commit
+        run: |
+          git checkout c59c584c45c5d3885f22b56b77de1b963d4183ea -- 'app/admin/volunteers/profile/[id]/page.js'
+          git config user.name 'Visionary Students Initiative (VSI)'
+          git config user.email 'vsizambia@gmail.com'
+          git add 'app/admin/volunteers/profile/[id]/page.js'
+          git commit -m 'fix: restore full volunteer profile functionality' || exit 0
+          git push
