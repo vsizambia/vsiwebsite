@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
 import {pool} from "../../../lib/db";
 
-const defaults={header:{links:[["Discover VSI","/discover"],["Our work","/#work"],["Our story","/story"],["Community","/community"],["VSI News","/news"],["Events","/events"],["Volunteer","/volunteer"],["Contact","/#contact"]],ctaLabel:"Volunteer",ctaHref:"/volunteer"},footer:{brandText:"Promoting policies and initiatives that place students at the centre of national development.",explore:[["Home","/"],["Discover VSI","/discover"],["Our work","/#work"],["Our story","/story"],["VSI in the Community","/community"],["VSI News","/news"],["Events","/events"],["Volunteer","/volunteer"]],email:"vsizambia@gmail.com",phone:"+260 968 623 786",address:"Plot No. 9173, Ben Bella Road\nPeace Embassy Building, 1st Floor\nLusaka, Zambia"}};
+const defaults={header:{links:[["Discover VSI","/discover"],["Our work","/#work"],["Our story","/story"],["Impact & Evidence","/impact"],["Community","/community"],["VSI News","/news"],["Events","/events"],["Volunteer","/volunteer"],["Contact","/#contact"]],ctaLabel:"Volunteer",ctaHref:"/volunteer"},footer:{brandText:"Promoting policies and initiatives that place students at the centre of national development.",explore:[["Home","/"],["Discover VSI","/discover"],["Our work","/#work"],["Our story","/story"],["Impact & Evidence","/impact"],["VSI in the Community","/community"],["VSI News","/news"],["Events","/events"],["Volunteer","/volunteer"]],email:"vsizambia@gmail.com",phone:"+260 968 623 786",address:"Plot No. 9173, Ben Bella Road\nPeace Embassy Building, 1st Floor\nLusaka, Zambia"}};
 
 const noStore={"Cache-Control":"private, no-store, max-age=0, must-revalidate, s-maxage=0"};
 
