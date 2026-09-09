@@ -1,0 +1,38 @@
+name: Move volunteer profile finance after professional development
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  move:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Move finance section
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p=Path('app/admin/volunteers/profile/[id]/page.js')
+          s=p.read_text(encoding='utf-8')
+          pattern=r'( <section className=\{styles\.registerPanel\} style=\{\{marginTop:18\}\}><div className=\{styles\.registerHeader\}><div><p className="kicker">VOLUNTEER FINANCE</p>.*?</section>) <section className=\{styles\.registerPanel\} style=\{\{marginTop:18\}\}><div className=\{styles\.registerHeader\}><div><p className="kicker">PROFILE ACTIONS</p>'
+          m=re.search(pattern,s,re.S)
+          if not m:
+              raise SystemExit('Finance section boundary not found; no changes made.')
+          finance=m.group(1)
+          s=s[:m.start()] + ' <section className={styles.registerPanel} style={{marginTop:18}}><div className={styles.registerHeader}><div><p className="kicker">PROFILE ACTIONS</p>' + s[m.end():]
+          anchor='<ProfessionalDevelopment volunteerId={id} activities={professionalDevelopmentActivities}/>'
+          if s.count(anchor)!=1:
+              raise SystemExit('ProfessionalDevelopment anchor not found exactly once; no changes made.')
+          s=s.replace(anchor, anchor+'\n'+finance, 1)
+          p.write_text(s,encoding='utf-8')
+      - name: Commit move
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add 'app/admin/volunteers/profile/[id]/page.js'
+          git diff --cached --quiet && { echo 'No changes to commit'; exit 0; }
+          git commit -m 'style: move volunteer profile finance after professional development'
+          git push origin HEAD:main
