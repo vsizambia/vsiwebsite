@@ -37,3 +37,29 @@ export async function POST(request){
  return NextResponse.json({error:"Unknown finance record type."},{status:400});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to save volunteer finance record."},{status:500})}
 }
+export async function PATCH(request){
+ if(!isAdminAuthenticated(request))return unauthorized();
+ try{await ensureVolunteerFinanceTables();const b=await request.json();const id=Number(b.id);if(!id)return NextResponse.json({error:"Record ID is required."},{status:400});
+ if(b.type==="membership"){
+  const volunteerId=Number(b.volunteerId),amountDue=Number(b.amountDue||0),amountPaid=Number(b.amountPaid||0),status=b.status||"unpaid";
+  if(!volunteerId)return NextResponse.json({error:"Volunteer is required."},{status:400});
+  const r=await pool.query(`UPDATE volunteer_membership_payments SET volunteer_id=$1,payment_month=$2,amount_due=$3,amount_paid=$4,status=$5,payment_date=$6,payment_method=$7,reference=$8,notes=$9,updated_at=NOW() WHERE id=$10 RETURNING *`,[volunteerId,monthStart(b.paymentMonth),amountDue,amountPaid,status,b.paymentDate||null,b.paymentMethod||null,b.reference||null,b.notes||null,id]);if(!r.rowCount)return NextResponse.json({error:"Membership record not found."},{status:404});return NextResponse.json({payment:r.rows[0]});
+ }
+ if(b.type==="donation"){
+  const volunteerId=Number(b.volunteerId),amount=Number(b.amount||0);if(!volunteerId||amount<=0||!String(b.cause||"").trim())return NextResponse.json({error:"Volunteer, cause and amount are required."},{status:400});
+  const r=await pool.query(`UPDATE volunteer_donations SET volunteer_id=$1,cause=$2,amount=$3,donation_date=$4,payment_method=$5,reference=$6,notes=$7 WHERE id=$8 RETURNING *`,[volunteerId,String(b.cause).trim(),amount,b.donationDate||new Date().toISOString().slice(0,10),b.paymentMethod||null,b.reference||null,b.notes||null,id]);if(!r.rowCount)return NextResponse.json({error:"Donation record not found."},{status:404});return NextResponse.json({donation:r.rows[0]});
+ }
+ if(b.type==="spending"){
+  const amount=Number(b.amount||0);if(amount<=0||!String(b.category||"").trim()||!String(b.description||"").trim())return NextResponse.json({error:"Category, description and amount are required."},{status:400});
+  const r=await pool.query(`UPDATE volunteer_finance_spending SET category=$1,description=$2,amount=$3,spending_date=$4,cause=$5,project=$6,payment_method=$7,reference=$8,notes=$9 WHERE id=$10 RETURNING *`,[String(b.category).trim(),String(b.description).trim(),amount,b.spendingDate||new Date().toISOString().slice(0,10),b.cause||null,b.project||null,b.paymentMethod||null,b.reference||null,b.notes||null,id]);if(!r.rowCount)return NextResponse.json({error:"Spending record not found."},{status:404});return NextResponse.json({spending:r.rows[0]});
+ }
+ return NextResponse.json({error:"Unknown finance record type."},{status:400});
+ }catch(e){console.error(e);return NextResponse.json({error:"Unable to update volunteer finance record."},{status:500})}
+}
+export async function DELETE(request){
+ if(!isAdminAuthenticated(request))return unauthorized();
+ try{await ensureVolunteerFinanceTables();const {searchParams}=new URL(request.url);const id=Number(searchParams.get("id")),type=searchParams.get("type");if(!id||!type)return NextResponse.json({error:"Record ID and type are required."},{status:400});
+ const table=type==="membership"?"volunteer_membership_payments":type==="donation"?"volunteer_donations":type==="spending"?"volunteer_finance_spending":null;if(!table)return NextResponse.json({error:"Unknown finance record type."},{status:400});
+ const r=await pool.query(`DELETE FROM ${table} WHERE id=$1 RETURNING id`,[id]);if(!r.rowCount)return NextResponse.json({error:"Finance record not found."},{status:404});return NextResponse.json({deleted:true,id});
+ }catch(e){console.error(e);return NextResponse.json({error:"Unable to delete volunteer finance record."},{status:500})}
+}
