@@ -94,10 +94,29 @@ export default async function ImpactPage() {
     <main>
       <SiteHeader />
       <section className="impact-hero">
-        <div className="section-shell">
-          <p className="kicker light">IMPACT & EVIDENCE</p>
-          <h1>Show the work.<br /><em>Show the evidence.</em></h1>
-          <p className="impact-lead">A growing public record of VSI projects, results, places, partners, activities and volunteer contribution — built around what can be documented, measured and verified.</p>
+        <div className="section-shell impact-hero-layout">
+          <div className="impact-hero-copy">
+            <p className="kicker light">IMPACT & EVIDENCE</p>
+            <h1>Show the work.<br /><em>Show the evidence.</em></h1>
+            <p className="impact-lead">A growing public record of VSI projects, results, places, partners, activities and volunteer contribution — built around what can be documented, measured and verified.</p>
+          </div>
+          <div className="impact-hero-projects">
+            <div className="impact-hero-project-heading">
+              <div><p className="kicker light">PROJECTS & RESULTS</p><h2>From activity to documented outcome.</h2></div>
+            </div>
+            <ImpactSlider label="Featured projects and results">
+              {documentedProjects.map((project) => (
+                <article className="project-card hero-project-slide" key={project.name}>
+                  <div className="project-top"><span>{project.period}</span><span>{project.place}</span></div>
+                  <h3>{project.name}</h3>
+                  <p className="project-partner"><b>Partner:</b> {project.partner}</p>
+                  <p>{project.result}</p>
+                  <div className="metric-tags">{project.metrics.map((metric) => <span key={metric}>{metric}</span>)}</div>
+                  <a href={project.link}>View evidence ↗</a>
+                </article>
+              ))}
+            </ImpactSlider>
+          </div>
         </div>
       </section>
 
@@ -108,22 +127,6 @@ export default async function ImpactPage() {
         </div>
         <ImpactSlider label="Evidence highlights">
           {proofCards.map(([number,label,source]) => <article className="evidence-slide" key={label}><strong>{number}</strong><span>{label}</span><small>{source}</small></article>)}
-        </ImpactSlider>
-      </section>
-
-      <section className="impact-projects section-shell">
-        <div className="section-heading-row"><div><p className="kicker">PROJECTS & RESULTS</p><h2>From activity to documented outcome.</h2></div></div>
-        <ImpactSlider label="Projects and results">
-          {documentedProjects.map((project) => (
-            <article className="project-card impact-slide" key={project.name}>
-              <div className="project-top"><span>{project.period}</span><span>{project.place}</span></div>
-              <h3>{project.name}</h3>
-              <p className="project-partner"><b>Partner:</b> {project.partner}</p>
-              <p>{project.result}</p>
-              <div className="metric-tags">{project.metrics.map((metric) => <span key={metric}>{metric}</span>)}</div>
-              <a href={project.link}>View evidence ↗</a>
-            </article>
-          ))}
         </ImpactSlider>
       </section>
 
