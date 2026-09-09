@@ -1,0 +1,2 @@
+export const metadata={title:"Projects & Impact Register | Visionary Students Initiative",description:"Explore documented VSI projects, community actions, locations, partners and reported results across Zambia.",alternates:{canonical:"/projects"},openGraph:{title:"Projects & Impact Register | Visionary Students Initiative",description:"Documented VSI projects, community actions, locations, partners and reported results across Zambia.",url:"https://www.vsizambia.org/projects"}};
+export default function ProjectsLayout({children}){return children}
