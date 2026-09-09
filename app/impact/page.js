@@ -56,7 +56,7 @@ const documentedProjects = [
     partner: "Market and youth community stakeholders",
     result: "VSI participated in the Keep Zambia Clean, Green and Healthy exercise with market leadership, youth representatives and marketeers.",
     metrics: ["Lusaka", "Community service", "Environmental health"],
-    link: "https://vsizambia.org/kuku-market/",
+    link: "https://web.facebook.com/share/p/1DTBZj5Wdo/",
   },
 ];
 
