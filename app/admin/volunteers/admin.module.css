@@ -7,3 +7,6 @@
 /* Volunteer Finance — table header differentiation */
 .financeHistoryPanel table thead th{background:#0b4678;color:#fff;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;border-bottom:0;padding-top:13px;padding-bottom:13px}.financeHistoryPanel table thead th:first-child{border-top-left-radius:10px}.financeHistoryPanel table thead th:last-child{border-top-right-radius:10px}.financeHistoryPanel table thead tr{background:#0b4678}.financeHistoryPanel table tbody tr:first-child td{border-top:0}.financeHistoryPanel table tbody td{border-bottom:1px solid #e8edf2}.financeHistoryPanel table tbody tr:last-child td{border-bottom:0}
 @media(max-width:700px){.financeHistoryPanel table thead th{font-size:10px;padding:11px 10px}}
+
+/* Volunteer Finance — white summary text */
+.financeSummary>div:first-child span,.financeSummary>div:first-child strong{color:#fff!important}
