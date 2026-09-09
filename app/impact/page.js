@@ -1,5 +1,6 @@
 import "../impact.css";
 import { SiteHeader, SiteFooter } from "../components/SiteChrome";
+import ImpactSlider from "../components/ImpactSlider";
 import { pool } from "../../lib/db";
 
 export const metadata = {
@@ -81,6 +82,14 @@ const documentedPartners = [
 
 export default async function ImpactPage() {
   const live = await getLiveVolunteerEvidence();
+  const proofCards = [
+    ["2,610","learners reached","Youth Growth Project"],
+    ["10","school clubs","Youth Growth Project"],
+    ["1,870","girls reached","Youth Growth Project"],
+    ["740","boys reached","Youth Growth Project"],
+    ["8","years of documented journey","Founded 16 August 2018"],
+    [live.hours === null ? "—" : live.hours.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}),"verified volunteer hours","Live system total"],
+  ];
   return (
     <main>
       <SiteHeader />
@@ -97,21 +106,16 @@ export default async function ImpactPage() {
           <div><p className="kicker">THE EVIDENCE BASE</p><h2>What VSI can demonstrate today.</h2></div>
           <p className="impact-note">Project figures are reported from documented VSI project records. Volunteer figures are aggregated from the live volunteer management system and exclude unverified service.</p>
         </div>
-        <div className="evidence-grid">
-          <article><strong>2,610</strong><span>learners reached</span><small>Youth Growth Project</small></article>
-          <article><strong>10</strong><span>school clubs</span><small>Youth Growth Project</small></article>
-          <article><strong>1,870</strong><span>girls reached</span><small>Youth Growth Project</small></article>
-          <article><strong>740</strong><span>boys reached</span><small>Youth Growth Project</small></article>
-          <article><strong>8</strong><span>years of documented journey</span><small>Founded 16 August 2018</small></article>
-          <article><strong>{live.hours === null ? "—" : live.hours.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</strong><span>verified volunteer hours</span><small>Live system total</small></article>
-        </div>
+        <ImpactSlider label="Evidence highlights">
+          {proofCards.map(([number,label,source]) => <article className="evidence-slide" key={label}><strong>{number}</strong><span>{label}</span><small>{source}</small></article>)}
+        </ImpactSlider>
       </section>
 
       <section className="impact-projects section-shell">
         <div className="section-heading-row"><div><p className="kicker">PROJECTS & RESULTS</p><h2>From activity to documented outcome.</h2></div></div>
-        <div className="project-grid">
+        <ImpactSlider label="Projects and results">
           {documentedProjects.map((project) => (
-            <article className="project-card" key={project.name}>
+            <article className="project-card impact-slide" key={project.name}>
               <div className="project-top"><span>{project.period}</span><span>{project.place}</span></div>
               <h3>{project.name}</h3>
               <p className="project-partner"><b>Partner:</b> {project.partner}</p>
@@ -120,7 +124,7 @@ export default async function ImpactPage() {
               <a href={project.link}>View evidence ↗</a>
             </article>
           ))}
-        </div>
+        </ImpactSlider>
       </section>
 
       <section className="impact-live">
@@ -128,22 +132,26 @@ export default async function ImpactPage() {
           <p className="kicker light">VOLUNTEER CONTRIBUTION</p>
           <h2>Service should be measurable.</h2>
           <p>VSI now records volunteer service separately from professional development. The public evidence layer counts only verified service activity, helping distinguish contribution to VSI's work from learning undertaken for a volunteer's own development.</p>
-          <div className="live-grid">
-            <div><strong>{live.volunteers === null ? "—" : live.volunteers.toLocaleString()}</strong><span>approved volunteers</span></div>
-            <div><strong>{live.activities === null ? "—" : live.activities.toLocaleString()}</strong><span>verified service activities</span></div>
-            <div><strong>{live.hours === null ? "—" : live.hours.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</strong><span>verified service hours</span></div>
-          </div>
+          <ImpactSlider label="Volunteer contribution">
+            <div className="live-slide"><strong>{live.volunteers === null ? "—" : live.volunteers.toLocaleString()}</strong><span>approved volunteers</span></div>
+            <div className="live-slide"><strong>{live.activities === null ? "—" : live.activities.toLocaleString()}</strong><span>verified service activities</span></div>
+            <div className="live-slide"><strong>{live.hours === null ? "—" : live.hours.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</strong><span>verified service hours</span></div>
+          </ImpactSlider>
         </div>
       </section>
 
       <section className="impact-activities section-shell">
         <div className="section-heading-row"><div><p className="kicker">ACTIVITY RECORD</p><h2>What the work covers.</h2></div></div>
-        <div className="activity-grid">{documentedActivities.map(([title,text]) => <article key={title}><h3>{title}</h3><p>{text}</p></article>)}</div>
+        <ImpactSlider label="Activity record">
+          {documentedActivities.map(([title,text]) => <article className="activity-slide" key={title}><h3>{title}</h3><p>{text}</p></article>)}
+        </ImpactSlider>
       </section>
 
       <section className="impact-partners section-shell">
         <div className="section-heading-row"><div><p className="kicker">PARTNERS & INSTITUTIONS</p><h2>Evidence is stronger when the record is connected.</h2></div></div>
-        <div className="partner-list">{documentedPartners.map((partner) => <span key={partner}>{partner}</span>)}</div>
+        <ImpactSlider label="Partners and institutions">
+          {documentedPartners.map((partner,index) => <article className="partner-slide" key={partner}><span>Institution {String(index+1).padStart(2,"0")}</span><strong>{partner}</strong></article>)}
+        </ImpactSlider>
       </section>
 
       <section className="impact-next">
