@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'app/admin/volunteers/profile/[id]/page.js'
+      - '.github/workflows/move-profile-finance-after-pd.yml'
 permissions:
   contents: write
 jobs:
@@ -20,7 +21,11 @@ jobs:
           import re
           p=Path('app/admin/volunteers/profile/[id]/page.js')
           s=p.read_text(encoding='utf-8')
-          if s.index('VOLUNTEER FINANCE') > s.index('ProfessionalDevelopment volunteerId'):
+          finance_pos=s.find('VOLUNTEER FINANCE')
+          pd_pos=s.find('ProfessionalDevelopment volunteerId')
+          if finance_pos == -1 or pd_pos == -1:
+              raise SystemExit('Required profile sections not found; no changes made.')
+          if finance_pos > pd_pos:
               print('Finance already follows ProfessionalDevelopment; no change needed.')
               raise SystemExit(0)
           pattern=r'( <section className=\{styles\.registerPanel\} style=\{\{marginTop:18\}\}><div className=\{styles\.registerHeader\}><div><p className="kicker">VOLUNTEER FINANCE</p>.*?</section>) <section className=\{styles\.registerPanel\} style=\{\{marginTop:18\}\}><div className=\{styles\.registerHeader\}><div><p className="kicker">PROFILE ACTIONS</p>'
@@ -28,7 +33,8 @@ jobs:
           if not m:
               raise SystemExit('Finance section boundary not found; no changes made.')
           finance=m.group(1)
-          s=s[:m.start()] + ' <section className={styles.registerPanel} style={{marginTop:18}}><div className={styles.registerHeader}><div><p className="kicker">PROFILE ACTIONS</p>' + s[m.end():]
+          profile_actions=' <section className={styles.registerPanel} style={{marginTop:18}}><div className={styles.registerHeader}><div><p className="kicker">PROFILE ACTIONS</p>'
+          s=s[:m.start()] + profile_actions + s[m.end():]
           anchor='<ProfessionalDevelopment volunteerId={id} activities={professionalDevelopmentActivities}/>'
           if s.count(anchor)!=1:
               raise SystemExit('ProfessionalDevelopment anchor not found exactly once; no changes made.')
