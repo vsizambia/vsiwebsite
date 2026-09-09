@@ -101,9 +101,6 @@ export default async function ImpactPage() {
             <p className="impact-lead">A growing public record of VSI projects, results, places, partners, activities and volunteer contribution — built around what can be documented, measured and verified.</p>
           </div>
           <div className="impact-hero-projects">
-            <div className="impact-hero-project-heading">
-              <div><p className="kicker light">PROJECTS & RESULTS</p><h2>From activity to documented outcome.</h2></div>
-            </div>
             <ImpactSlider label="Featured projects and results">
               {documentedProjects.map((project) => (
                 <article className="project-card hero-project-slide" key={project.name}>
