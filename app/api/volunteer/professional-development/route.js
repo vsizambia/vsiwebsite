@@ -1,5 +1,6 @@
 import {NextResponse} from "next/server";
 import {ensureVolunteerTable,pool} from "../../../../lib/db";
+import {verifyTurnstileToken} from "../../../../lib/turnstile";
 
 async function ensureTable(){
  await ensureVolunteerTable();
@@ -15,6 +16,8 @@ async function ensureTable(){
 export async function POST(request){
  try{
   const b=await request.json();
+  const turnstile=await verifyTurnstileToken(b.turnstileToken,request,"professional_development");
+  if(!turnstile.ok)return NextResponse.json({error:turnstile.error},{status:403});
   const volunteerId=String(b.volunteer_id||b.volunteerId||"").trim();
   const email=String(b.email||"").trim().toLowerCase();
   const programmeName=String(b.programme_name||"").trim();
