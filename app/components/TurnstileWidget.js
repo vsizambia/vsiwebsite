@@ -16,15 +16,21 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
     if (!sitekey || !containerRef.current) return;
 
     let cancelled = false;
+    const setToken = token => {
+      const value = typeof token === "string" ? token : "";
+      if (containerRef.current) containerRef.current.dataset.token = value;
+      callbackRef.current?.(value);
+    };
+
     const render = () => {
       if (cancelled || !window.turnstile || !containerRef.current || widgetIdRef.current !== null) return;
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey,
         action,
-        callback: token => callbackRef.current?.(token),
-        "expired-callback": () => callbackRef.current?.(""),
-        "timeout-callback": () => callbackRef.current?.(""),
-        "error-callback": () => callbackRef.current?.(""),
+        callback: setToken,
+        "expired-callback": () => setToken(""),
+        "timeout-callback": () => setToken(""),
+        "error-callback": () => setToken(""),
       });
     };
 
@@ -66,5 +72,5 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
     };
   }, [action]);
 
-  return <div ref={containerRef} className={className} aria-label="Security verification" />;
+  return <div ref={containerRef} className={className} data-vsi-turnstile-action={action} data-token="" aria-label="Security verification" />;
 }
