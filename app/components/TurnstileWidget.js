@@ -24,7 +24,10 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
         callback: token => callbackRef.current?.(token),
         "expired-callback": () => callbackRef.current?.(""),
         "timeout-callback": () => callbackRef.current?.(""),
-        "error-callback": () => callbackRef.current?.(""),
+        "error-callback": errorCode => {
+          console.error("Turnstile error:", errorCode);
+          callbackRef.current?.("");
+        },
       });
     };
 
