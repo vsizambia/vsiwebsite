@@ -43,10 +43,15 @@ export default function TurnstileWidget({ action, onToken, className = "", reset
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
         sitekey,
         action,
+        retry: "auto",
+        "retry-interval": 3000,
         callback: setToken,
         "expired-callback": () => setToken(""),
         "timeout-callback": () => setToken(""),
-        "error-callback": () => setToken(""),
+        "error-callback": errorCode => {
+          console.error("Turnstile error:", { action, errorCode });
+          setToken("");
+        },
       });
       containerRef.current.dataset.widgetId = String(widgetIdRef.current);
     };
