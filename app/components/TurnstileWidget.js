@@ -32,6 +32,7 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
         "timeout-callback": () => setToken(""),
         "error-callback": () => setToken(""),
       });
+      containerRef.current.dataset.widgetId = String(widgetIdRef.current);
     };
 
     if (window.turnstile) render();
@@ -72,5 +73,5 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
     };
   }, [action]);
 
-  return <div ref={containerRef} className={className} data-vsi-turnstile-action={action} data-token="" aria-label="Security verification" />;
+  return <div ref={containerRef} className={className} data-vsi-turnstile-action={action} data-token="" data-widget-id="" aria-label="Security verification" />;
 }
