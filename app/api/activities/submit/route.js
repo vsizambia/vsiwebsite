@@ -2,6 +2,7 @@ import {NextResponse} from "next/server";
 import crypto from "node:crypto";
 import {ensureVolunteerTable,pool} from "../../../../lib/db";
 import {ACTIVITY_CATALOGUE} from "../../../../app/admin/activities/add/activity-catalogue";
+import {verifyTurnstileToken} from "../../../../lib/turnstile";
 
 const hours=(s,e)=>{const[a,b]=String(s).split(":").map(Number),[c,d]=String(e).split(":").map(Number);let m=c*60+d-(a*60+b);if(m<0)m+=1440;return +(m/60).toFixed(2)};
 const clean=v=>typeof v==="string"?v.trim():"";
@@ -73,6 +74,9 @@ export async function GET(request){
 export async function POST(request){
  try{
   const b=await request.json();
+  const turnstile=await verifyTurnstileToken(b.turnstileToken,request,b.action==="verify"?"activity_verify":"activity_submit");
+  if(!turnstile.ok)return NextResponse.json({error:turnstile.error},{status:403});
+
   if(b.action==="verify"){
    const volunteerId=clean(b.volunteerId);
    const contact=clean(b.contact).toLowerCase();
