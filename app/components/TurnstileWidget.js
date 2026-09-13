@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
-export default function TurnstileWidget({ action, onToken, className = "" }) {
+export default function TurnstileWidget({ action, onToken, className = "", resetKey = 0 }) {
   const containerRef = useRef(null);
   const widgetIdRef = useRef(null);
   const callbackRef = useRef(onToken);
@@ -10,6 +10,14 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
   useEffect(() => {
     callbackRef.current = onToken;
   }, [onToken]);
+
+  useEffect(() => {
+    if (resetKey > 0 && widgetIdRef.current !== null && window.turnstile?.reset) {
+      try { window.turnstile.reset(widgetIdRef.current); } catch {}
+      if (containerRef.current) containerRef.current.dataset.token = "";
+      callbackRef.current?.("");
+    }
+  }, [resetKey]);
 
   useEffect(() => {
     const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
