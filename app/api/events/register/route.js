@@ -1,6 +1,7 @@
 import {NextResponse} from "next/server";
 import {ensureEventsTable,pool} from "../../../../lib/db";
 import crypto from "node:crypto";
+import {verifyTurnstileToken} from "../../../../lib/turnstile";
 
 const clean=v=>typeof v==="string"?v.trim():"";
 const MAX_BODY_BYTES=100000;
@@ -41,6 +42,9 @@ export async function POST(request){
     if(contentLength>MAX_BODY_BYTES)return NextResponse.json({error:"Registration data is too large."},{status:413});
 
     const b=await request.json();
+    const turnstile=await verifyTurnstileToken(b.turnstileToken,request,"event_registration");
+    if(!turnstile.ok)return NextResponse.json({error:turnstile.error},{status:403});
+
     const eventId=Number(b.event_id);
     const fullName=clean(b.full_name);
     const designation=clean(b.designation);
