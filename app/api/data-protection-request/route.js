@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { ensureVolunteerTable, pool } from "../../../lib/db";
+import { verifyTurnstileToken } from "../../../lib/turnstile";
 
 const clean=v=>typeof v==="string"?v.trim():"";
 const allowed=new Set(["access","correction","deletion","withdraw_consent","processing_information","complaint"]);
@@ -7,6 +8,8 @@ const allowed=new Set(["access","correction","deletion","withdraw_consent","proc
 export async function POST(request){
   try{
     const body=await request.json();
+    const turnstile=await verifyTurnstileToken(body.turnstileToken,request,"data_rights");
+    if(!turnstile.ok)return NextResponse.json({error:turnstile.error},{status:403});
     const requestType=clean(body.requestType);
     const requesterName=clean(body.requesterName);
     const requesterEmail=clean(body.requesterEmail).toLowerCase();
