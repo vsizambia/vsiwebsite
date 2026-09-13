@@ -73,14 +73,20 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
     }
 
     const form = containerRef.current.closest("form");
-    const resetAfterAction = () => window.setTimeout(reset, 0);
+    const resetAfterAction = event => {
+      if (!(event.target instanceof Element)) return;
+      const button = event.target.closest("button");
+      if (!button || !form?.contains(button)) return;
+      window.setTimeout(reset, 0);
+    };
+    const resetAfterSubmit = () => window.setTimeout(reset, 0);
     form?.addEventListener("click", resetAfterAction);
-    form?.addEventListener("submit", resetAfterAction);
+    form?.addEventListener("submit", resetAfterSubmit);
 
     return () => {
       cancelled = true;
       form?.removeEventListener("click", resetAfterAction);
-      form?.removeEventListener("submit", resetAfterAction);
+      form?.removeEventListener("submit", resetAfterSubmit);
       if (widgetIdRef.current !== null && window.turnstile) {
         try { window.turnstile.remove(widgetIdRef.current); } catch {}
       }
