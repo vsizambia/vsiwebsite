@@ -22,6 +22,14 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
       callbackRef.current?.(value);
     };
 
+    const reset = () => {
+      if (widgetIdRef.current !== null && window.turnstile?.reset) {
+        try { window.turnstile.reset(widgetIdRef.current); } catch {}
+      }
+      if (containerRef.current) containerRef.current.dataset.token = "";
+      callbackRef.current?.("");
+    };
+
     const render = () => {
       if (cancelled || !window.turnstile || !containerRef.current || widgetIdRef.current !== null) return;
       widgetIdRef.current = window.turnstile.render(containerRef.current, {
@@ -64,8 +72,15 @@ export default function TurnstileWidget({ action, onToken, className = "" }) {
       };
     }
 
+    const form = containerRef.current.closest("form");
+    const resetAfterAction = () => window.setTimeout(reset, 0);
+    form?.addEventListener("click", resetAfterAction);
+    form?.addEventListener("submit", resetAfterAction);
+
     return () => {
       cancelled = true;
+      form?.removeEventListener("click", resetAfterAction);
+      form?.removeEventListener("submit", resetAfterAction);
       if (widgetIdRef.current !== null && window.turnstile) {
         try { window.turnstile.remove(widgetIdRef.current); } catch {}
       }
