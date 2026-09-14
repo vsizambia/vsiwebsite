@@ -66,6 +66,7 @@ const modules = [
     method: "Role-playing, resource mapping, guided discussion and expert-led sessions.",
     sdgs: "SDGs 3 & 10 — Good Health and Well-being; Reduced Inequalities",
     au: "Goals 1 & 18 — Well-being for all citizens and engaged and empowered youth and children.",
+    href: "/elearning/suicide-prevention",
   },
 ];
 
