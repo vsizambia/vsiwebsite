@@ -172,22 +172,6 @@ export default function ElearningPage() {
         </div>
       </section>
 
-      <section className="core-message section-shell">
-        <div className="core-message-mark">“</div>
-        <p className="kicker">CORE MESSAGE</p>
-        <blockquote>Responsible citizenship begins with personal values, grows through service, protects the community and environment, and promotes the well-being of others.</blockquote>
-        <div className="core-message-rule" />
-        <p className="core-message-note">Youth civic engagement is strongest when knowledge is connected to practical action and shared responsibility.</p>
-      </section>
-
-      <section className="elearning-next">
-        <div className="section-shell">
-          <p className="kicker light">NEXT STEP</p>
-          <h2>Turn the programme into a learning experience.</h2>
-          <p>The programme structure is ready to support future digital lessons, resources, activities, assessments and completion tracking.</p>
-        </div>
-      </section>
-
       <SiteFooter />
     </main>
   );
