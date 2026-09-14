@@ -7,7 +7,7 @@ export const metadata = {
   alternates: { canonical: "/elearning" },
   openGraph: {
     title: "Youth Civic Engagement Programme | VSI E-Learning",
-    description: "A five-module learning programme on values, service, environmental action, resilience and safe support for others.",
+    description: "A five-module learning programme on values, service, environmental action, resilience and safe support.",
     url: "https://www.vsizambia.org/elearning",
   },
 };
@@ -44,6 +44,7 @@ const modules = [
     method: "Visual demonstrations, community walk, practical clean-up activity and pledge formulation.",
     sdgs: "SDGs 3, 6, 13 & 15 — Health, sanitation, climate action and life on land",
     au: "Goals 1 & 7 — Quality of life, environmental sustainability and climate-resilient communities.",
+    href: "/elearning/clean-green-healthy",
   },
   {
     number: "04",
@@ -83,7 +84,6 @@ export default function ElearningPage() {
   return (
     <main>
       <SiteHeader />
-
       <section className="elearning-hero">
         <div className="section-shell elearning-hero-inner">
           <div className="elearning-hero-copy">
@@ -109,49 +109,24 @@ export default function ElearningPage() {
           </div>
         </div>
       </section>
-
       <section className="programme-intro section-shell">
-        <div>
-          <p className="kicker">MODULE SUMMARY</p>
-          <h2>From values to <em>action.</em></h2>
-        </div>
+        <div><p className="kicker">MODULE SUMMARY</p><h2>From values to <em>action.</em></h2></div>
         <div className="programme-intro-copy">
           <p>The programme progressively develops young people's ability to move from <strong>understanding values → serving their communities → protecting the environment → building personal resilience → supporting others safely.</strong></p>
           <p>Each module combines practical learning with reflection, discussion and action so that civic engagement is not only understood, but practised.</p>
         </div>
       </section>
-
       <section className="modules-section">
         <div className="section-shell">
-          <div className="section-heading-row">
-            <div>
-              <p className="kicker">THE FIVE MODULES</p>
-              <h2>Learn it. Discuss it. <em>Apply it.</em></h2>
-            </div>
-            <p>Each two-hour module connects learning objectives to practical outcomes, participatory teaching and Zambia's wider development priorities.</p>
-          </div>
-
+          <div className="section-heading-row"><div><p className="kicker">THE FIVE MODULES</p><h2>Learn it. Discuss it. <em>Apply it.</em></h2></div><p>Each two-hour module connects learning objectives to practical outcomes, participatory teaching and Zambia's wider development priorities.</p></div>
           <div className="module-list">
             {modules.map((module) => (
               <article className="module-card" id={`module-${module.number}`} key={module.number}>
                 <div className="module-number">{module.number}</div>
                 <div className="module-main">
-                  <div className="module-title-row">
-                    <div>
-                      <p className="module-label">MODULE {module.number}</p>
-                      <h3>{module.title}</h3>
-                    </div>
-                    <span className="duration">{module.duration}</span>
-                  </div>
-                  <div className="module-details">
-                    <div><span>LEARNING OBJECTIVE</span><p>{module.objective}</p></div>
-                    <div><span>LEARNING OUTCOME</span><p>{module.outcome}</p></div>
-                    <div><span>TEACHING METHODOLOGY</span><p>{module.method}</p></div>
-                  </div>
-                  <div className="alignment-row">
-                    <div><span>UN SDG ALIGNMENT</span><p>{module.sdgs}</p></div>
-                    <div><span>AU AGENDA 2063</span><p>{module.au}</p></div>
-                  </div>
+                  <div className="module-title-row"><div><p className="module-label">MODULE {module.number}</p><h3>{module.title}</h3></div><span className="duration">{module.duration}</span></div>
+                  <div className="module-details"><div><span>LEARNING OBJECTIVE</span><p>{module.objective}</p></div><div><span>LEARNING OUTCOME</span><p>{module.outcome}</p></div><div><span>TEACHING METHODOLOGY</span><p>{module.method}</p></div></div>
+                  <div className="alignment-row"><div><span>UN SDG ALIGNMENT</span><p>{module.sdgs}</p></div><div><span>AU AGENDA 2063</span><p>{module.au}</p></div></div>
                   {module.href ? <a className="module-open" href={module.href}>Open full module <span>→</span></a> : null}
                 </div>
               </article>
@@ -159,22 +134,12 @@ export default function ElearningPage() {
           </div>
         </div>
       </section>
-
       <section className="learning-focus">
         <div className="section-shell learning-focus-grid">
-          <div>
-            <p className="kicker light">OVERALL LEARNING FOCUS</p>
-            <h2>What participants should be able to <em>do.</em></h2>
-            <p>By the end of the programme, participants should be better equipped to translate civic knowledge into responsible, practical and collaborative action.</p>
-          </div>
-          <div className="focus-list">
-            {learningFocus.map((item, index) => (
-              <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>
-            ))}
-          </div>
+          <div><p className="kicker light">OVERALL LEARNING FOCUS</p><h2>What participants should be able to <em>do.</em></h2><p>By the end of the programme, participants should be better equipped to translate civic knowledge into responsible, practical and collaborative action.</p></div>
+          <div className="focus-list">{learningFocus.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}</div>
         </div>
       </section>
-
       <SiteFooter />
     </main>
   );
