@@ -22,6 +22,7 @@ const modules = [
     method: "Plenary discussion, case study analysis, role-playing exercises.",
     sdgs: "SDG 16 — Peace, Justice and Strong Institutions",
     au: "Goals 11 & 12 — Democratic values, rule of law, and capable institutions.",
+    href: "/elearning/national-values",
   },
   {
     number: "02",
@@ -98,7 +99,7 @@ export default function ElearningPage() {
             <p className="kicker light">THE LEARNING JOURNEY</p>
             <div className="journey-line">
               {modules.map((module) => (
-                <a href={`#module-${module.number}`} key={module.number} className="journey-step">
+                <a href={module.href || `#module-${module.number}`} key={module.number} className="journey-step">
                   <span>{module.number}</span>
                   <strong>{module.title}</strong>
                 </a>
@@ -150,6 +151,7 @@ export default function ElearningPage() {
                     <div><span>UN SDG ALIGNMENT</span><p>{module.sdgs}</p></div>
                     <div><span>AU AGENDA 2063</span><p>{module.au}</p></div>
                   </div>
+                  {module.href ? <a className="module-open" href={module.href}>Open full module <span>→</span></a> : null}
                 </div>
               </article>
             ))}
