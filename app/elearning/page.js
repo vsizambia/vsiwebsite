@@ -33,6 +33,7 @@ const modules = [
     method: "Asset mapping, action-planning workshops, experience sharing and group activities.",
     sdgs: "SDG 11 — Sustainable Cities and Communities; SDG 17 — Partnerships for the Goals",
     au: "Goal 18 — Engaged and empowered youth and children.",
+    href: "/elearning/community-service",
   },
   {
     number: "03",
