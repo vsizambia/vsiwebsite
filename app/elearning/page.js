@@ -55,6 +55,7 @@ const modules = [
     method: "Guided reflection, self-assessment worksheets, group discussions and practical exercises.",
     sdgs: "SDG 3 — Good Health and Well-being",
     au: "Goal 1 — High standard of living, quality of life and well-being.",
+    href: "/elearning/mental-health-resilience",
   },
   {
     number: "05",
