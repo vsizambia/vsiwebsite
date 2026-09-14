@@ -22,8 +22,6 @@ function hashRateKey(ip) {
 async function allowVolunteerApplication(request) {
   const ip = getClientIp(request);
   const keyHash = hashRateKey(ip);
-  await pool.query(`CREATE TABLE IF NOT EXISTS volunteer_application_rate_limits (id BIGSERIAL PRIMARY KEY, key_hash TEXT NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
-  await pool.query(`CREATE INDEX IF NOT EXISTS volunteer_application_rate_limits_key_created_idx ON volunteer_application_rate_limits(key_hash,created_at)`);
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
