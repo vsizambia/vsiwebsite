@@ -1,5 +1,6 @@
 import "../elearning.css";
 import "./safeguarding.css";
+import "./framework-resource.css";
 import { SiteHeader, SiteFooter } from "../components/SiteChrome";
 
 export const metadata = {
