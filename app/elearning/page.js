@@ -13,73 +13,15 @@ export const metadata = {
 };
 
 const modules = [
-  {
-    number: "01",
-    title: "National Values and Principles",
-    duration: "2 Hours",
-    objective: "Explore Zambia's national values, patriotism, good governance and responsible citizenship.",
-    outcome: "Use these values when making everyday decisions at school, at home and in the community.",
-    method: "Discussion, case studies and role-playing.",
-    sdgs: "SDG 16 — Peace, Justice and Strong Institutions",
-    au: "Goals 11 & 12 — Democratic values, rule of law, and capable institutions.",
-    href: "/elearning/national-values",
-  },
-  {
-    number: "02",
-    title: "Generosity, Volunteerism, and Community Service",
-    duration: "2 Hours",
-    objective: "Learn how generosity, volunteering and active citizenship can help address problems in the community.",
-    outcome: "Plan a simple community service activity using people, skills and resources that are already available.",
-    method: "Asset mapping, action planning, discussion and group activities.",
-    sdgs: "SDG 11 — Sustainable Cities and Communities; SDG 17 — Partnerships for the Goals",
-    au: "Goal 18 — Engaged and empowered youth and children.",
-    href: "/elearning/community-service",
-  },
-  {
-    number: "03",
-    title: "Keep Zambia Clean, Green and Healthy",
-    duration: "2 Hours",
-    objective: "Learn how sanitation, waste, pollution and the environment affect the health of our communities.",
-    outcome: "Put simple environmental practices into use, including waste sorting, tree care and community clean-up.",
-    method: "Demonstrations, a community walk, practical clean-up work and a personal pledge.",
-    sdgs: "SDGs 3, 6, 13 & 15 — Health, sanitation, climate action and life on land",
-    au: "Goals 1 & 7 — Quality of life, environmental sustainability and climate-resilient communities.",
-    href: "/elearning/clean-green-healthy",
-  },
-  {
-    number: "04",
-    title: "Mental Health Resilience",
-    duration: "2 Hours",
-    objective: "Understand emotions, stress, resilience and the pressures that can affect young people.",
-    outcome: "Use healthy ways of managing stress and know when and where to ask for support.",
-    method: "Reflection, simple exercises, discussion and practical activities.",
-    sdgs: "SDG 3 — Good Health and Well-being",
-    au: "Goal 1 — High standard of living, quality of life and well-being.",
-    href: "/elearning/mental-health-resilience",
-  },
-  {
-    number: "05",
-    title: "Suicide Prevention",
-    duration: "2 Hours",
-    objective: "Learn to recognise possible warning signs and respond safely when someone may be in serious distress.",
-    outcome: "Listen without judgement, encourage help-seeking and connect someone at risk with a trusted adult or professional.",
-    method: "Role-playing, support mapping, discussion and expert-guided sessions.",
-    sdgs: "SDGs 3 & 10 — Good Health and Well-being; Reduced Inequalities",
-    au: "Goals 1 & 18 — Well-being for all citizens and engaged and empowered youth and children.",
-    href: "/elearning/suicide-prevention",
-  },
+  { number: "01", title: "National Values and Principles", duration: "2 Hours", objective: "Explore Zambia's national values, patriotism, good governance and responsible citizenship.", outcome: "Use these values when making everyday decisions at school, at home and in the community.", method: "Discussion, case studies and role-playing.", sdgs: "SDG 16 — Peace, Justice and Strong Institutions", au: "Goals 11 & 12 — Democratic values, rule of law, and capable institutions.", href: "/elearning/national-values" },
+  { number: "02", title: "Generosity, Volunteerism, and Community Service", duration: "2 Hours", objective: "Learn how generosity, volunteering and active citizenship can help address problems in the community.", outcome: "Plan a simple community service activity using people, skills and resources that are already available.", method: "Asset mapping, action planning, discussion and group activities.", sdgs: "SDG 11 — Sustainable Cities and Communities; SDG 17 — Partnerships for the Goals", au: "Goal 18 — Engaged and empowered youth and children.", href: "/elearning/community-service" },
+  { number: "03", title: "Keep Zambia Clean, Green and Healthy", duration: "2 Hours", objective: "Learn how sanitation, waste, pollution and the environment affect the health of our communities.", outcome: "Put simple environmental practices into use, including waste sorting, tree care and community clean-up.", method: "Demonstrations, a community walk, practical clean-up work and a personal pledge.", sdgs: "SDGs 3, 6, 13 & 15 — Health, sanitation, climate action and life on land", au: "Goals 1 & 7 — Quality of life, environmental sustainability and climate-resilient communities.", href: "/elearning/clean-green-healthy" },
+  { number: "04", title: "Mental Health Resilience", duration: "2 Hours", objective: "Understand emotions, stress, resilience and the pressures that can affect young people.", outcome: "Use healthy ways of managing stress and know when and where to ask for support.", method: "Reflection, simple exercises, discussion and practical activities.", sdgs: "SDG 3 — Good Health and Well-being", au: "Goal 1 — High standard of living, quality of life and well-being.", href: "/elearning/mental-health-resilience" },
+  { number: "05", title: "Suicide Prevention", duration: "2 Hours", objective: "Learn to recognise possible warning signs and respond safely when someone may be in serious distress.", outcome: "Listen without judgement, encourage help-seeking and connect someone at risk with a trusted adult or professional.", method: "Role-playing, support mapping, discussion and expert-guided sessions.", sdgs: "SDGs 3 & 10 — Good Health and Well-being; Reduced Inequalities", au: "Goals 1 & 18 — Well-being for all citizens and engaged and empowered youth and children.", href: "/elearning/suicide-prevention" },
 ];
 
 const learningFocus = [
-  "Be a responsible member of the community.",
-  "Make thoughtful and honest decisions.",
-  "Take part in community service.",
-  "Make good use of local people, skills and resources.",
-  "Help keep communities clean, healthy and safe.",
-  "Use healthy ways to deal with stress and difficult situations.",
-  "Notice when someone may be having a difficult time.",
-  "Encourage people to seek help when they need it.",
-  "Work with others to solve problems in the community.",
+  "Be a responsible member of the community.", "Make thoughtful and honest decisions.", "Take part in community service.", "Make good use of local people, skills and resources.", "Help keep communities clean, healthy and safe.", "Use healthy ways to deal with stress and difficult situations.", "Notice when someone may be having a difficult time.", "Encourage people to seek help when they need it.", "Work with others to solve problems in the community.",
 ];
 
 export default function ElearningPage() {
@@ -88,60 +30,14 @@ export default function ElearningPage() {
       <SiteHeader />
       <section className="elearning-hero">
         <div className="section-shell elearning-hero-inner">
-          <div className="elearning-hero-copy">
-            <p className="kicker">VSI E-LEARNING</p>
-            <h1>Youth Civic Engagement <em>Programme.</em></h1>
-            <p className="hero-lead">Five practical modules to help young people understand their responsibilities, serve their communities, care for their environment, build resilience and support others.</p>
-            <div className="elearning-meta" aria-label="Programme overview">
-              <span><strong>5</strong> Modules</span>
-              <span><strong>10</strong> Learning Hours</span>
-              <span><strong>Youth</strong> Civic Leadership</span>
-            </div>
-          </div>
-          <div className="elearning-hero-panel" aria-label="Programme pathway">
-            <p className="kicker light">THE LEARNING JOURNEY</p>
-            <div className="journey-line">
-              {modules.map((module) => (
-                <a href={module.href || `#module-${module.number}`} key={module.number} className="journey-step">
-                  <span>{module.number}</span>
-                  <strong>{module.title}</strong>
-                </a>
-              ))}
-            </div>
-          </div>
+          <div className="elearning-hero-copy"><p className="kicker">VSI E-LEARNING</p><h1>Youth Civic Engagement <em>Programme.</em></h1><p className="hero-lead">Five practical modules to help young people understand their responsibilities, serve their communities, care for their environment, build resilience and support others.</p><div className="elearning-meta" aria-label="Programme overview"><span><strong>5</strong> Modules</span><span><strong>10</strong> Learning Hours</span><span><strong>Youth</strong> Civic Leadership</span></div></div>
+          <div className="elearning-hero-panel" aria-label="Programme pathway"><p className="kicker light">THE LEARNING JOURNEY</p><div className="journey-line">{modules.map((module) => <a href={module.href || `#module-${module.number}`} key={module.number} className="journey-step"><span>{module.number}</span><strong>{module.title}</strong></a>)}</div></div>
         </div>
       </section>
-      <section className="programme-intro section-shell">
-        <div><p className="kicker">MODULE SUMMARY</p><h2>From values to <em>action.</em></h2></div>
-        <div className="programme-intro-copy">
-          <p>The five modules take learners from understanding values and serving others to caring for the environment, looking after their own well-being and knowing how to support someone who may be struggling.</p>
-          <p>There is time to talk, think, practise and take action. The aim is simple: help young people use what they learn in everyday life.</p>
-        </div>
-      </section>
-      <section className="modules-section">
-        <div className="section-shell">
-          <div className="section-heading-row"><div><p className="kicker">THE FIVE MODULES</p><h2>Learn it. Discuss it. <em>Use it.</em></h2></div><p>Each two-hour module combines classroom discussion with practical activities and examples that relate to everyday life in Zambia.</p></div>
-          <div className="module-list">
-            {modules.map((module) => (
-              <article className="module-card" id={`module-${module.number}`} key={module.number}>
-                <div className="module-number">{module.number}</div>
-                <div className="module-main">
-                  <div className="module-title-row"><div><p className="module-label">MODULE {module.number}</p><h3>{module.title}</h3></div><span className="duration">{module.duration}</span></div>
-                  <div className="module-details"><div><span>WHAT YOU WILL LEARN</span><p>{module.objective}</p></div><div><span>BY THE END</span><p>{module.outcome}</p></div><div><span>HOW WE WILL LEARN</span><p>{module.method}</p></div></div>
-                  <div className="alignment-row"><div><span>UN SDG ALIGNMENT</span><p>{module.sdgs}</p></div><div><span>AU AGENDA 2063</span><p>{module.au}</p></div></div>
-                  {module.href ? <a className="module-open" href={module.href}>Open full module <span>→</span></a> : null}
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-      <section className="learning-focus">
-        <div className="section-shell learning-focus-grid">
-          <div><p className="kicker light">OVERALL LEARNING FOCUS</p><h2>What learners should take <em>with them.</em></h2><p>By the end of the programme, young people should have practical ideas and skills they can use at school, at home and in their communities.</p></div>
-          <div className="focus-list">{learningFocus.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}</div>
-        </div>
-      </section>
+      <section className="programme-intro section-shell"><div><p className="kicker">MODULE SUMMARY</p><h2>From values to <em>action.</em></h2></div><div className="programme-intro-copy"><p>The five modules take learners from understanding values and serving others to caring for the environment, looking after their own well-being and knowing how to support someone who may be struggling.</p><p>There is time to talk, think, practise and take action. The aim is simple: help young people use what they learn in everyday life.</p></div></section>
+      <section className="modules-section"><div className="section-shell"><div className="section-heading-row"><div><p className="kicker">THE FIVE MODULES</p><h2>Learn it. Discuss it. <em>Use it.</em></h2></div><p>Each two-hour module combines classroom discussion with practical activities and examples that relate to everyday life in Zambia.</p></div><div className="module-list">{modules.map((module) => <article className="module-card" id={`module-${module.number}`} key={module.number}><div className="module-number">{module.number}</div><div className="module-main"><div className="module-title-row"><div><p className="module-label">MODULE {module.number}</p><h3>{module.title}</h3></div><span className="duration">{module.duration}</span></div><div className="module-details"><div><span>WHAT YOU WILL LEARN</span><p>{module.objective}</p></div><div><span>BY THE END</span><p>{module.outcome}</p></div><div><span>HOW WE WILL LEARN</span><p>{module.method}</p></div></div><div className="alignment-row"><div><span>UN SDG ALIGNMENT</span><p>{module.sdgs}</p></div><div><span>AU AGENDA 2063</span><p>{module.au}</p></div></div><a className="module-open" href={module.href}>Open full module <span>→</span></a></div></article>)}</div></div></section>
+      <section className="safeguarding-hub"><div className="section-shell safeguarding-hub-inner"><div><p className="kicker">SAFEGUARDING</p><h2>Additional guidance for <em>sensitive modules.</em></h2></div><div><p>Modules 4 and 5 require additional care. Facilitators can use this guidance to create a respectful learning environment, respond appropriately to distress or disclosures, and connect learners to appropriate support.</p><a className="module-open" href="/elearning/safeguarding-guidance">Open safeguarding guidance <span>→</span></a></div></div></section>
+      <section className="learning-focus"><div className="section-shell learning-focus-grid"><div><p className="kicker light">OVERALL LEARNING FOCUS</p><h2>What learners should take <em>with them.</em></h2><p>By the end of the programme, young people should have practical ideas and skills they can use at school, at home and in their communities.</p></div><div className="focus-list">{learningFocus.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}</div></div></section>
       <SiteFooter />
     </main>
   );
