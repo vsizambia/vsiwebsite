@@ -14,10 +14,6 @@ function requestIp(request) {
   return (forwarded.split(",")[0] || request.headers.get("x-real-ip") || "unknown").trim();
 }
 function hashIp(ip) { return crypto.createHash("sha256").update(`${process.env.ADMIN_SESSION_SECRET}:${ip}`).digest("hex"); }
-async function ensureLoginAttemptTable() {
-  await pool.query(`CREATE TABLE IF NOT EXISTS admin_login_attempts (id BIGSERIAL PRIMARY KEY,ip_hash TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
-  await pool.query(`CREATE INDEX IF NOT EXISTS admin_login_attempts_ip_created_idx ON admin_login_attempts(ip_hash,created_at DESC)`);
-}
 function clearCookie(response, name) { response.cookies.set(name, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 }); }
 
 export async function POST(request) {
@@ -25,7 +21,6 @@ export async function POST(request) {
     const totpSecret = getAdminTotpSecret();
     if (!process.env.ADMIN_PASSWORD || !process.env.ADMIN_SESSION_SECRET || !totpSecret) return NextResponse.json({ error: "Admin authenticator is not configured yet." }, { status: 503 });
     const ipHash = hashIp(requestIp(request));
-    await ensureLoginAttemptTable();
     await pool.query("DELETE FROM admin_login_attempts WHERE created_at < NOW() - INTERVAL '1 hour'");
     const recent = await pool.query("SELECT COUNT(*)::int AS count FROM admin_login_attempts WHERE ip_hash=$1 AND created_at >= NOW() - ($2 * INTERVAL '1 second')", [ipHash, LOGIN_WINDOW_SECONDS]);
     if (recent.rows[0].count >= MAX_FAILED_ATTEMPTS) return NextResponse.json({ error: "Too many unsuccessful sign-in attempts. Please try again later." }, { status: 429 });
