@@ -8,15 +8,6 @@ const allowedReviewStatuses=["PENDING","APPROVED","REJECTED"];
 
 async function ensureProfessionalDevelopmentTable(){
  await ensureVolunteerTable();
- await pool.query(`CREATE TABLE IF NOT EXISTS volunteer_professional_development (id BIGSERIAL PRIMARY KEY,volunteer_id BIGINT NOT NULL REFERENCES volunteer_applications(id) ON DELETE CASCADE,programme_name TEXT NOT NULL,development_date DATE NOT NULL,provider TEXT,hours NUMERIC(6,2) NOT NULL CHECK(hours>=0 AND hours<=24),status TEXT NOT NULL DEFAULT 'COMPLETED' CHECK(status IN ('COMPLETED','IN_PROGRESS','PLANNED')),notes TEXT,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
- await pool.query(`ALTER TABLE volunteer_professional_development ADD COLUMN IF NOT EXISTS review_status TEXT NOT NULL DEFAULT 'APPROVED'`);
- await pool.query(`ALTER TABLE volunteer_professional_development ADD COLUMN IF NOT EXISTS review_comment TEXT`);
- await pool.query(`ALTER TABLE volunteer_professional_development ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'ADMIN'`);
- await pool.query(`ALTER TABLE volunteer_professional_development ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ`);
- await pool.query(`ALTER TABLE volunteer_professional_development ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ`);
- await pool.query(`ALTER TABLE volunteer_professional_development ADD COLUMN IF NOT EXISTS reviewed_by TEXT`);
- await pool.query(`CREATE INDEX IF NOT EXISTS volunteer_professional_development_volunteer_date_idx ON volunteer_professional_development(volunteer_id,development_date DESC)`);
- await pool.query(`CREATE INDEX IF NOT EXISTS volunteer_professional_development_review_idx ON volunteer_professional_development(review_status,development_date DESC)`);
 }
 
 async function recordsFor(volunteerId){
