@@ -1,0 +1,153 @@
+import "../../elearning.css";
+import { SiteHeader, SiteFooter } from "../../components/SiteChrome";
+
+export const metadata = {
+  title: "Safeguarding Guidance for Sensitive Modules | VSI E-Learning",
+  description: "Safeguarding guidance for facilitators and learners covering Mental Health Resilience and Suicide Prevention in the VSI Youth Civic Engagement Programme.",
+  alternates: { canonical: "/elearning/safeguarding-guidance" },
+};
+
+const generalPrinciples = [
+  "Create a respectful, supportive and non-judgmental learning environment.",
+  "Explain at the beginning that participants do not have to share personal experiences.",
+  "Avoid forcing learners to disclose private or traumatic experiences.",
+  "Respect appropriate confidentiality while making clear that information about serious risk or abuse cannot always be kept confidential.",
+  "Use age-appropriate language and activities.",
+  "Monitor learners for signs of distress during activities.",
+  "Provide an appropriate opportunity for a participant to step out of an activity if they become uncomfortable.",
+  "Know the school's or organisation's safeguarding and referral procedures before the session begins.",
+  "Ensure that participants know who they can approach for help.",
+];
+
+const module4Do = [
+  "Normalise help-seeking.",
+  "Focus on healthy coping and resilience.",
+  "Encourage supportive relationships.",
+  "Allow learners to participate without revealing personal experiences.",
+  "Refer persistent or serious concerns to an appropriate adult or qualified professional.",
+];
+
+const module4Avoid = [
+  "Asking learners to publicly describe traumatic experiences.",
+  "Diagnosing learners.",
+  "Labelling someone based on their behaviour.",
+  "Treating normal emotional experiences as mental illness.",
+  "Suggesting that positive thinking alone can solve serious mental-health problems.",
+];
+
+const module5Before = [
+  "A responsible safeguarding focal person is available.",
+  "Appropriate referral pathways are known.",
+  "Relevant health or mental-health services have been identified.",
+  "Emergency procedures are understood.",
+  "The facilitator knows what to do if a learner discloses suicidal thoughts, abuse or another serious safety concern.",
+];
+
+const module5During = [
+  "Use calm, factual and age-appropriate language.",
+  "Emphasise hope, support and help-seeking.",
+  "Focus on recognising concerns and connecting people to help.",
+  "Avoid graphic descriptions, methods or unnecessary details.",
+  "Avoid sensationalising suicide.",
+  "Avoid presenting suicide as inevitable or as a solution to problems.",
+  "Do not ask learners to disclose whether they personally have suicidal thoughts in front of the group.",
+  "Do not conduct group counselling.",
+];
+
+const disclosureSteps = [
+  ["LISTEN", "Remain calm and allow the learner to speak."],
+  ["TAKE IT SERIOUSLY", "Do not dismiss, shame, challenge or minimise what they have said."],
+  ["DO NOT PROMISE SECRECY", "Explain gently that you need to involve someone who can help keep them safe."],
+  ["CONNECT", "Follow the established safeguarding and referral pathway and involve an appropriate trusted adult or qualified professional."],
+  ["RESPOND TO IMMEDIATE DANGER", "Follow the organisation's emergency procedure and obtain urgent professional assistance. The learner should not be left to manage an immediate crisis alone."],
+];
+
+const postSession = [
+  "Remind learners where they can obtain help.",
+  "Make trusted adults or designated support personnel available.",
+  "Check privately with any learner who appeared significantly distressed, using appropriate safeguarding procedures.",
+  "Record and refer safeguarding concerns according to institutional policy.",
+  "Avoid discussing a learner's disclosure publicly.",
+];
+
+export default function SafeguardingGuidancePage() {
+  return (
+    <main>
+      <SiteHeader />
+      <section className="lesson-hero safeguarding-hero">
+        <div className="section-shell">
+          <a className="lesson-back" href="/elearning">← Back to E-Learning</a>
+          <p className="kicker light">VSI E-LEARNING · SAFEGUARDING</p>
+          <h1>Safeguarding Guidance for <em>Sensitive Modules.</em></h1>
+          <p className="lesson-subtitle">Guidance for facilitators working with Modules 4: Mental Health Resilience and 5: Suicide Prevention.</p>
+          <div className="lesson-meta">
+            <span><strong>Module 04</strong> Mental Health Resilience</span>
+            <span><strong>Module 05</strong> Suicide Prevention</span>
+            <span><strong>Facilitator guidance</strong> Safe learning &amp; referral</span>
+          </div>
+        </div>
+      </section>
+
+      <article className="lesson-content section-shell safeguarding-content">
+        <section className="safeguarding-intro">
+          <p className="kicker">IMPORTANT SAFEGUARDING NOTE</p>
+          <h2>Education, awareness, early recognition and <em>safe referral.</em></h2>
+          <p>The programme is intended for education, awareness, early recognition and safe referral. It is not a substitute for counselling, psychotherapy, medical care or crisis intervention.</p>
+        </section>
+
+        <section className="lesson-section safeguarding-section">
+          <p className="kicker">01 · GENERAL SAFEGUARDING PRINCIPLES</p>
+          <h2>Create a <em>Safe Learning Environment.</em></h2>
+          <div className="safeguarding-list">{generalPrinciples.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}</div>
+        </section>
+
+        <section className="lesson-section safeguarding-section">
+          <p className="kicker">02 · MODULE 4</p>
+          <h2>Mental Health <em>Resilience.</em></h2>
+          <p>When discussing stress, emotional well-being or difficult experiences, facilitators should focus on healthy coping, resilience and appropriate help-seeking without asking learners to disclose personal trauma.</p>
+          <div className="safeguarding-two-col">
+            <div className="safeguarding-panel do"><span className="module-label">DO</span><ul>{module4Do.map(item => <li key={item}>{item}</li>)}</ul></div>
+            <div className="safeguarding-panel avoid"><span className="module-label">AVOID</span><ul>{module4Avoid.map(item => <li key={item}>{item}</li>)}</ul></div>
+          </div>
+          <div className="safeguarding-callout"><span className="module-label">IF A LEARNER BECOMES DISTRESSED</span><ol><li>Remain calm.</li><li>Move the conversation to an appropriate private setting where possible.</li><li>Listen without judgement.</li><li>Avoid making promises of secrecy.</li><li>Follow the school's safeguarding/referral procedure.</li><li>Involve the appropriate trusted adult or qualified professional.</li></ol></div>
+        </section>
+
+        <section className="lesson-section safeguarding-section safeguarding-high-risk">
+          <p className="kicker">03 · MODULE 5</p>
+          <h2>Suicide Prevention Requires <em>Extra Safeguarding.</em></h2>
+          <p>This module requires the highest level of safeguarding preparation. The focus should remain on recognising concerns, responding safely, encouraging help-seeking and connecting people to appropriate support.</p>
+          <div className="safeguarding-subsection"><span className="module-label">BEFORE THE SESSION</span><div className="safeguarding-list compact">{module5Before.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}</div></div>
+          <div className="safeguarding-subsection"><span className="module-label">DURING THE SESSION</span><div className="safeguarding-list compact">{module5During.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}</div></div>
+          <div className="safeguarding-learner-message"><span className="module-label">IMPORTANT MESSAGE FOR LEARNERS</span><blockquote>You are not responsible for saving a friend by yourself. If you are worried about someone's safety, tell a trusted adult or qualified professional.</blockquote></div>
+        </section>
+
+        <section className="lesson-section safeguarding-section">
+          <p className="kicker">04 · RESPONDING TO A DISCLOSURE</p>
+          <h2>Listen. Take It Seriously. <em>Connect.</em></h2>
+          <div className="safeguarding-response-grid">{disclosureSteps.map(([title, text], index) => <article key={title}><span>{String(index + 1).padStart(2, "0")}</span><div><h3>{title}</h3><p>{text}</p></div></article>)}</div>
+        </section>
+
+        <section className="lesson-section safeguarding-section">
+          <p className="kicker">05 · SAFEGUARDING DURING ROLE-PLAY</p>
+          <h2>Practise Safe <em>Responses.</em></h2>
+          <p>For Module 5, role-plays should focus on recognising concerning behaviour, starting a supportive conversation, listening without judgement and connecting someone to a trusted adult.</p>
+          <div className="safeguarding-roleplay"><div><span className="module-label">SAFE ROLE-PLAY FOCUS</span><ul><li>Recognising concerning behaviour.</li><li>Starting a supportive conversation.</li><li>Listening without judgement.</li><li>Connecting someone to a trusted adult.</li></ul></div><div><span className="module-label">DO NOT ROLE-PLAY</span><ul><li>A suicide attempt.</li><li>A suicide method.</li><li>A traumatic experience.</li><li>A graphic crisis scenario.</li></ul></div></div>
+          <div className="lesson-note"><strong>Participation choice</strong><p>Participants should be allowed to opt out of a sensitive role-play without penalty.</p></div>
+        </section>
+
+        <section className="lesson-section safeguarding-section">
+          <p className="kicker">06 · POST-SESSION SUPPORT</p>
+          <h2>Support Does Not <em>End at the Session.</em></h2>
+          <div className="safeguarding-list">{postSession.map((item, index) => <div key={item}><span>{String(index + 1).padStart(2, "0")}</span><p>{item}</p></div>)}</div>
+        </section>
+
+        <section className="safeguarding-closing">
+          <p className="kicker">SAFEGUARDING PRINCIPLE</p>
+          <div className="safeguarding-flow"><span>CREATE SAFETY</span><b>→</b><span>LISTEN WITHOUT JUDGEMENT</span><b>→</b><span>DO NOT PROMISE SECRECY</span><b>→</b><span>CONNECT TO APPROPRIATE HELP</span><b>→</b><span>FOLLOW UP THROUGH SAFEGUARDING PROCEDURES</span></div>
+          <blockquote>Young people should be empowered to support one another, but they should never be expected to manage serious mental-health, suicide or safeguarding concerns on their own.</blockquote>
+        </section>
+      </article>
+      <SiteFooter />
+    </main>
+  );
+}
