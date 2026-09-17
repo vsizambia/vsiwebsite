@@ -51,8 +51,36 @@
     letter-spacing: -.055em;
   }
 
+  /* On mobile the programme title reads as three deliberate lines. */
   .elearning-hero h1 span {
     white-space: normal !important;
+  }
+
+  .elearning-hero h1 span:first-child {
+    font-size: 0;
+  }
+
+  .elearning-hero h1 span:first-child::after {
+    content: "Civic Engagement &";
+    font-size: clamp(40px, 10.8vw, 52px);
+  }
+
+  .elearning-hero h1 span:nth-child(2) {
+    font-size: 0;
+  }
+
+  .elearning-hero h1 span:nth-child(2)::after {
+    content: "Democratic Governance";
+    font-size: clamp(40px, 10.8vw, 52px);
+  }
+
+  .elearning-hero h1 span:nth-child(3) {
+    font-size: 0;
+  }
+
+  .elearning-hero h1 span:nth-child(3)::after {
+    content: "Programme.";
+    font-size: clamp(40px, 10.8vw, 52px);
   }
 
   .hero-lead {
@@ -271,6 +299,12 @@
 
   .elearning-hero h1 {
     font-size: 38px !important;
+  }
+
+  .elearning-hero h1 span:first-child::after,
+  .elearning-hero h1 span:nth-child(2)::after,
+  .elearning-hero h1 span:nth-child(3)::after {
+    font-size: 38px;
   }
 
   .module-main {
