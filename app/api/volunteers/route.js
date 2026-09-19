@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
-import { ensureVolunteerTable, pool } from "../../../lib/db";
+import { ensureVolunteerTable, publicPool } from "../../../lib/db";
 import crypto from "node:crypto";
 
 const clean = (value) => typeof value === "string" ? value.trim() : null;
@@ -22,7 +22,7 @@ function hashRateKey(ip) {
 async function allowVolunteerApplication(request) {
   const ip = getClientIp(request);
   const keyHash = hashRateKey(ip);
-  const client = await pool.connect();
+  const client = await publicPool.connect();
   try {
     await client.query("BEGIN");
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [keyHash]);
@@ -110,7 +110,7 @@ export async function POST(request) {
     if (!await allowVolunteerApplication(request)) return NextResponse.json({ error: "Too many application attempts. Please try again later." }, { status: 429 });
 
     await ensureVolunteerTable();
-    const result = await pool.query(
+    const result = await publicPool.query(
       `INSERT INTO volunteer_applications
        (full_name, date_of_birth, nationality, gender, faith, email, phone, province, district, constituency, ward, location, current_occupation, education, category, skills, availability, hours_per_week, motivation, volunteering_elsewhere, other_volunteering_details, past_volunteer_positions, reference_name, reference_organization, reference_phone, reference_email, criminal_conviction, criminal_offence_details, disability, disability_certificate, disability_certificate_name, profile_picture, emergency_name, emergency_phone, membership_fee_acknowledged, consent, privacy_policy_version, privacy_notice_accepted_at, photo_processing_consent, public_media_consent, guardian_name, guardian_relationship, guardian_phone, guardian_email, guardian_consent, guardian_consent_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34, $35, $36, $37, NOW(), $38, $39, $40, $41, $42, $43, $44, CASE WHEN $44 THEN NOW() ELSE NULL END)
@@ -118,7 +118,7 @@ export async function POST(request) {
       [clean(body.fullName), dateOfBirth, clean(body.nationality), clean(body.gender), clean(body.faith), clean(body.email)?.toLowerCase(), clean(body.phone), clean(body.province), clean(body.district), clean(body.constituency), clean(body.ward), clean(body.location) || [clean(body.district), clean(body.province)].filter(Boolean).join(", "), clean(body.currentOccupation), clean(body.education), clean(body.category), clean(body.skills), clean(body.availability), hoursPerWeek, clean(body.motivation), elsewhere, clean(body.otherVolunteeringDetails), clean(body.pastVolunteerPositions), clean(body.referenceName), clean(body.referenceOrganization), clean(body.referencePhone), clean(body.referenceEmail)?.toLowerCase(), convicted, clean(body.criminalOffenceDetails), disability, disability ? body.disabilityCertificate : null, disability ? clean(body.disabilityCertificateName) : null, null, clean(body.emergencyName), clean(body.emergencyPhone), true, true, clean(body.privacyPolicyVersion) || '2026-09', body.photoProcessingConsent === true, body.publicMediaConsent === true, applicantAge < 18 ? clean(body.guardianName) : null, applicantAge < 18 ? clean(body.guardianRelationship) : null, applicantAge < 18 ? clean(body.guardianPhone) : null, applicantAge < 18 ? clean(body.guardianEmail)?.toLowerCase() : null, applicantAge < 18 && body.guardianConsent === true]
     );
 
-    await pool.query(
+    await publicPool.query(
       `INSERT INTO data_protection_consent_log (subject_type,subject_id,consent_type,policy_version,granted) VALUES
        ('volunteer', $1, 'privacy_notice', $2, TRUE),
        ('volunteer', $1, 'profile_photo_processing', $2, TRUE),
@@ -126,15 +126,15 @@ export async function POST(request) {
       [result.rows[0].id, clean(body.privacyPolicyVersion) || '2026-09', body.publicMediaConsent === true]
     );
     if (applicantAge < 18) {
-      await pool.query(`INSERT INTO data_protection_consent_log (subject_type,subject_id,consent_type,policy_version,granted) VALUES ('volunteer',$1,'parent_or_guardian_consent',$2,TRUE)`, [result.rows[0].id, clean(body.privacyPolicyVersion) || '2026-09']);
+      await publicPool.query(`INSERT INTO data_protection_consent_log (subject_type,subject_id,consent_type,policy_version,granted) VALUES ('volunteer',$1,'parent_or_guardian_consent',$2,TRUE)`, [result.rows[0].id, clean(body.privacyPolicyVersion) || '2026-09']);
     }
 
     let profilePicture = null;
     try {
       profilePicture = await storeProfilePicture(body.profilePicture, result.rows[0].id);
-      if (profilePicture) await pool.query("UPDATE volunteer_applications SET profile_picture = $1 WHERE id = $2", [profilePicture, result.rows[0].id]);
+      if (profilePicture) await publicPool.query("UPDATE volunteer_applications SET profile_picture = $1 WHERE id = $2", [profilePicture, result.rows[0].id]);
     } catch (photoError) {
-      await pool.query("DELETE FROM volunteer_applications WHERE id = $1", [result.rows[0].id]);
+      await publicPool.query("DELETE FROM volunteer_applications WHERE id = $1", [result.rows[0].id]);
       throw photoError;
     }
 
