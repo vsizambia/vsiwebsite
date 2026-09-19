@@ -1,5 +1,7 @@
 import {NextResponse} from "next/server";
-import {ensureVolunteerTable,publicPool} from "../../../../lib/db";
+import {ensureVolunteerTable,pool,publicPool} from "../../../../lib/db";
+
+const db=publicPool||pool;
 
 
 export async function POST(request){
@@ -16,12 +18,12 @@ export async function POST(request){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(developmentDate)||Number.isNaN(new Date(`${developmentDate}T00:00:00Z`).getTime()))return NextResponse.json({error:"Please enter a valid date."},{status:400});
   if(!Number.isFinite(hours)||hours<=0||hours>24)return NextResponse.json({error:"Development hours must be greater than 0 and no more than 24."},{status:400});
   await ensureVolunteerTable();
-  const v=await publicPool.query(`SELECT id,full_name,email,status FROM volunteer_applications WHERE UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) AND LOWER(TRIM(email))=LOWER(TRIM($2)) LIMIT 1`,[volunteerId,email]);
+  const v=await db.query(`SELECT id,full_name,email,status FROM volunteer_applications WHERE UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) AND LOWER(TRIM(email))=LOWER(TRIM($2)) LIMIT 1`,[volunteerId,email]);
   if(!v.rowCount)return NextResponse.json({error:"We could not match that VSI ID and email to a volunteer record."},{status:404});
   if(String(v.rows[0].status).toLowerCase()!=="approved")return NextResponse.json({error:"Only approved VSI volunteers can submit professional development records."},{status:403});
-  const duplicate=await publicPool.query(`SELECT id FROM volunteer_professional_development WHERE volunteer_id=$1 AND development_date=$2 AND LOWER(TRIM(programme_name))=LOWER(TRIM($3)) AND hours=$4 LIMIT 1`,[v.rows[0].id,developmentDate,programmeName,hours]);
+  const duplicate=await db.query(`SELECT id FROM volunteer_professional_development WHERE volunteer_id=$1 AND development_date=$2 AND LOWER(TRIM(programme_name))=LOWER(TRIM($3)) AND hours=$4 LIMIT 1`,[v.rows[0].id,developmentDate,programmeName,hours]);
   if(duplicate.rowCount)return NextResponse.json({error:"A matching professional development record has already been submitted."},{status:409});
-  const r=await publicPool.query(`INSERT INTO volunteer_professional_development (volunteer_id,programme_name,development_date,provider,hours,status,notes,review_status,source,submitted_at) VALUES ($1,$2,$3,$4,$5,'COMPLETED',$6,'PENDING','VOLUNTEER',NOW()) RETURNING id`,[v.rows[0].id,programmeName,developmentDate,provider||null,hours,notes||null]);
+  const r=await db.query(`INSERT INTO volunteer_professional_development (volunteer_id,programme_name,development_date,provider,hours,status,notes,review_status,source,submitted_at) VALUES ($1,$2,$3,$4,$5,'COMPLETED',$6,'PENDING','VOLUNTEER',NOW()) RETURNING id`,[v.rows[0].id,programmeName,developmentDate,provider||null,hours,notes||null]);
   return NextResponse.json({ok:true,id:r.rows[0].id,message:"Your professional development record has been submitted for review."});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to submit professional development record."},{status:500});}
 }
