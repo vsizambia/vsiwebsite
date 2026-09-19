@@ -1,6 +1,8 @@
 import {NextResponse} from "next/server";
 import crypto from "node:crypto";
-import {ensureVolunteerTable,publicPool} from "../../../../lib/db";
+import {ensureVolunteerTable,pool,publicPool} from "../../../../lib/db";
+
+const db=publicPool||pool;
 import {ACTIVITY_CATALOGUE} from "../../../../app/admin/activities/add/activity-catalogue";
 
 const hours=(s,e)=>{const[a,b]=String(s).split(":").map(Number),[c,d]=String(e).split(":").map(Number);let m=c*60+d-(a*60+b);if(m<0)m+=1440;return +(m/60).toFixed(2)};
@@ -23,7 +25,7 @@ function hashRateKey(ip){
 
 async function allowRate(request,prefix,limit){
  const keyHash=`${prefix}:${hashRateKey(getClientIp(request))}`;
- const client=await publicPool.connect();
+ const client=await db.connect();
  try{
   await client.query("BEGIN");
   await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[keyHash]);
@@ -62,7 +64,7 @@ export async function GET(request){
   const q=new URL(request.url).searchParams.get("q")?.trim()||"";
   if(q.length<2)return NextResponse.json({volunteers:[]});
   await ensureVolunteerTable();
-  const r=await publicPool.query(`SELECT id,volunteer_id,status FROM volunteer_applications WHERE LOWER(TRIM(status))='approved' AND UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) LIMIT 1`,[q]);
+  const r=await db.query(`SELECT id,volunteer_id,status FROM volunteer_applications WHERE LOWER(TRIM(status))='approved' AND UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) LIMIT 1`,[q]);
   if(!r.rowCount)return NextResponse.json({volunteers:[]});
   return NextResponse.json({volunteers:[{id:r.rows[0].id,volunteerId:r.rows[0].volunteer_id,status:"approved"}]});
  }catch(e){console.error("Public volunteer lookup failed:",e);return NextResponse.json({error:"Unable to verify the volunteer right now."},{status:500})}
@@ -77,7 +79,7 @@ export async function POST(request){
    if(!volunteerId||!contact)return NextResponse.json({error:"Please enter your VSI Volunteer ID and your registered email or phone number."},{status:400});
    if(!await allowRate(request,"verify",VERIFY_RATE_LIMIT))return NextResponse.json({error:"Too many verification attempts. Please try again later."},{status:429});
    await ensureVolunteerTable();
-   const v=await publicPool.query(`SELECT id,volunteer_id,email,phone,status FROM volunteer_applications WHERE UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) AND LOWER(TRIM(status))='approved' LIMIT 1`,[volunteerId]);
+   const v=await db.query(`SELECT id,volunteer_id,email,phone,status FROM volunteer_applications WHERE UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) AND LOWER(TRIM(status))='approved' LIMIT 1`,[volunteerId]);
    if(!v.rowCount)return NextResponse.json({error:"We could not verify those volunteer details."},{status:403});
    const row=v.rows[0];
    const email=clean(row.email).toLowerCase();
@@ -93,10 +95,10 @@ export async function POST(request){
   const catalogueActivity=catalogueByCode.get(clean(b.activityCode).toUpperCase());if(!catalogueActivity)return NextResponse.json({error:"Please select a valid VSI activity from the official activity catalogue."},{status:400});
   if(!await allowRate(request,"submit",ACTIVITY_RATE_LIMIT))return NextResponse.json({error:"Too many activity submissions. Please try again later."},{status:429});
   await ensureVolunteerTable();
-  const v=await publicPool.query("SELECT id,status,line_manager_name FROM volunteer_applications WHERE UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) LIMIT 1",[b.volunteerId]);
+  const v=await db.query("SELECT id,status,line_manager_name FROM volunteer_applications WHERE UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) LIMIT 1",[b.volunteerId]);
   if(!v.rowCount||String(v.rows[0].status||"").trim().toLowerCase()!=="approved")return NextResponse.json({error:"We could not verify this volunteer for activity submission."},{status:403});
   if(!validVerificationToken(b.verificationToken,v.rows[0].id))return NextResponse.json({error:"Volunteer verification has expired. Please verify your identity again."},{status:403});
-  const r=await publicPool.query(`INSERT INTO volunteer_activity_register (volunteer_id,activity_date,activity_name,activity_code,project,location,start_time,end_time,hours,directorate,sdgs,au_agenda,description,supervisor_name,facilitator,verified) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,false) RETURNING id,activity_date,activity_name,activity_code,hours,facilitator,verified`,[v.rows[0].id,b.activityDate,catalogueActivity.name,catalogueActivity.code,catalogueActivity.project,b.location||null,b.startTime,b.endTime,h,catalogueActivity.directorate,catalogueActivity.sdgs,catalogueActivity.auAgenda,b.description,v.rows[0].line_manager_name||null,b.facilitator?.trim()||null]);
+  const r=await db.query(`INSERT INTO volunteer_activity_register (volunteer_id,activity_date,activity_name,activity_code,project,location,start_time,end_time,hours,directorate,sdgs,au_agenda,description,supervisor_name,facilitator,verified) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,false) RETURNING id,activity_date,activity_name,activity_code,hours,facilitator,verified`,[v.rows[0].id,b.activityDate,catalogueActivity.name,catalogueActivity.code,catalogueActivity.project,b.location||null,b.startTime,b.endTime,h,catalogueActivity.directorate,catalogueActivity.sdgs,catalogueActivity.auAgenda,b.description,v.rows[0].line_manager_name||null,b.facilitator?.trim()||null]);
   return NextResponse.json({activity:r.rows[0]},{status:201});
  }catch(e){console.error("Public activity submission failed:",e);return NextResponse.json({error:"Unable to process the activity right now. Please try again."},{status:500})}
 }
