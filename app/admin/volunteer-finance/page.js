@@ -6,9 +6,53 @@ import styles from "../volunteers/admin.module.css";
 const initial={type:"membership",volunteerId:"",paymentMonth:"2026-09-01",amountDue:"0",amountPaid:"0",status:"unpaid",paymentDate:"",paymentMethod:"",reference:"",notes:"",cause:"",amount:"",donationDate:new Date().toISOString().slice(0,10),category:"",description:"",spendingDate:new Date().toISOString().slice(0,10),project:""};
 const money=v=>"ZMW "+Number(v||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
 
- const Field=({label,children})=><label>{label}{children}</label>;
- const Volunteer=({value,onChange,volunteers})=><select required value={value} onChange={onChange}><option value="">Select volunteer</option>{volunteers.map(v=><option key={v.id} value={v.id}>{v.full_name}{v.volunteer_id?" ("+v.volunteer_id+")":""}</option>)}</select>;
- const FinanceFields=({value,setValue,volunteers,includeVolunteer=true})=><>{includeVolunteer&&value.type!=="spending"&&<Field label="Volunteer"><Volunteer value={value.volunteerId} onChange={e=>setValue({...value,volunteerId:e.target.value})} volunteers={volunteers}/></Field>}{value.type==="membership"?<><Field label="Payment month"><input type="month" value={String(value.paymentMonth).slice(0,7)} onChange={e=>setValue({...value,paymentMonth:e.target.value+"-01"})}/></Field><Field label="Amount due"><input type="number" min="0" step="0.01" value={value.amountDue} onChange={e=>setValue({...value,amountDue:e.target.value})}/></Field><Field label="Amount paid"><input type="number" min="0" step="0.01" value={value.amountPaid} onChange={e=>setValue({...value,amountPaid:e.target.value})}/></Field><Field label="Status"><select value={value.status} onChange={e=>setValue({...value,status:e.target.value})}><option value="unpaid">Unpaid</option><option value="paid">Paid</option><option value="partial">Partial</option><option value="waived">Waived</option></select></Field><Field label="Payment date"><input type="date" value={value.paymentDate||""} onChange={e=>setValue({...value,paymentDate:e.target.value})}/></Field></>:value.type==="donation"?<><Field label="Cause / campaign"><input required value={value.cause} onChange={e=>setValue({...value,cause:e.target.value})}/></Field><Field label="Amount"><input required type="number" min="0.01" step="0.01" value={value.amount} onChange={e=>setValue({...value,amount:e.target.value})}/></Field><Field label="Donation date"><input type="date" value={value.donationDate||""} onChange={e=>setValue({...value,donationDate:e.target.value})}/></Field></>:<><Field label="Spending category"><input required value={value.category} onChange={e=>setValue({...value,category:e.target.value})}/></Field><Field label="Description"><input required value={value.description} onChange={e=>setValue({...value,description:e.target.value})}/></Field><Field label="Amount spent"><input required type="number" min="0.01" step="0.01" value={value.amount} onChange={e=>setValue({...value,amount:e.target.value})}/></Field><Field label="Spending date"><input type="date" value={value.spendingDate||""} onChange={e=>setValue({...value,spendingDate:e.target.value})}/></Field><Field label="Cause / fund"><input value={value.cause||""} onChange={e=>setValue({...value,cause:e.target.value})}/></Field><Field label="Project"><input value={value.project||""} onChange={e=>setValue({...value,project:e.target.value})}/></>}<Field label="Payment method"><input value={value.paymentMethod||""} onChange={e=>setValue({...value,paymentMethod:e.target.value})}/></Field><Field label="Reference / receipt"><input value={value.reference||""} onChange={e=>setValue({...value,reference:e.target.value})}/></Field><Field label="Notes"><input value={value.notes||""} onChange={e=>setValue({...value,notes:e.target.value})}/></Field></>;
+function Field({label,children}) {
+ return <label>{label}{children}</label>;
+}
+
+function Volunteer({value,onChange,volunteers}) {
+ return <select required value={value} onChange={onChange}>
+  <option value="">Select volunteer</option>
+  {volunteers.map(v=><option key={v.id} value={v.id}>{v.full_name}{v.volunteer_id ? " ("+v.volunteer_id+")" : ""}</option>)}
+ </select>;
+}
+
+function FinanceFields({value,setValue,volunteers,includeVolunteer=true}) {
+ return <>
+  {includeVolunteer && value.type !== "spending" && (
+   <Field label="Volunteer">
+    <Volunteer value={value.volunteerId} onChange={e=>setValue({...value,volunteerId:e.target.value})} volunteers={volunteers}/>
+   </Field>
+  )}
+  {value.type === "membership" ? (
+   <>
+    <Field label="Payment month"><input type="month" value={String(value.paymentMonth).slice(0,7)} onChange={e=>setValue({...value,paymentMonth:e.target.value+"-01"})}/></Field>
+    <Field label="Amount due"><input type="number" min="0" step="0.01" value={value.amountDue} onChange={e=>setValue({...value,amountDue:e.target.value})}/></Field>
+    <Field label="Amount paid"><input type="number" min="0" step="0.01" value={value.amountPaid} onChange={e=>setValue({...value,amountPaid:e.target.value})}/></Field>
+    <Field label="Status"><select value={value.status} onChange={e=>setValue({...value,status:e.target.value})}><option value="unpaid">Unpaid</option><option value="paid">Paid</option><option value="partial">Partial</option><option value="waived">Waived</option></select></Field>
+    <Field label="Payment date"><input type="date" value={value.paymentDate||""} onChange={e=>setValue({...value,paymentDate:e.target.value})}/></Field>
+   </>
+  ) : value.type === "donation" ? (
+   <>
+    <Field label="Cause / campaign"><input required value={value.cause} onChange={e=>setValue({...value,cause:e.target.value})}/></Field>
+    <Field label="Amount"><input required type="number" min="0.01" step="0.01" value={value.amount} onChange={e=>setValue({...value,amount:e.target.value})}/></Field>
+    <Field label="Donation date"><input type="date" value={value.donationDate||""} onChange={e=>setValue({...value,donationDate:e.target.value})}/></Field>
+   </>
+  ) : (
+   <>
+    <Field label="Spending category"><input required value={value.category} onChange={e=>setValue({...value,category:e.target.value})}/></Field>
+    <Field label="Description"><input required value={value.description} onChange={e=>setValue({...value,description:e.target.value})}/></Field>
+    <Field label="Amount spent"><input required type="number" min="0.01" step="0.01" value={value.amount} onChange={e=>setValue({...value,amount:e.target.value})}/></Field>
+    <Field label="Spending date"><input type="date" value={value.spendingDate||""} onChange={e=>setValue({...value,spendingDate:e.target.value})}/></Field>
+    <Field label="Cause / fund"><input value={value.cause||""} onChange={e=>setValue({...value,cause:e.target.value})}/></Field>
+    <Field label="Project"><input value={value.project||""} onChange={e=>setValue({...value,project:e.target.value})}/></Field>
+   </>
+  )}
+  <Field label="Payment method"><input value={value.paymentMethod||""} onChange={e=>setValue({...value,paymentMethod:e.target.value})}/></Field>
+  <Field label="Reference / receipt"><input value={value.reference||""} onChange={e=>setValue({...value,reference:e.target.value})}/></Field>
+  <Field label="Notes"><input value={value.notes||""} onChange={e=>setValue({...value,notes:e.target.value})}/></Field>
+ </>;
+}
 
 export default function VolunteerFinance(){
  const [data,setData]=useState({payments:[],donations:[],spending:[],volunteers:[],summary:{}}),[form,setForm]=useState(initial),[edit,setEdit]=useState(null),[message,setMessage]=useState(""),[error,setError]=useState(""),[filters,setFilters]=useState({month:"",volunteer:"",status:"",from:"",to:""}),[spendingFilters,setSpendingFilters]=useState({month:"",category:"",project:"",from:"",to:""}),[cashFilters,setCashFilters]=useState({month:"",type:"",volunteer:"",from:"",to:""});
