@@ -13,39 +13,75 @@ function requestIp(request) {
   const forwarded = request.headers.get("x-forwarded-for") || "";
   return (forwarded.split(",")[0] || request.headers.get("x-real-ip") || "unknown").trim();
 }
-function hashIp(ip) { return crypto.createHash("sha256").update(`${process.env.ADMIN_SESSION_SECRET}:${ip}`).digest("hex"); }
-function clearCookie(response, name) { response.cookies.set(name, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 }); }
+function hashIp(ip) {
+  return crypto.createHash("sha256").update(`${process.env.ADMIN_SESSION_SECRET}:${ip}`).digest("hex");
+}
+function clearCookie(response, name) {
+  response.cookies.set(name, "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 0,
+  });
+}
 
 export async function POST(request) {
   try {
     const totpSecret = getAdminTotpSecret();
-    if (!process.env.ADMIN_PASSWORD || !process.env.ADMIN_SESSION_SECRET || !totpSecret) return NextResponse.json({ error: "Admin authenticator is not configured yet." }, { status: 503 });
+    if (!process.env.ADMIN_PASSWORD || !process.env.ADMIN_SESSION_SECRET || !totpSecret) {
+      return NextResponse.json({ error: "Admin authenticator is not configured yet." }, { status: 503 });
+    }
+
     const ipHash = hashIp(requestIp(request));
     await pool.query("DELETE FROM admin_login_attempts WHERE created_at < NOW() - INTERVAL '1 hour'");
-    const recent = await pool.query("SELECT COUNT(*)::int AS count FROM admin_login_attempts WHERE ip_hash=$1 AND created_at >= NOW() - ($2 * INTERVAL '1 second')", [ipHash, LOGIN_WINDOW_SECONDS]);
-    if (recent.rows[0].count >= MAX_FAILED_ATTEMPTS) return NextResponse.json({ error: "Too many unsuccessful sign-in attempts. Please try again later." }, { status: 429 });
+    const recent = await pool.query(
+      "SELECT COUNT(*)::int AS count FROM admin_login_attempts WHERE ip_hash=$1 AND created_at >= NOW() - ($2 * INTERVAL '1 second')",
+      [ipHash, LOGIN_WINDOW_SECONDS],
+    );
+    if (recent.rows[0].count >= MAX_FAILED_ATTEMPTS) {
+      return NextResponse.json({ error: "Too many unsuccessful sign-in attempts. Please try again later." }, { status: 429 });
+    }
+
     const body = await request.json();
     const password = body?.password;
     const code = String(body?.code || "").replace(/\s+/g, "");
+
     if (!code) {
       if (!validAdminPassword(password)) {
         await pool.query("INSERT INTO admin_login_attempts (ip_hash) VALUES ($1)", [ipHash]);
         return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
       }
+
       await pool.query("DELETE FROM admin_login_attempts WHERE ip_hash=$1", [ipHash]);
       const response = NextResponse.json({ ok: true, requiresAuthenticator: true });
-      response.cookies.set(ADMIN_PENDING_COOKIE, makeSignedToken(PENDING_AGE), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: PENDING_AGE });
+      response.cookies.set(ADMIN_PENDING_COOKIE, makeSignedToken(PENDING_AGE), {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: PENDING_AGE,
+      });
       return response;
     }
+
     if (!isAdminTwoFactorPending(request)) {
       return NextResponse.json({ error: "Authenticator session expired. Please enter your password again." }, { status: 401 });
     }
+
     if (!verifyTotp(totpSecret, code)) {
       await pool.query("INSERT INTO admin_login_attempts (ip_hash) VALUES ($1)", [ipHash]);
       return NextResponse.json({ error: "Invalid authenticator code." }, { status: 401 });
     }
+
     const response = NextResponse.json({ ok: true, authenticated: true });
-    response.cookies.set(ADMIN_COOKIE, makeSignedToken(MAX_AGE), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: MAX_AGE });
+    response.cookies.set(ADMIN_COOKIE, makeSignedToken(MAX_AGE), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: MAX_AGE,
+    });
     clearCookie(response, ADMIN_PENDING_COOKIE);
     await pool.query("DELETE FROM admin_login_attempts WHERE ip_hash=$1", [ipHash]);
     return response;
@@ -54,7 +90,10 @@ export async function POST(request) {
     return NextResponse.json({ error: "Unable to sign in." }, { status: 500 });
   }
 }
+
 export async function DELETE() {
   const response = NextResponse.json({ ok: true });
-  clearCookie(response, ADMIN_COOKIE); clearCookie(response, ADMIN_PENDING_COOKIE); return response;
+  clearCookie(response, ADMIN_COOKIE);
+  clearCookie(response, ADMIN_PENDING_COOKIE);
+  return response;
 }
