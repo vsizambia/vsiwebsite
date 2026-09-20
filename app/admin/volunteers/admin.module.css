@@ -13,8 +13,7 @@
 .printButton{border:1px solid #0b4678!important;background:#0b4678!important;color:#fff!important;border-radius:10px!important;padding:10px 14px!important;font-weight:850!important;cursor:pointer}
 .printReport{display:none}
 @media print{
- @page{size:A4;margin:14mm 13mm 16mm}
- body{background:#fff!important;color:#102a43!important}
+  body{background:#fff!important;color:#102a43!important}
  header,footer,nav,.topline,.hero,.registerPanel:not(.printReport),.page>*,.shell>.registerPanel{box-shadow:none!important}
  .page{padding:0!important;background:#fff!important;min-height:0!important}
  .shell{max-width:none!important}
