@@ -37,7 +37,10 @@ export async function POST(request) {
       response.cookies.set(ADMIN_PENDING_COOKIE, makeSignedToken(PENDING_AGE), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: PENDING_AGE });
       return response;
     }
-    if (!isAdminTwoFactorPending(request) || !verifyTotp(totpSecret, code)) {
+    if (!isAdminTwoFactorPending(request)) {
+      return NextResponse.json({ error: "Authenticator session expired. Please enter your password again." }, { status: 401 });
+    }
+    if (!verifyTotp(totpSecret, code)) {
       await pool.query("INSERT INTO admin_login_attempts (ip_hash) VALUES ($1)", [ipHash]);
       return NextResponse.json({ error: "Invalid authenticator code." }, { status: 401 });
     }
