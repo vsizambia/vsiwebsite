@@ -26,7 +26,7 @@ export async function POST(request){
   if(!volunteerId)return NextResponse.json({error:"Volunteer is required."},{status:400});
   const r=await pool.query(`INSERT INTO volunteer_membership_payments(volunteer_id,payment_month,amount_due,amount_paid,status,payment_date,payment_method,reference,notes) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(volunteer_id,payment_month) DO UPDATE SET amount_due=EXCLUDED.amount_due,amount_paid=EXCLUDED.amount_paid,status=EXCLUDED.status,payment_date=EXCLUDED.payment_date,payment_method=EXCLUDED.payment_method,reference=EXCLUDED.reference,notes=EXCLUDED.notes,updated_at=NOW() RETURNING *`,[volunteerId,monthStart(b.paymentMonth),amountDue,amountPaid,status,b.paymentDate||null,b.paymentMethod||null,b.reference||null,b.notes||null]);return NextResponse.json({payment:r.rows[0]});
  }
- if(b.type==="donation"){
+ if(b.type==="donation"||b.type==="other_payment"){
   const volunteerId=Number(b.volunteerId),amount=Number(b.amount||0);if(!volunteerId||amount<=0||!String(b.cause||"").trim())return NextResponse.json({error:"Volunteer, cause and amount are required."},{status:400});
   const r=await pool.query(`INSERT INTO volunteer_donations(volunteer_id,cause,amount,donation_date,payment_method,reference,notes) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *`,[volunteerId,String(b.cause).trim(),amount,b.donationDate||new Date().toISOString().slice(0,10),b.paymentMethod||null,b.reference||null,b.notes||null]);return NextResponse.json({donation:r.rows[0]});
  }
