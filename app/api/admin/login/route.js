@@ -65,11 +65,7 @@ export async function POST(request) {
       return response;
     }
 
-    if (!isAdminTwoFactorPending(request)) {
-      return NextResponse.json({ error: "Authenticator session expired. Please enter your password again." }, { status: 401 });
-    }
-
-    if (!verifyTotp(totpSecret, code)) {
+    if (!isAdminTwoFactorPending(request) || !verifyTotp(totpSecret, code)) {
       await pool.query("INSERT INTO admin_login_attempts (ip_hash) VALUES ($1)", [ipHash]);
       return NextResponse.json({ error: "Invalid authenticator code." }, { status: 401 });
     }
