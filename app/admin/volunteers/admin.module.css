@@ -14,6 +14,7 @@
 /* Volunteer profile report — clean financial-statement print layout */
 .printReport{display:none}
 @media print{
+  .printChromeHidden{display:none!important}
   .page{padding:0!important;margin:0!important;background:#fff!important}
   .shell{max-width:none!important;margin:0!important}
   .shell > *:not(.printReport){display:none!important}
