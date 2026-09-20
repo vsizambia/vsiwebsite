@@ -15,7 +15,6 @@
 .printReport{display:none}
 
 @media print{
-  @page{size:A4;margin:12mm 12mm 14mm}
   :global(body){background:#fff!important;color:#111827!important}
   :global(body > header),
   :global(body > footer){display:none!important}
