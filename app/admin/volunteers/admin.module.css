@@ -13,23 +13,18 @@
 
 /* Volunteer profile report — clean financial-statement print layout */
 .printReport{display:none}
-
 @media print{
-  :global(body){background:#fff!important;color:#111827!important}
-  :global(body > header),
-  :global(body > footer){display:none!important}
-  .page{padding:0!important;margin:0!important;background:#fff!important;min-height:0!important}
+  .page{padding:0!important;margin:0!important;background:#fff!important}
   .shell{max-width:none!important;margin:0!important}
   .shell > *:not(.printReport){display:none!important}
-  .printReport{display:block!important;width:100%!important;max-width:none!important;background:#fff!important;color:#111827!important;font-family:Arial,Helvetica,sans-serif;font-size:9.5pt;line-height:1.35}
-  .printReport *{box-sizing:border-box}
-  .printHeader{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;padding:0 0 12px;margin:0 0 12px;border-bottom:2px solid #0b3052}
-  .printBrand{display:inline-grid;place-items:center;width:34px;height:34px;margin-bottom:6px;border-radius:7px;background:#0b3052;color:#ffd220;font-size:16px;font-weight:900}
+  .printReport{display:block!important;width:100%!important;background:#fff!important;color:#111827!important;font-family:Arial,Helvetica,sans-serif;font-size:9.5pt;line-height:1.35}
+  .printHeader{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;padding-bottom:12px;margin-bottom:12px;border-bottom:2px solid #0b3052}
+  .printBrand{display:grid;place-items:center;width:34px;height:34px;margin-bottom:6px;border-radius:6px;background:#0b3052;color:#ffd220;font-size:16px;font-weight:900}
   .printHeader .kicker{margin:0 0 2px;color:#627d98;font-size:7.5pt;font-weight:800;letter-spacing:.12em}
-  .printHeader h1{margin:2px 0 3px;color:#0b3052;font-size:19pt;line-height:1.05;letter-spacing:-.02em;text-transform:uppercase}
+  .printHeader h1{margin:2px 0 3px;color:#0b3052;font-size:19pt;line-height:1.05}
   .printHeader p{margin:0;color:#627d98;font-size:8.5pt}
   .printMeta{min-width:145px;display:grid;grid-template-columns:auto auto;gap:3px 12px;text-align:right;font-size:8pt}
-  .printMeta strong{color:#627d98;font-size:7pt;text-transform:uppercase;letter-spacing:.08em}
+  .printMeta strong{color:#627d98;font-size:7pt;text-transform:uppercase}
   .printMeta span{color:#111827;font-weight:700}
   .printIdentity{display:grid;grid-template-columns:62px 1fr;gap:13px;align-items:center;padding:10px 0 12px;border-bottom:1px solid #cbd5e1}
   .printIdentity img,.printInitials{width:58px;height:70px;border:1px solid #cbd5e1;border-radius:4px;object-fit:cover}
@@ -38,30 +33,23 @@
   .printIdentity p{margin:0 0 6px;color:#475569;font-size:8.5pt}
   .printTags{display:flex;gap:6px;flex-wrap:wrap}
   .printTags span{padding:2px 6px;border:1px solid #cbd5e1;border-radius:3px;color:#475569;font-size:7.5pt}
-  .printSection{margin-top:13px;break-inside:auto}
-  .printSectionTitle{padding:5px 7px;margin-bottom:0;background:#eef2f6;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;color:#0b3052;font-size:7.5pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+  .printSection{margin-top:13px}
+  .printSectionTitle{padding:5px 7px;background:#eef2f6;border-top:1px solid #94a3b8;border-bottom:1px solid #94a3b8;color:#0b3052;font-size:7.5pt;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
   .printGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-left:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
-  .printGrid>div{min-height:38px;padding:6px 8px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
-  .printGrid>div:nth-last-child(-n+3){border-bottom:0}
-  .printGrid span{display:block;margin-bottom:2px;color:#64748b;font-size:6.8pt;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+  .printGrid > div{min-height:38px;padding:6px 8px;border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
+  .printGrid span{display:block;margin-bottom:2px;color:#64748b;font-size:6.8pt;font-weight:700;text-transform:uppercase}
   .printGrid strong{display:block;color:#111827;font-size:8.5pt;font-weight:600;overflow-wrap:anywhere}
   .printMetrics{display:grid;grid-template-columns:repeat(3,1fr);border-left:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0}
-  .printMetrics>div{padding:8px;border-right:1px solid #e2e8f0}
-  .printMetrics span{display:block;color:#64748b;font-size:6.8pt;font-weight:800;letter-spacing:.06em}
-  .printMetrics strong{display:inline-block;margin-top:2px;color:#0b3052;font-size:13pt;line-height:1.1}
+  .printMetrics > div{padding:8px;border-right:1px solid #e2e8f0}
+  .printMetrics span{display:block;color:#64748b;font-size:6.8pt;font-weight:800}
+  .printMetrics strong{display:inline-block;margin-top:2px;color:#0b3052;font-size:13pt}
   .printMetrics small{margin-left:4px;color:#64748b;font-size:7pt}
   .printSection h3{margin:9px 0 4px;color:#334155;font-size:8pt;font-weight:800}
   .printTable{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.8pt}
-  .printTable th{padding:5px 6px;background:#0b3052;color:#fff;text-align:left;font-size:6.8pt;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+  .printTable th{padding:5px 6px;background:#0b3052;color:#fff;text-align:left;font-size:6.8pt;font-weight:800;text-transform:uppercase}
   .printTable td{padding:5px 6px;border-bottom:1px solid #dbe2e8;vertical-align:top;color:#1f2937;overflow-wrap:anywhere}
   .printTable tbody tr:nth-child(even){background:#f8fafc}
-  .printTable th:nth-child(1),.printTable td:nth-child(1){width:13%}
-  .printTable th:nth-last-child(1),.printTable td:nth-last-child(1){width:13%}
-  .printTable th:nth-last-child(2),.printTable td:nth-last-child(2){width:12%}
   .printTable thead{display:table-header-group}
-  .printTable tr{break-inside:avoid;page-break-inside:avoid}
+  .printTable tr{page-break-inside:avoid}
   .printFooter{display:flex;justify-content:space-between;gap:18px;margin-top:18px;padding-top:7px;border-top:1px solid #94a3b8;color:#64748b;font-size:6.8pt}
-  .printFooter span:last-child{text-align:right}
-  .printSection:nth-last-of-type(1){break-inside:avoid}
-  .printReport button,.printReport a{color:inherit;text-decoration:none}
 }
