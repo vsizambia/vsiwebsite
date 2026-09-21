@@ -15,7 +15,7 @@ export async function GET(request){
   pool.query("SELECT id,full_name,volunteer_id FROM volunteer_applications WHERE status='approved' ORDER BY full_name"),
   pool.query(`SELECT COALESCE((SELECT SUM(amount_paid) FROM volunteer_membership_payments${volunteerId?" WHERE volunteer_id=$1":""}),0) membership_paid,COALESCE((SELECT SUM(CASE WHEN status IN ('unpaid','partial') THEN GREATEST(amount_due-amount_paid,0) ELSE 0 END) FROM volunteer_membership_payments${volunteerId?" WHERE volunteer_id=$1":""}),0) outstanding,COALESCE((SELECT SUM(amount_paid) FROM volunteer_membership_payments WHERE payment_month=date_trunc('month',CURRENT_DATE)::date AND status='paid'${volunteerId?" AND volunteer_id=$1":""}),0) paid_this_month,COALESCE((SELECT SUM(amount) FROM volunteer_donations${volunteerId?" WHERE volunteer_id=$1":""}),0) donations_total,COALESCE((SELECT SUM(amount) FROM volunteer_other_payments${volunteerId?" WHERE volunteer_id=$1":""}),0) other_payments_total,COALESCE((SELECT SUM(amount) FROM volunteer_finance_spending),0) spent_total`,params)
  ]);
- const s=summary.rows[0]||{};const received=Number(s.membership_paid||0)+Number(s.donations_total||0);const spent=Number(s.spent_total||0);
+ const s=summary.rows[0]||{};const received=Number(s.membership_paid||0)+Number(s.donations_total||0)+Number(s.other_payments_total||0);const spent=Number(s.spent_total||0);
  return NextResponse.json({payments:payments.rows,donations:donations.rows,otherPayments:otherPayments.rows,spending:spending.rows,volunteers:volunteers.rows,summary:{...s,total_received:received,balance:received-spent}});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to load volunteer finance."},{status:500})}
 }
