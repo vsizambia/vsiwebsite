@@ -52,9 +52,11 @@ export async function POST(request){
     const province=clean(b.province);
     const district=clean(b.district);
     const residentialArea=clean(b.residential_area);
+    const attendanceMode=clean(b.attendance_mode)||"physical";
     const feeLabel=clean(b.fee_label);
 
-    if(!Number.isInteger(eventId)||eventId<1||!fullName||!designation||!email||!phone||!gender||!disability||!province||!district||!residentialArea||!feeLabel)return NextResponse.json({error:"Please complete all required registration fields."},{status:400});
+    if(!Number.isInteger(eventId)||eventId<1||!fullName||!designation||!email||!phone||!gender||!disability||!province||!district||!residentialArea||!attendanceMode)return NextResponse.json({error:"Please complete all required registration fields."},{status:400});
+    if(!["physical","virtual"].includes(attendanceMode))return NextResponse.json({error:"Please choose a valid attendance mode."},{status:400});
     if(fullName.length>120||designation.length>120||organization.length>160||gender.length>40||disability.length>80||province.length>80||district.length>80||residentialArea.length>120||feeLabel.length>120||phone.length>40)return NextResponse.json({error:"One or more registration fields are too long."},{status:400});
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254)return NextResponse.json({error:"Please enter a valid email address."},{status:400});
     if(!/^[+0-9()\-\s]{7,40}$/.test(phone))return NextResponse.json({error:"Please enter a valid phone number."},{status:400});
@@ -62,14 +64,15 @@ export async function POST(request){
     await ensureEventsTable();
     const e=await pool.query("SELECT id,title,fee_options,status,event_date FROM vsi_events WHERE id=$1 LIMIT 1",[eventId]);
     if(!e.rowCount||e.rows[0].status!=="published")return NextResponse.json({error:"This event is not available for registration."},{status:404});
-    const option=(e.rows[0].fee_options||[]).find(x=>String(x.label)===feeLabel);
-    if(!option)return NextResponse.json({error:"Please select a valid event fee."},{status:400});
-    const feeAmount=Number(option.amount);
+    const option=attendanceMode==="physical"?(e.rows[0].fee_options||[]).find(x=>Number(x.amount)>0):null;
+    const feeAmount=attendanceMode==="virtual"?0:Number(option?.amount);
+    const registrationFeeLabel=attendanceMode==="virtual"?"Virtual — Free":String(option?.label||"");
+    if(attendanceMode==="physical"&&!option)return NextResponse.json({error:"A physical attendance fee has not been configured for this event."},{status:400});
     if(!Number.isFinite(feeAmount)||feeAmount<0||feeAmount>10000000)return NextResponse.json({error:"The selected event fee is invalid."},{status:400});
 
     if(!await allowEventRegistration(request))return NextResponse.json({error:"Too many registration attempts. Please try again later."},{status:429});
 
-    const r=await pool.query("INSERT INTO vsi_event_registrations (event_id,full_name,designation,email,phone,organization,gender,disability,province,district,residential_area,fee_label,fee_amount) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING id,created_at",[eventId,fullName,designation,email,phone,organization||null,gender,disability,province,district,residentialArea,option.label,feeAmount]);
+    const r=await pool.query("INSERT INTO vsi_event_registrations (event_id,full_name,designation,email,phone,organization,gender,disability,province,district,residential_area,fee_label,fee_amount,attendance_mode) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id,created_at",[eventId,fullName,designation,email,phone,organization||null,gender,disability,province,district,residentialArea,registrationFeeLabel,feeAmount,attendanceMode]);
     return NextResponse.json({ok:true,registration:r.rows[0],event_title:e.rows[0].title});
   }catch(e){
     console.error("Event registration error:",e);
