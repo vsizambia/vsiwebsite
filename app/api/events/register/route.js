@@ -17,24 +17,6 @@ function hashRateKey(ip){
   return crypto.createHmac("sha256",secret).update(ip).digest("hex");
 }
 
-async function allowEventRegistration(request){
-  const keyHash=hashRateKey(getClientIp(request));
-  await pool.query(`CREATE TABLE IF NOT EXISTS event_registration_rate_limits (id BIGSERIAL PRIMARY KEY,key_hash TEXT NOT NULL,created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())`);
-  await pool.query(`CREATE INDEX IF NOT EXISTS event_registration_rate_limits_key_created_idx ON event_registration_rate_limits(key_hash,created_at)`);
-  const client=await pool.connect();
-  try{
-    await client.query("BEGIN");
-    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[keyHash]);
-    await client.query("DELETE FROM event_registration_rate_limits WHERE created_at < NOW() - INTERVAL '1 hour'");
-    const count=await client.query("SELECT COUNT(*)::int AS count FROM event_registration_rate_limits WHERE key_hash=$1 AND created_at >= NOW() - INTERVAL '1 hour'",[keyHash]);
-    if(count.rows[0].count>=RATE_LIMIT){await client.query("ROLLBACK");return false;}
-    await client.query("INSERT INTO event_registration_rate_limits (key_hash) VALUES ($1)",[keyHash]);
-    await client.query("COMMIT");
-    return true;
-  }catch(error){await client.query("ROLLBACK").catch(()=>{});throw error}
-  finally{client.release()}
-}
-
 export async function POST(request){
   try{
     const contentLength=Number(request.headers.get("content-length")||0);
@@ -70,7 +52,6 @@ export async function POST(request){
     if(attendanceMode==="physical"&&!option)return NextResponse.json({error:"A physical attendance fee has not been configured for this event."},{status:400});
     if(!Number.isFinite(feeAmount)||feeAmount<0||feeAmount>10000000)return NextResponse.json({error:"The selected event fee is invalid."},{status:400});
 
-    if(!await allowEventRegistration(request))return NextResponse.json({error:"Too many registration attempts. Please try again later."},{status:429});
 
     const r=await pool.query("INSERT INTO vsi_event_registrations (event_id,full_name,designation,email,phone,organization,gender,disability,province,district,residential_area,fee_label,fee_amount,attendance_mode) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id,created_at",[eventId,fullName,designation,email,phone,organization||null,gender,disability,province,district,residentialArea,registrationFeeLabel,feeAmount,attendanceMode]);
     return NextResponse.json({ok:true,registration:r.rows[0],event_title:e.rows[0].title});
