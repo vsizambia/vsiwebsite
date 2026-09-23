@@ -8,7 +8,6 @@ import "./accessibility.css";
 import "./qa.css";
 import "./admin-dob.css";
 import { Analytics } from "@vercel/analytics/next";
-import Script from "next/script";
 
 const siteUrl = "https://www.vsizambia.org";
 
@@ -40,6 +39,7 @@ export const metadata = {
     images: ["/images/vsi-parliament.jpg"],
   },
   robots: { index: true, follow: true },
+  other: { "google-adsense-account": "ca-pub-2657914734740544" },
 };
 
 const organizationSchema = {
