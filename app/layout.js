@@ -7,6 +7,7 @@ import "./mobile.css";
 import "./accessibility.css";
 import "./qa.css";
 import "./admin-dob.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const siteUrl = "https://www.vsizambia.org";
 
@@ -68,6 +69,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+        <Analytics />
         <a className="skip-link" href="#main-content">Skip to main content</a>
         <div id="main-content">{children}</div>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
