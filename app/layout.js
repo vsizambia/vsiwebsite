@@ -8,6 +8,7 @@ import "./accessibility.css";
 import "./qa.css";
 import "./admin-dob.css";
 import { Analytics } from "@vercel/analytics/next";
+import Script from "next/script";
 
 const siteUrl = "https://www.vsizambia.org";
 
