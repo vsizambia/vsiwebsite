@@ -51,4 +51,4 @@ export async function middleware(request){
   return NextResponse.next();
 }
 
-export const config={matcher:["/admin/:path*","/api/admin/:path*"]};
+export const config={matcher:["/:path*"]};
