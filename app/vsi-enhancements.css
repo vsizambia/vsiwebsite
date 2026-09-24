@@ -2,6 +2,20 @@
 @media (min-width: 901px){
   .nav-shell{min-height:88px;padding-top:8px;padding-bottom:8px}
   .brand img{width:184px}
+  .desktop-nav{
+    flex:1 1 auto;
+    min-width:0;
+    gap:16px;
+    font-size:13px;
+  }
+  .desktop-nav a{
+    white-space:nowrap;
+    flex:0 0 auto;
+  }
+  .nav-cta{
+    flex:0 0 auto;
+    white-space:nowrap;
+  }
 }
 
 /* Consistent, gentle image motion on scroll and hover */
