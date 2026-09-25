@@ -44,16 +44,16 @@ export async function POST(request){
     if(!/^[+0-9()\-\s]{7,40}$/.test(phone))return NextResponse.json({error:"Please enter a valid phone number."},{status:400});
 
     await ensureEventsTable();
-    const e=await pool.query("SELECT id,title,fee_options,status,event_date FROM vsi_events WHERE id=$1 LIMIT 1",[eventId]);
+    const e=await pool.query("SELECT id,title,slug,fee_options,status,event_date FROM vsi_events WHERE id=$1 LIMIT 1",[eventId]);
     if(!e.rowCount||e.rows[0].status!=="published")return NextResponse.json({error:"This event is not available for registration."},{status:404});
-    const option=attendanceMode==="physical"?(e.rows[0].fee_options||[]).find(x=>Number(x.amount)>0):null;
-    const feeAmount=attendanceMode==="virtual"?0:Number(option?.amount);
-    const registrationFeeLabel=attendanceMode==="virtual"?"Virtual — Free":String(option?.label||"");
-    if(attendanceMode==="physical"&&!option)return NextResponse.json({error:"A physical attendance fee has not been configured for this event."},{status:400});
+    const onlineOnly=e.rows[0].slug==="the-2026-founders-and-directors-synergy";if(onlineOnly&&attendanceMode!=="virtual")return NextResponse.json({error:"This event is available online only."},{status:400});const effectiveAttendanceMode=onlineOnly?"virtual":attendanceMode;const option=effectiveAttendanceMode==="physical"?(e.rows[0].fee_options||[]).find(x=>Number(x.amount)>0):null;
+    const feeAmount=effectiveAttendanceMode==="virtual"?0:Number(option?.amount);
+    const registrationFeeLabel=onlineOnly?"Online":(effectiveAttendanceMode==="virtual"?"Virtual — Free":String(option?.label||""));
+    if(effectiveAttendanceMode==="physical"&&!option)return NextResponse.json({error:"A physical attendance fee has not been configured for this event."},{status:400});
     if(!Number.isFinite(feeAmount)||feeAmount<0||feeAmount>10000000)return NextResponse.json({error:"The selected event fee is invalid."},{status:400});
 
 
-    const r=await pool.query("INSERT INTO vsi_event_registrations (event_id,full_name,designation,email,phone,organization,gender,disability,province,district,residential_area,fee_label,fee_amount,attendance_mode) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id,created_at",[eventId,fullName,designation,email,phone,organization||null,gender,disability,province,district,residentialArea,registrationFeeLabel,feeAmount,attendanceMode]);
+    const r=await pool.query("INSERT INTO vsi_event_registrations (event_id,full_name,designation,email,phone,organization,gender,disability,province,district,residential_area,fee_label,fee_amount,attendance_mode) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING id,created_at",[eventId,fullName,designation,email,phone,organization||null,gender,disability,province,district,residentialArea,registrationFeeLabel,feeAmount,effectiveAttendanceMode]);
     return NextResponse.json({ok:true,registration:r.rows[0],event_title:e.rows[0].title});
   }catch(e){
     console.error("Event registration error:",e);
