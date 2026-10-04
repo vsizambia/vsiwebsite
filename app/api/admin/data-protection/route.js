@@ -57,6 +57,30 @@ export async function PATCH(request){
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to update record."},{status:500});}
 }
 
+export async function PATCH(request){
+ if(!isAdminAuthenticated(request))return unauthorized();
+ try{
+  await ensureDataProtectionTables();
+  const b=await request.json();
+  if(b.kind!=="volunteer_consent")return NextResponse.json({error:"Invalid consent update."},{status:400});
+  const id=Number(b.volunteerId);
+  const type=String(b.consentType||"").trim();
+  const granted=b.granted===true;
+  if(!Number.isFinite(id)||!["photo_processing","public_media"].includes(type))return NextResponse.json({error:"Invalid volunteer consent update."},{status:400});
+  const column=type==="photo_processing"?"photo_processing_consent":"public_media_consent";
+  const client=await pool.connect();
+  try{
+   await client.query("BEGIN");
+   const current=await client.query("SELECT id FROM volunteer_applications WHERE id=$1 FOR UPDATE",[id]);
+   if(!current.rows[0])throw new Error("Volunteer record not found.");
+   await client.query(`UPDATE volunteer_applications SET ${column}=$1,updated_at=NOW() WHERE id=$2`,[granted,id]);
+   await client.query("INSERT INTO data_protection_consent_log (subject_type,subject_id,consent_type,policy_version,granted,recorded_at,source) VALUES ('volunteer',$1,$2,NULL,$3,NOW(),'admin_confirmation')",[id,type,granted]);
+   await client.query("COMMIT");
+   return NextResponse.json({ok:true,volunteerId:id,consentType:type,granted});
+  }catch(e){await client.query("ROLLBACK");throw e}finally{client.release()}
+ }catch(e){console.error(e);return NextResponse.json({error:e.message||"Unable to update volunteer consent."},{status:500});}
+}
+
 export async function POST(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{await ensureDataProtectionTables();const b=await request.json();
