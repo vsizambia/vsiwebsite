@@ -49,16 +49,6 @@ export async function GET(request){
 
 export async function PATCH(request){
  if(!isAdminAuthenticated(request))return unauthorized();
- try{await ensureDataProtectionTables();const b=await request.json();
- if(b.kind==="request"){const status=String(b.status||"").trim();if(!["received","in_progress","completed","closed"].includes(status))return NextResponse.json({error:"Invalid request status."},{status:400});const r=await pool.query("UPDATE data_protection_requests SET status=$1,completed_at=CASE WHEN $1 IN ('completed','closed') THEN COALESCE(completed_at,NOW()) ELSE NULL END WHERE id=$2 RETURNING *",[status,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
- if(b.kind==="incident"){const status=String(b.status||"").trim();if(!["open","contained","investigating","resolved"].includes(status))return NextResponse.json({error:"Invalid incident status."},{status:400});const r=await pool.query("UPDATE data_protection_incidents SET status=$1,resolved_at=CASE WHEN $1='resolved' THEN COALESCE(resolved_at,NOW()) ELSE NULL END WHERE id=$2 RETURNING *",[status,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
- if(b.kind==="retention_rule"){const months=Number(b.retentionMonths);const action=String(b.action||"");if(!Number.isInteger(months)||months<0||!["review","archive","anonymise","delete"].includes(action))return NextResponse.json({error:"Invalid retention rule."},{status:400});const r=await pool.query("UPDATE data_retention_rules SET retention_months=$1,action=$2,updated_at=NOW() WHERE id=$3 RETURNING *",[months,action,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
- return NextResponse.json({error:"Invalid update."},{status:400});
- }catch(e){console.error(e);return NextResponse.json({error:"Unable to update record."},{status:500});}
-}
-
-export async function PATCH(request){
- if(!isAdminAuthenticated(request))return unauthorized();
  try{
   await ensureDataProtectionTables();
   const b=await request.json();
