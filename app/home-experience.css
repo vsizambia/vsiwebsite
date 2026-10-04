@@ -1,0 +1,27 @@
+.home-experience{background:#fff}
+.home-hero{min-height:clamp(480px,39vw,620px);isolation:isolate}
+.home-hero .hero-image img{object-fit:cover;object-position:center 42%;animation:homeHeroFade .35s ease both}
+.home-hero .hero-overlay{background:linear-gradient(90deg,rgba(0,45,85,.94) 0%,rgba(0,53,102,.82) 38%,rgba(0,53,102,.32) 74%,rgba(0,30,58,.16) 100%)}
+.home-hero-content{position:relative;z-index:2;padding-top:72px;padding-bottom:76px;max-width:1160px}
+.home-hero-content .kicker{color:#ffd60a;font-size:12px;font-weight:900;letter-spacing:.13em;margin:0 0 18px}
+.home-hero-content h1{max-width:760px;color:#fff;font-size:clamp(44px,5.6vw,76px);font-weight:850;line-height:.99;letter-spacing:-.055em;margin:0}
+.home-hero-content h1 em{font-style:normal;color:#ffd60a}
+.home-hero-description{max-width:660px;color:#f1f6fa;font-size:clamp(15px,1.4vw,18px);line-height:1.7;margin:22px 0 26px}
+.home-hero-actions{display:flex;flex-wrap:wrap;gap:10px}
+.home-hero-actions .button{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:999px;padding:12px 18px;font-size:13px;font-weight:850}
+.home-hero-actions .button-primary{background:#003566;color:#fff;border:1px solid rgba(255,255,255,.2)}
+.home-hero-actions .button-news{background:#fff;color:#003566}
+.home-section-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;padding:12px max(20px,calc((100vw - 1220px)/2));background:#fff}
+.home-section-card{display:flex;align-items:stretch;min-width:0;min-height:94px;padding:0;text-align:left;border:1px solid #c8d5e0;background:#fff;color:#172b3c;cursor:pointer;overflow:hidden;transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.home-section-card:hover,.home-section-card:focus-visible{border-color:#094074;box-shadow:0 8px 22px rgba(0,53,102,.12);transform:translateY(-2px)}
+.home-section-card.is-active{border-color:#094074;box-shadow:inset 0 -3px 0 #ffc300}
+.home-section-card-image{position:relative;display:block;flex:0 0 43%;min-height:92px;overflow:hidden;background:#e7eef4}
+.home-section-card-image img{object-fit:cover;transition:transform .35s ease}
+.home-section-card:hover .home-section-card-image img{transform:scale(1.05)}
+.home-section-card-title{align-self:center;flex:1;padding:10px 10px;font-size:clamp(14px,1.35vw,20px);line-height:1.14;font-weight:600;overflow-wrap:anywhere}
+.home-section-card-arrow{align-self:flex-start;margin:10px 8px 0 0;color:#094074;font-size:15px;font-weight:800}
+@keyframes homeHeroFade{from{opacity:.78}to{opacity:1}}
+@media(min-width:1400px){.home-hero-content{width:min(1160px,calc(100% - 40px))}}
+@media(max-width:900px){.home-hero{min-height:500px}.home-hero-content{padding-top:64px;padding-bottom:62px}.home-section-cards{grid-template-columns:repeat(3,minmax(0,1fr));padding:12px 16px;gap:8px}.home-section-card{min-height:82px}.home-section-card-image{min-height:80px;flex-basis:38%}.home-section-card-title{font-size:15px;padding:8px}}
+@media(max-width:600px){.home-hero{min-height:540px;align-items:flex-end}.home-hero .hero-overlay{background:linear-gradient(0deg,rgba(0,35,68,.96) 0%,rgba(0,45,85,.82) 48%,rgba(0,53,102,.32) 100%)}.home-hero .hero-image img{object-position:center}.home-hero-content{padding-top:80px;padding-bottom:42px}.home-hero-content .kicker{font-size:10px;margin-bottom:14px}.home-hero-content h1{font-size:clamp(42px,12vw,60px);line-height:1.01}.home-hero-description{font-size:15px;line-height:1.6;margin:18px 0 22px}.home-hero-actions{display:grid;grid-template-columns:1fr 1fr}.home-hero-actions .button{padding:11px 10px;font-size:12px}.home-hero-actions .button-news{grid-column:1/-1}.home-section-cards{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px;gap:8px}.home-section-card{min-height:76px}.home-section-card-image{min-height:74px;flex-basis:38%}.home-section-card-title{font-size:14px;padding:7px}.home-section-card-arrow{margin:7px 6px 0 0;font-size:12px}}
+@media(prefers-reduced-motion:reduce){.home-hero .hero-image img,.home-section-card,.home-section-card-image img{animation:none;transition:none}.home-section-card:hover{transform:none}}
