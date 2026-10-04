@@ -85,51 +85,6 @@ export default function ProjectsPage() {
         </div>
       </section>
 
-      <section className="projects-focus">
-        <div className="section-shell">
-          <div className="section-heading-row">
-            <div>
-              <p className="kicker light">WHERE OUR WORK CONNECTS</p>
-              <h2>Six focus areas help turn the mission into practice.</h2>
-            </div>
-            <p>Individual projects may connect several of these areas at once, depending on their purpose, partners and community context.</p>
-          </div>
-          <div className="projects-focus-grid">
-            {focusAreas.map(([number, title, description]) => (
-              <article key={number}>
-                <span>{number}</span>
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="projects-learning section-shell">
-        <div className="projects-learning-image">
-          <Image src="/images/vsi-community-action.jpg" alt="Young people participating in community action" fill sizes="(max-width: 900px) 100vw, 50vw" />
-        </div>
-        <div className="projects-learning-copy">
-          <p className="kicker">LEARNING FROM ACTION</p>
-          <h2>Good programmes keep learning as they go.</h2>
-          <p>VSI uses reflection, participant feedback, documentation and evidence to understand what is working and where programmes can improve. This helps us strengthen implementation while keeping the experiences and perspectives of young people visible.</p>
-          <a className="button button-primary" href="/impact">Explore impact &amp; evidence <span aria-hidden="true">↗</span></a>
-        </div>
-      </section>
-
-      <section className="projects-next">
-        <div className="section-shell">
-          <p className="kicker light">BE PART OF THE WORK</p>
-          <h2>There is more to youth participation than being invited into the room.</h2>
-          <p>It is about creating meaningful opportunities to learn, contribute, lead and shape the work itself.</p>
-          <div className="hero-actions">
-            <a className="button button-yellow" href="/volunteer">Volunteer with VSI <span aria-hidden="true">↗</span></a>
-            <a className="button button-primary" href="/news">See VSI News <span aria-hidden="true">↗</span></a>
-          </div>
-        </div>
-      </section>
-
       <SiteFooter />
     </main>
   );
