@@ -30,7 +30,7 @@ async function retentionQueue(){
 export async function GET(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{await ensureDataProtectionTables();
- const [requests,incidents,consents,retention,recentActions,retentionQueueRecords]=await Promise.all([
+ const [requests,incidents,consents,volunteerConsent,retention,recentActions,retentionQueueRecords]=await Promise.all([
  pool.query("SELECT * FROM data_protection_requests ORDER BY received_at DESC LIMIT 100"),
  pool.query("SELECT * FROM data_protection_incidents ORDER BY reported_at DESC LIMIT 100"),
  pool.query("SELECT consent_type,COUNT(*) FILTER(WHERE granted) granted,COUNT(*) total FROM data_protection_consent_log WHERE subject_type='volunteer' GROUP BY consent_type ORDER BY consent_type"),
@@ -38,7 +38,7 @@ export async function GET(request){
  retentionSummary(),
  pool.query("SELECT * FROM data_retention_actions ORDER BY performed_at DESC LIMIT 50"),
  retentionQueue()]);
- const volunteerConsent=await pool.query("SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE consent=TRUE)::int privacyDeclared,COUNT(*) FILTER (WHERE privacy_notice_accepted_at IS NOT NULL)::int privacyTimestamped,COUNT(*) FILTER (WHERE photo_processing_consent=TRUE)::int photoGranted,COUNT(*) FILTER (WHERE public_media_consent=TRUE)::int mediaGranted,COUNT(*) FILTER (WHERE public_media_consent=FALSE)::int mediaFalse FROM volunteer_applications");
+
  const consentReconciliation={volunteers:volunteerConsent.rows[0]||{},legacyReconciled:(await pool.query("SELECT COUNT(DISTINCT subject_id)::int count FROM data_protection_consent_log WHERE subject_type='volunteer' AND source='legacy_reconciliation'")).rows[0]?.count||0};
  const dueCount=retentionQueueRecords.length;
  const overdueCount=retentionQueueRecords.filter(item=>new Date(item.dueAt)<new Date()).length;
