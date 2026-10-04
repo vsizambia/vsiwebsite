@@ -30,6 +30,11 @@ async function retentionQueue(){
 export async function GET(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{await ensureDataProtectionTables();
+ const volunteerId=Number(new URL(request.url).searchParams.get("volunteerId"));
+ if(Number.isFinite(volunteerId)){
+  const rows=(await pool.query("SELECT consent_type,granted,recorded_at,source,policy_version FROM data_protection_consent_log WHERE subject_type='volunteer' AND subject_id=$1 ORDER BY recorded_at DESC",[volunteerId])).rows;
+  return NextResponse.json({consents:rows});
+ }
  const [requests,incidents,consents,volunteerConsent,retention,recentActions,retentionQueueRecords]=await Promise.all([
  pool.query("SELECT * FROM data_protection_requests ORDER BY received_at DESC LIMIT 100"),
  pool.query("SELECT * FROM data_protection_incidents ORDER BY reported_at DESC LIMIT 100"),
