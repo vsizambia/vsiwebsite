@@ -33,7 +33,7 @@ export async function GET(request){
  const [requests,incidents,consents,volunteerConsent,retention,recentActions,retentionQueueRecords]=await Promise.all([
  pool.query("SELECT * FROM data_protection_requests ORDER BY received_at DESC LIMIT 100"),
  pool.query("SELECT * FROM data_protection_incidents ORDER BY reported_at DESC LIMIT 100"),
- pool.query("SELECT consent_type,COUNT(*) FILTER(WHERE granted) granted,COUNT(*) total FROM data_protection_consent_log WHERE subject_type='volunteer' GROUP BY consent_type ORDER BY consent_type"),
+ pool.query("SELECT consent_type,COUNT(*) FILTER(WHERE granted) granted,COUNT(*) total,COUNT(DISTINCT subject_id) unique_subjects,COUNT(DISTINCT subject_id) FILTER (WHERE EXISTS (SELECT 1 FROM volunteer_applications v WHERE v.id=data_protection_consent_log.subject_id)) current_volunteers FROM data_protection_consent_log WHERE subject_type='volunteer' GROUP BY consent_type ORDER BY consent_type"),
  pool.query("SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE consent=TRUE)::int privacyDeclared,COUNT(*) FILTER (WHERE privacy_notice_accepted_at IS NOT NULL)::int privacyTimestamped,COUNT(*) FILTER (WHERE photo_processing_consent=TRUE)::int photoGranted,COUNT(*) FILTER (WHERE public_media_consent=TRUE)::int mediaGranted,COUNT(*) FILTER (WHERE public_media_consent=FALSE)::int mediaFalse FROM volunteer_applications"),
  retentionSummary(),
  pool.query("SELECT * FROM data_retention_actions ORDER BY performed_at DESC LIMIT 50"),
