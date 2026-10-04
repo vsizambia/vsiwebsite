@@ -159,7 +159,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
               },
               {
                 "id": "000101002002",
-                "name": "Ward 000101002002"
+                "name": "Monang'ombe"
               },
               {
                 "id": "000101002003",
@@ -505,7 +505,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
               },
               {
                 "id": "000101007009",
-                "name": "Ward 000101007009"
+                "name": "Ching'ombe"
               },
               {
                 "id": "000101007010",
@@ -2765,7 +2765,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
               },
               {
                 "id": "000103008005",
-                "name": "Ward 000103008005"
+                "name": "Ching'ombe"
               },
               {
                 "id": "000103008006",
@@ -2807,7 +2807,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
               },
               {
                 "id": "000103008014",
-                "name": "Ward 000103008014"
+                "name": "Mng'omba"
               },
               {
                 "id": "000103008015",
@@ -3479,7 +3479,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
               },
               {
                 "id": "000104004004",
-                "name": "Ward 000104004004"
+                "name": "Ngóna"
               },
               {
                 "id": "000104004005",
@@ -6243,7 +6243,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
   },
   {
     "id": "8",
-    "name": "North-western",
+    "name": "North-Western",
     "districts": [
       {
         "id": "001",
@@ -6913,7 +6913,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
               },
               {
                 "id": "000108009003",
-                "name": "Ward 000108009003"
+                "name": "Mpidi Kakong’a"
               },
               {
                 "id": "000108009009",
@@ -6965,7 +6965,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
               },
               {
                 "id": "000108009007",
-                "name": "Ward 000108009007"
+                "name": "Chileng’a Chizenzi"
               },
               {
                 "id": "000108009008",
@@ -7397,7 +7397,7 @@ export const ECZ_2026_LOCATION_HIERARCHY = [
               },
               {
                 "id": "000109002027",
-                "name": "Ward 000109002027"
+                "name": "Mang’unza"
               },
               {
                 "id": "000109002028",
