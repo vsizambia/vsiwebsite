@@ -1,5 +1,7 @@
 "use client";
 import Image from "next/image";
+import "../destination-hero.css";
+import DestinationHero from "../components/DestinationHero";
 import { useEffect, useState } from "react";
 import { SiteHeader, SiteFooter } from "../components/SiteChrome";
 import styles from "./news.module.css";
@@ -21,13 +23,7 @@ export default function NewsPage() {
   return (
     <main>
       <SiteHeader />
-      <section className={styles.hero}>
-        <div className="section-shell">
-          <p className="kicker light">VSI NEWS &amp; UPDATES</p>
-          <h1>Stories from the work, people and ideas shaping VSI.</h1>
-          <p>Explore the latest highlights, community stories, programme updates and announcements from Visionary Students Initiative.</p>
-        </div>
-      </section>
+      <DestinationHero eyebrow="COMMUNITY VOICES" title={<>Every young person has a voice worth <em>hearing.</em></>} description="Explore the latest stories, community voices, programme updates and announcements from Visionary Students Initiative." image="/images/vsi-community-action.jpg" alt="Young people participating in community action" primaryLabel="Explore our work" primaryHref="/projects" secondaryLabel="Volunteer with VSI" secondaryHref="/volunteer" />
 
       <section className={`${styles.list} section-shell`}>
         {loading ? (
