@@ -30,6 +30,11 @@ async function retentionQueue(){
 export async function GET(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{await ensureDataProtectionTables();
+ const volunteerId=Number(new URL(request.url).searchParams.get("volunteerId"));
+ if(Number.isFinite(volunteerId)){
+  const rows=(await pool.query("SELECT consent_type,granted,recorded_at,source,policy_version FROM data_protection_consent_log WHERE subject_type='volunteer' AND subject_id=$1 ORDER BY recorded_at DESC",[volunteerId])).rows;
+  return NextResponse.json({consents:rows});
+ }
  const [requests,incidents,consents,volunteerConsent,retention,recentActions,retentionQueueRecords]=await Promise.all([
  pool.query("SELECT * FROM data_protection_requests ORDER BY received_at DESC LIMIT 100"),
  pool.query("SELECT * FROM data_protection_incidents ORDER BY reported_at DESC LIMIT 100"),
@@ -49,12 +54,26 @@ export async function GET(request){
 
 export async function PATCH(request){
  if(!isAdminAuthenticated(request))return unauthorized();
- try{await ensureDataProtectionTables();const b=await request.json();
- if(b.kind==="request"){const status=String(b.status||"").trim();if(!["received","in_progress","completed","closed"].includes(status))return NextResponse.json({error:"Invalid request status."},{status:400});const r=await pool.query("UPDATE data_protection_requests SET status=$1,completed_at=CASE WHEN $1 IN ('completed','closed') THEN COALESCE(completed_at,NOW()) ELSE NULL END WHERE id=$2 RETURNING *",[status,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
- if(b.kind==="incident"){const status=String(b.status||"").trim();if(!["open","contained","investigating","resolved"].includes(status))return NextResponse.json({error:"Invalid incident status."},{status:400});const r=await pool.query("UPDATE data_protection_incidents SET status=$1,resolved_at=CASE WHEN $1='resolved' THEN COALESCE(resolved_at,NOW()) ELSE NULL END WHERE id=$2 RETURNING *",[status,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
- if(b.kind==="retention_rule"){const months=Number(b.retentionMonths);const action=String(b.action||"");if(!Number.isInteger(months)||months<0||!["review","archive","anonymise","delete"].includes(action))return NextResponse.json({error:"Invalid retention rule."},{status:400});const r=await pool.query("UPDATE data_retention_rules SET retention_months=$1,action=$2,updated_at=NOW() WHERE id=$3 RETURNING *",[months,action,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
- return NextResponse.json({error:"Invalid update."},{status:400});
- }catch(e){console.error(e);return NextResponse.json({error:"Unable to update record."},{status:500});}
+ try{
+  await ensureDataProtectionTables();
+  const b=await request.json();
+  if(b.kind!=="volunteer_consent")return NextResponse.json({error:"Invalid consent update."},{status:400});
+  const id=Number(b.volunteerId);
+  const type=String(b.consentType||"").trim();
+  const granted=b.granted===true;
+  if(!Number.isFinite(id)||!["photo_processing","public_media"].includes(type))return NextResponse.json({error:"Invalid volunteer consent update."},{status:400});
+  const column=type==="photo_processing"?"photo_processing_consent":"public_media_consent";
+  const client=await pool.connect();
+  try{
+   await client.query("BEGIN");
+   const current=await client.query("SELECT id FROM volunteer_applications WHERE id=$1 FOR UPDATE",[id]);
+   if(!current.rows[0])throw new Error("Volunteer record not found.");
+   await client.query(`UPDATE volunteer_applications SET ${column}=$1,updated_at=NOW() WHERE id=$2`,[granted,id]);
+   await client.query("INSERT INTO data_protection_consent_log (subject_type,subject_id,consent_type,policy_version,granted,recorded_at,source) VALUES ('volunteer',$1,$2,NULL,$3,NOW(),'admin_confirmation')",[id,type,granted]);
+   await client.query("COMMIT");
+   return NextResponse.json({ok:true,volunteerId:id,consentType:type,granted});
+  }catch(e){await client.query("ROLLBACK");throw e}finally{client.release()}
+ }catch(e){console.error(e);return NextResponse.json({error:e.message||"Unable to update volunteer consent."},{status:500});}
 }
 
 export async function POST(request){
