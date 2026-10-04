@@ -109,9 +109,6 @@ export default function HomeExperience() {
               <span className="home-section-card-title">{section.cardTitle}</span>
               <span className="home-section-card-description">{section.cardDescription}</span>
             </span>
-            <span className="home-section-card-arrow-wrap">
-              <span className="home-section-card-arrow" aria-hidden="true">↗</span>
-            </span>
           </button>
         ))}
       </nav>
