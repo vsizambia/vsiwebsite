@@ -72,14 +72,6 @@ export default function ImpactPage() {
 
       <section className="impact-programmes">
         <div className="section-shell">
-          <div className="impact-programmes-heading">
-            <div>
-              <p className="kicker">OUR PROGRAMMES, OUR REACH</p>
-              <h2>Making a difference in practical ways.</h2>
-            </div>
-            <p>These programme cards bring together the key measures VSI tracks across its work. Figures will be published once verified totals are available.</p>
-          </div>
-
           <div className="impact-programme-grid">
             {programmeImpact.map((programme) => (
               <article className="impact-programme-card" key={programme.number}>
