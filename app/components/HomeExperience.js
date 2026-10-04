@@ -38,7 +38,7 @@ const sections = [
     image: "/images/research.JPG",
     thumb: "/images/research.JPG",
     alt: "VSI research and advocacy work",
-    learnMore: "/projects",
+    learnMore: "/impact",
   },
   {
     id: "community-voices",
