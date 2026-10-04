@@ -33,14 +33,17 @@ export async function GET(request){
  const [requests,incidents,consents,retention,recentActions,retentionQueueRecords]=await Promise.all([
  pool.query("SELECT * FROM data_protection_requests ORDER BY received_at DESC LIMIT 100"),
  pool.query("SELECT * FROM data_protection_incidents ORDER BY reported_at DESC LIMIT 100"),
- pool.query("SELECT consent_type,COUNT(*) FILTER(WHERE granted) granted,COUNT(*) total FROM data_protection_consent_log GROUP BY consent_type ORDER BY consent_type"),
+ pool.query("SELECT consent_type,COUNT(*) FILTER(WHERE granted) granted,COUNT(*) total FROM data_protection_consent_log WHERE subject_type='volunteer' GROUP BY consent_type ORDER BY consent_type"),
+ pool.query("SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE consent=TRUE)::int privacyDeclared,COUNT(*) FILTER (WHERE privacy_notice_accepted_at IS NOT NULL)::int privacyTimestamped,COUNT(*) FILTER (WHERE photo_processing_consent=TRUE)::int photoGranted,COUNT(*) FILTER (WHERE public_media_consent=TRUE)::int mediaGranted,COUNT(*) FILTER (WHERE public_media_consent=FALSE)::int mediaFalse FROM volunteer_applications"),
  retentionSummary(),
  pool.query("SELECT * FROM data_retention_actions ORDER BY performed_at DESC LIMIT 50"),
  retentionQueue()]);
+ const volunteerConsent=await pool.query("SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE consent=TRUE)::int privacyDeclared,COUNT(*) FILTER (WHERE privacy_notice_accepted_at IS NOT NULL)::int privacyTimestamped,COUNT(*) FILTER (WHERE photo_processing_consent=TRUE)::int photoGranted,COUNT(*) FILTER (WHERE public_media_consent=TRUE)::int mediaGranted,COUNT(*) FILTER (WHERE public_media_consent=FALSE)::int mediaFalse FROM volunteer_applications");
+ const consentReconciliation={volunteers:volunteerConsent.rows[0]||{},legacyReconciled:(await pool.query("SELECT COUNT(DISTINCT subject_id)::int count FROM data_protection_consent_log WHERE subject_type='volunteer' AND source='legacy_reconciliation'")).rows[0]?.count||0};
  const dueCount=retentionQueueRecords.length;
  const overdueCount=retentionQueueRecords.filter(item=>new Date(item.dueAt)<new Date()).length;
  const recentActionCount=recentActions.rows.filter(item=>["delete","anonymise"].includes(item.action)).length;
- return NextResponse.json({requests:requests.rows,incidents:incidents.rows,consents:consents.rows,retention,recentActions:recentActions.rows,retentionQueue:retentionQueueRecords,kpis:{dueCount,overdueCount,recentActionCount}});
+ return NextResponse.json({requests:requests.rows,incidents:incidents.rows,consents:consents.rows,consentReconciliation,retention,recentActions:recentActions.rows,retentionQueue:retentionQueueRecords,kpis:{dueCount,overdueCount,recentActionCount}});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to load compliance records."},{status:500});}
 }
 
