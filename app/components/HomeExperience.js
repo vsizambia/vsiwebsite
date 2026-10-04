@@ -102,9 +102,6 @@ export default function HomeExperience() {
             aria-pressed={activeId === section.id}
             aria-label={`Show ${section.cardTitle} hero`}
           >
-            <span className="home-section-card-image">
-              <Image src={section.thumb} alt="" fill sizes="(max-width: 680px) 112px, 190px" />
-            </span>
             <span className="home-section-card-copy">
               <span className="home-section-card-title">{section.cardTitle}</span>
               <span className="home-section-card-description">{section.cardDescription}</span>
