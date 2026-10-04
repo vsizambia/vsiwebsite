@@ -53,33 +53,6 @@ export default function ImpactPage() {
         </div>
       </section>
 
-      <section className="impact-principles">
-        <div className="section-shell">
-          <p className="kicker light">OUR LEARNING CYCLE</p>
-          <h2>Evidence should lead somewhere.</h2>
-          <div className="impact-principles-grid">
-            {evidencePrinciples.map(([number,title,description]) => (
-              <article key={number}>
-                <span>{number}</span>
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="impact-next section-shell">
-        <div>
-          <p className="kicker">KEEP EXPLORING</p>
-          <h2>See the work, then hear the stories behind it.</h2>
-        </div>
-        <div className="impact-next-actions">
-          <a className="button button-primary" href="/projects">VSI in Action <span aria-hidden="true">↗</span></a>
-          <a className="button button-yellow" href="/news">Community Voices <span aria-hidden="true">↗</span></a>
-        </div>
-      </section>
-
       <SiteFooter />
     </main>
   );
