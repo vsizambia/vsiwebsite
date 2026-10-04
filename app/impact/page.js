@@ -92,7 +92,6 @@ export default function ImpactPage() {
               </article>
             ))}
           </div>
-          <p className="impact-data-note">Impact figures are being verified and consolidated before publication.</p>
         </div>
       </section>
 
