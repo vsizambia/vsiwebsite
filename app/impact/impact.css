@@ -1,7 +1,4 @@
 .impact-programmes{padding:88px 0 104px;background:#f5f8fb}
-.impact-programmes-heading{display:grid;grid-template-columns:1.05fr .75fr;gap:70px;align-items:end;margin-bottom:34px}
-.impact-programmes-heading h2{max-width:700px;margin:6px 0 0;color:var(--regal-navy);font-size:clamp(38px,4.5vw,60px);line-height:1.02;letter-spacing:-.045em}
-.impact-programmes-heading>p{margin:0 0 4px;color:var(--muted);font-size:16px;line-height:1.8}
 .impact-programme-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
 .impact-programme-card{position:relative;display:flex;flex-direction:column;min-width:0;padding:28px;border:1px solid #e1e9ef;border-radius:24px;background:#fff;box-shadow:0 12px 32px rgba(0,35,68,.065);transition:transform .2s ease,box-shadow .2s ease}
 .impact-programme-card:hover{transform:translateY(-3px);box-shadow:0 18px 40px rgba(0,35,68,.1)}
@@ -14,7 +11,6 @@
 .impact-metric{display:flex;flex-direction:column;justify-content:center;min-height:90px;padding:14px;border-radius:15px;background:#f4f7fa}
 .impact-metric strong{color:#003566;font-size:30px;line-height:1;font-weight:900;letter-spacing:-.04em}
 .impact-metric span{margin-top:9px;color:#5e6f7e;font-size:11px;line-height:1.35;font-weight:700}
-.impact-data-note{margin:22px 0 0;color:#71808d;font-size:12px;line-height:1.6}
-@media(max-width:900px){.impact-programmes-heading{grid-template-columns:1fr;gap:20px}.impact-programme-grid{gap:14px}.impact-programme-card{padding:23px}}
+@media(max-width:900px){.impact-programme-grid{gap:14px}.impact-programme-card{padding:23px}}
 @media(max-width:600px){.impact-programmes{padding:66px 0 76px}.impact-programme-grid{grid-template-columns:1fr}.impact-programme-card{padding:22px;border-radius:20px}.impact-programme-description{min-height:0}.impact-metric{padding:12px 10px;min-height:82px}.impact-metric strong{font-size:26px}.impact-metric span{font-size:10px}.impact-programme-category{font-size:9px}}
 @media(prefers-reduced-motion:reduce){.impact-programme-card{transition:none}.impact-programme-card:hover{transform:none}}
