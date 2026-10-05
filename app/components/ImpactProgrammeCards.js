@@ -33,15 +33,15 @@ export default function ImpactProgrammeCards({initialProgrammes}){
   const primary=selected.programme_key==="policy-contribution"?sum("documents_contributed"):selected.programme_key==="clean-green-healthy"?sum("marketeers_reached"):selected.programme_key==="youth-policy"?male+female:people;
   return{count:detailRows.length,male,female,maleMarketeers,femaleMarketeers,people,items,schools,youth,trees,primary,locations:Object.entries(locations).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,7),partners:Object.entries(partners).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,6),sdgs,aus};
  },[detailRows,selected]);
- const overview=useMemo(()=>({activities:programmes.reduce((n,p)=>n+metricValue(p,"activities"),0),male:programmes.reduce((n,p)=>n+metricValue(p,"male"),0),female:programmes.reduce((n,p)=>n+metricValue(p,"female"),0),documents:programmes.reduce((n,p)=>n+metricValue(p,"documents"),0)}),[programmes]);
+ const overview=useMemo(()=>{const people=activities.reduce((n,row)=>{const direct=Number(row.people_reached)||0;const gender=(Number(row.male_reached)||0)+(Number(row.female_reached)||0);const marketeers=Number(row.marketeers_reached)||0;return n+(direct||gender||marketeers)},0);return{activities:activities.length,people,institutions:activities.reduce((n,row)=>n+(Number(row.institutions_engaged)||0),0),documents:activities.reduce((n,row)=>n+(Number(row.documents_contributed)||0),0)}},[activities]);
  if(!selected)return null;
  return <div className="impact-dashboard">
   <div className="impact-dashboard-heading"><div><span className="impact-dashboard-kicker">IMPACT &amp; EVIDENCE</span><h2>Impact at a glance</h2></div><span className="impact-dashboard-status"><i/> Live programme register</span></div>
   <div className="impact-kpi-grid" aria-label="Impact overview">
    <div className="impact-kpi"><span className="impact-kpi-label">Activities conducted</span><strong>{formatValue(overview.activities)}</strong><small>Across tracked programmes</small></div>
-   <div className="impact-kpi"><span className="impact-kpi-label">Boys reached</span><strong>{formatValue(overview.male)}</strong><small>Reported child reach</small></div>
-   <div className="impact-kpi"><span className="impact-kpi-label">Girls reached</span><strong>{formatValue(overview.female)}</strong><small>Reported child reach</small></div>
-   <div className="impact-kpi impact-kpi-accent"><span className="impact-kpi-label">Policy documents</span><strong>{formatValue(overview.documents)}</strong><small>Contributions recorded</small></div>
+   <div className="impact-kpi"><span className="impact-kpi-label">People reached</span><strong>{formatValue(overview.people)}</strong><small>Reported people reached</small></div>
+   <div className="impact-kpi"><span className="impact-kpi-label">Institutions engaged</span><strong>{formatValue(overview.institutions)}</strong><small>Schools, facilities &amp; organisations</small></div>
+   <div className="impact-kpi impact-kpi-accent"><span className="impact-kpi-label">Policy &amp; research outputs</span><strong>{formatValue(overview.documents)}</strong><small>Contributions recorded</small></div>
   </div>
   <div className="impact-section-heading"><div><span>PROGRAMME PERFORMANCE</span><h3>Where the work is happening</h3></div><span>{programmes.length} programmes tracked</span></div>
   <div className="impact-dashboard-shell">
