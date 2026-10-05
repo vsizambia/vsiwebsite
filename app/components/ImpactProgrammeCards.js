@@ -40,7 +40,7 @@ export default function ImpactProgrammeCards({initialProgrammes}){
   <div className="impact-kpi-grid" aria-label="Impact overview">
    <div className="impact-kpi"><span className="impact-kpi-label">Activities conducted</span><strong>{formatValue(overview.activities)}</strong><small>Across tracked programmes</small></div>
    <div className="impact-kpi"><span className="impact-kpi-label">People reached</span><strong>{formatValue(overview.people)}</strong><small>Reported people reached</small></div>
-   <div className="impact-kpi"><span className="impact-kpi-label">Institutions engaged</span><strong>{formatValue(overview.institutions)}</strong><small>Schools, facilities &amp; organisations</small></div>
+   <div className="impact-kpi"><span className="impact-kpi-label">Institutions &amp; facilities engaged</span><strong>{formatValue(overview.institutions)}</strong><small>Schools, health facilities &amp; organisations</small></div>
    <div className="impact-kpi impact-kpi-accent"><span className="impact-kpi-label">Policy &amp; research outputs</span><strong>{formatValue(overview.documents)}</strong><small>Contributions recorded</small></div>
   </div>
   <div className="impact-section-heading"><div><span>PROGRAMME PERFORMANCE</span><h3>Where the work is happening</h3></div><span>{programmes.length} programmes tracked</span></div>
