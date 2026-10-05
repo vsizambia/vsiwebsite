@@ -12,7 +12,22 @@ const shareStyle=(male,female)=>{const total=male+female;if(!total)return {backg
 
 function BarList({items,empty}){const max=Math.max(1,...items.map(item=>item.value));return items.length?<div className="impact-bar-list">{items.map((item,index)=><div className="impact-bar-row" key={item.label}><div className="impact-bar-label"><span>{item.label}</span><strong>{formatValue(item.value)}</strong></div><div className="impact-bar-track"><i style={{width:Math.max(3,item.value/max*100)+"%",background:PALETTE[index%PALETTE.length]}}/></div></div>):<div className="impact-empty">{empty}</div>}
 
-function AlignmentList({items,type}){const names=type==="sdg"?SDG_NAMES:AU_ASPIRATION_NAMES;return items.length?<div className="impact-alignment-list">{items.map(([label,value],index)=>{const match=label.match(/([0-9]+)/);const number=match?.[1];const name=number?(names[number]||label):label;return <div className="impact-alignment-item" key={label}><span className="impact-alignment-dot" style={{background:PALETTE[index%PALETTE.length]}}/><div><strong>{name}</strong><small>{value} catalogue {value===1?"activity":"activities"}</small></div><b>{value}</b></div>})}</div>:<div className="impact-empty">Alignment data will appear as catalogue-linked activities are recorded.</div>}
+function AlignmentList({items,type}){
+ const names=type==="sdg"?SDG_NAMES:AU_ASPIRATION_NAMES;
+ if(!items.length)return <div className="impact-empty">Alignment data will appear as catalogue-linked activities are recorded.</div>;
+ return <div className="impact-alignment-list">
+  {items.map(([label,value],index)=>{
+   const match=String(label).match(/([0-9]+)/);
+   const number=match?.[1];
+   const name=number?(names[number]||label):label;
+   return <div className="impact-alignment-item" key={label}>
+    <span className="impact-alignment-dot" style={{background:PALETTE[index%PALETTE.length]}}/>
+    <div><strong>{name}</strong><small>{value} catalogue {value===1?"activity":"activities"}</small></div>
+    <b>{value}</b>
+   </div>;
+  })}
+ </div>;
+}
 
 export default function ImpactProgrammeCards({initialProgrammes}){
  const[programmes,setProgrammes]=useState(initialProgrammes||[]);
