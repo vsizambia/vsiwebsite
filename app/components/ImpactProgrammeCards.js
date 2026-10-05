@@ -26,7 +26,8 @@ export default function ImpactProgrammeCards({initialProgrammes}){
   const partners={};detailRows.forEach(r=>(r.partner||"Partner not recorded").split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(x=>{partners[x]=(partners[x]||0)+1}));
   const sdgs=alignmentTokens(detailRows,"sdgs",/SDG\s*\d+/gi);
   const aus=alignmentTokens(detailRows,"au_agenda_2063",/Aspiration\s*\d+/gi);
-  const male=sum("male_reached"),female=sum("female_reached");\n  const maleMarketeers=sum("male_marketeers_reached"),femaleMarketeers=sum("female_marketeers_reached");
+  const male=sum("male_reached"),female=sum("female_reached");
+  const maleMarketeers=sum("male_marketeers_reached"),femaleMarketeers=sum("female_marketeers_reached");
   const primary=selected.programme_key==="policy-contribution"?sum("documents_contributed"):selected.programme_key==="clean-green-healthy"?sum("marketeers_reached"):male+female;
   return{count:detailRows.length,male,female,maleMarketeers,femaleMarketeers,primary,locations:Object.entries(locations).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,7),partners:Object.entries(partners).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,6),sdgs,aus};
  },[detailRows,selected]);
