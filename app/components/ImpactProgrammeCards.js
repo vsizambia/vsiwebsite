@@ -4,7 +4,17 @@ import { useEffect, useMemo, useState } from "react";
 
 const PALETTE=["#094074","#3c6997","#003566","#ffc300","#ffd60a"];
 const metricValue=(programme,key)=>{const metric=(programme?.metrics||[]).find(item=>item.key===key);return metric?.value==null||metric.value===""?0:Number(metric.value)||0};
-const formatValue=value=>Number(value||0).toLocaleString();
+const formatValue=value=>Number(value||0).toLocaleString();\nconst PROGRAMME_COPY={
+ "ovc-support":{title:"Community Service & Humanitarian Action",category:"COMMUNITY IMPACT",description:"Supporting vulnerable communities through community-led service, humanitarian assistance, donations and social support."},
+ "clean-green-healthy":{title:"Keep Zambia Clean, Green and Healthy",category:"COMMUNITY ACTION",description:"Advancing cleaner, greener and healthier communities through environmental action, education, waste management and restoration."},
+ "education-support":{title:"Education, Schools & Youth Development",category:"LEARNING & OPPORTUNITY",description:"Strengthening learners and young people through school outreach, mentorship, educational support and youth development."},
+ "civic-voter":{title:"Civic & Voter Education",category:"CIVIC LEADERSHIP",description:"Supporting informed, peaceful and non-partisan civic and voter participation through community education and democratic awareness."},
+ "youth-policy":{title:"Youth Policy Dialogue & Participation",category:"YOUTH VOICE",description:"Creating meaningful spaces for young people to contribute to policy dialogue, governance discussions and public decision-making."},
+ "policy-contribution":{title:"Policy Advocacy, Research & Governance",category:"POLICY & ADVOCACY",description:"Generating evidence and contributing to policy, research, governance and constructive institutional engagement."},
+ "community-health":{title:"Community Health & Wellbeing",category:"HEALTH & WELLBEING",description:"Improving community health and wellbeing through outreach, health education, prevention, referral and supportive services."},
+ "youth-skills":{title:"Youth Skills, Innovation & Economic Empowerment",category:"YOUTH DEVELOPMENT",description:"Equipping young people with practical skills, innovation, entrepreneurship and economic opportunities."}
+};
+const normalizeProgrammes=rows=>(rows||[]).map(row=>PROGRAMME_COPY[row.programme_key]?{...row,...PROGRAMME_COPY[row.programme_key]}:row);
 const alignmentTokens=(rows,field,pattern)=>{const counts={};rows.forEach(row=>{(row[field]||"").match(pattern)?.forEach(token=>{const key=token.trim();if(key)counts[key]=(counts[key]||0)+1})});return Object.entries(counts).sort((a,b)=>b[1]-a[1])};
 const SDG_NAMES={"1":"No Poverty","2":"Zero Hunger","3":"Good Health and Well-being","4":"Quality Education","5":"Gender Equality","6":"Clean Water and Sanitation","7":"Affordable and Clean Energy","8":"Decent Work and Economic Growth","9":"Industry, Innovation and Infrastructure","10":"Reduced Inequalities","11":"Sustainable Cities and Communities","12":"Responsible Consumption and Production","13":"Climate Action","14":"Life Below Water","15":"Life on Land","16":"Peace, Justice and Strong Institutions","17":"Partnerships for the Goals"};
 const AU_ASPIRATION_NAMES={"1":"A prosperous Africa based on inclusive growth and sustainable development","2":"An integrated continent, politically united and based on the ideals of Pan-Africanism","3":"An Africa of good governance, democracy, respect for human rights, justice and the rule of law","4":"A peaceful and secure Africa","5":"An Africa with a strong cultural identity, common heritage, shared values and ethics","6":"An Africa whose development is people-driven, relying on the potential of African people, especially its women and youth","7":"Africa as a strong, united, resilient and influential global player and partner"};
@@ -59,10 +69,10 @@ function DetailOutputPanel({selected,detail}){
 }
 
 export default function ImpactProgrammeCards({initialProgrammes}){
- const[programmes,setProgrammes]=useState(initialProgrammes||[]);
+ const[programmes,setProgrammes]=useState(normalizeProgrammes(initialProgrammes||[]));
  const[activities,setActivities]=useState([]);
  const[selectedKey,setSelectedKey]=useState(initialProgrammes?.[0]?.programme_key||"ovc-support");
- useEffect(()=>{let active=true;fetch("/api/impact",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(data=>{if(!active)return;if(Array.isArray(data.programmes)&&data.programmes.length)setProgrammes(data.programmes);if(Array.isArray(data.activities))setActivities(data.activities)}).catch(()=>{});return()=>{active=false}},[]);
+ useEffect(()=>{let active=true;fetch("/api/impact",{cache:"no-store"}).then(r=>r.ok?r.json():Promise.reject()).then(data=>{if(!active)return;if(Array.isArray(data.programmes)&&data.programmes.length)setProgrammes(normalizeProgrammes(data.programmes));if(Array.isArray(data.activities))setActivities(data.activities)}).catch(()=>{});return()=>{active=false}},[]);
  const selected=programmes.find(p=>p.programme_key===selectedKey)||programmes[0];
  const detailRows=useMemo(()=>activities.filter(a=>a.programme_key===selected?.programme_key),[activities,selected]);
  const detail=useMemo(()=>{
@@ -96,7 +106,7 @@ export default function ImpactProgrammeCards({initialProgrammes}){
     {programmes.map(programme=><button type="button" className={programme.programme_key===selectedKey?"is-active":""} onClick={()=>setSelectedKey(programme.programme_key)} key={programme.programme_key}><span className="impact-nav-number">{programme.number}</span><span><strong>{programme.title}</strong><small>{programme.category}</small></span><b>→</b></button>)}
    </aside>
    <section className="impact-detail-panel">
-    <header className="impact-detail-header"><div><span className="impact-detail-kicker">{selected.category}</span><h3>{selected.title}</h3><p>{selected.description}</p></div><span className="impact-live-chip">{detail.count} recorded activities</span></header>
+    <header className="impact-detail-header"><div><span className="impact-detail-kicker">{selected.category}</span><h3>{selected.title}</h3><p>{selected.description}</p></div><span className="impact-live-chip">{detail.count} recorded {detail.count===1?"activity":"activities"}</span></header>
     <div className="impact-detail-kpis">
      <div><span>Activities</span><strong>{formatValue(detail.count)}</strong></div>
      <DetailKpis selected={selected} detail={detail}/>
