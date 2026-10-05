@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const [programmes, activities] = await Promise.all([
       pool.query("SELECT programme_key, number, title, category, description, metrics FROM vsi_impact_programmes ORDER BY number"),
-      pool.query(`SELECT a.id,a.programme_key,a.activity_name,a.activity_date,a.province,a.district,a.constituency,a.ward,a.partner,a.male_reached,a.female_reached,a.male_marketeers_reached,a.female_marketeers_reached,a.marketeers_reached,a.documents_contributed,a.institutions_engaged,a.people_reached,a.items_donated,a.schools_supported,a.youth_participants,a.trees_planted,a.catalogue_activity_code,c.activity_code,c.project,c.sdgs,c.au_agenda_2063
+      pool.query(`SELECT a.id,a.programme_key,a.activity_name,a.activity_date,a.province,a.district,a.constituency,a.ward,a.institution_name,a.partner,a.male_reached,a.female_reached,a.male_marketeers_reached,a.female_marketeers_reached,a.marketeers_reached,a.documents_contributed,a.institutions_engaged,a.people_reached,a.items_donated,a.schools_supported,a.youth_participants,a.trees_planted,a.catalogue_activity_code,c.activity_code,c.project,c.sdgs,c.au_agenda_2063
         FROM vsi_impact_activities a
         LEFT JOIN vsi_master_activity_catalogue c ON c.activity_code=a.catalogue_activity_code
         ORDER BY a.activity_date DESC,a.id DESC`)
