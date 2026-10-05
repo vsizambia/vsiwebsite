@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 
 const PALETTE=["#094074","#3c6997","#003566","#ffc300","#ffd60a"];
 const metricValue=(programme,key)=>{const metric=(programme?.metrics||[]).find(item=>item.key===key);return metric?.value==null||metric.value===""?0:Number(metric.value)||0};
-const formatValue=value=>Number(value||0).toLocaleString();\nconst PROGRAMME_COPY={
+const formatValue=value=>Number(value||0).toLocaleString();
+const PROGRAMME_COPY={
  "ovc-support":{title:"Community Service & Humanitarian Action",category:"COMMUNITY IMPACT",description:"Supporting vulnerable communities through community-led service, humanitarian assistance, donations and social support."},
  "clean-green-healthy":{title:"Keep Zambia Clean, Green and Healthy",category:"COMMUNITY ACTION",description:"Advancing cleaner, greener and healthier communities through environmental action, education, waste management and restoration."},
  "education-support":{title:"Education, Schools & Youth Development",category:"LEARNING & OPPORTUNITY",description:"Strengthening learners and young people through school outreach, mentorship, educational support and youth development."},
