@@ -6,13 +6,13 @@ import { ECZ_2026_LOCATION_HIERARCHY } from "../../data/ecz-2026-location-hierar
 import styles from "./impact.module.css";
 
 const PROGRAMME_META={
-  "ovc-support":{label:"Community Service & Humanitarian Action",category:"COMMUNITY IMPACT",fields:[["male_reached","Boys reached"],["female_reached","Girls reached"]]},
+  "ovc-support":{label:"Community Service & Humanitarian Action",category:"COMMUNITY IMPACT",fields:[["people_reached","People reached"],["items_donated","Items / supplies donated"],["schools_supported","Schools / institutions supported"]]},
   "clean-green-healthy":{label:"Keep Zambia Clean, Green and Healthy",category:"COMMUNITY ACTION",fields:[["marketeers_reached","Marketeers reached"],["male_marketeers_reached","Men reached (optional)"],["female_marketeers_reached","Women reached (optional)"]],help:"Gender counts are optional. Enter them only when they were actually recorded — do not estimate."},
   "education-support":{label:"Education, Schools & Youth Development",category:"LEARNING & OPPORTUNITY",fields:[["male_reached","Boys reached"],["female_reached","Girls reached"],["schools_supported","Schools supported"],["items_donated","Books / learning items donated"]]},
-  "civic-voter":{label:"Civic & Voter Education",category:"CIVIC LEADERSHIP",fields:[["male_reached","Male reached"],["female_reached","Female reached"]],help:"Record people reached by civic or voter education activity. Keep all voter education non-partisan and informational."},
+  "civic-voter":{label:"Civic & Voter Education",category:"CIVIC LEADERSHIP",fields:[["people_reached","People reached"]],help:"Record people reached by civic or voter education activity. Keep all voter education non-partisan and informational."},
   "youth-policy":{label:"Youth Policy Dialogue & Participation",category:"YOUTH VOICE",fields:[["male_reached","Male participants"],["female_reached","Female participants"],["institutions_engaged","Institutions engaged"]]},
   "policy-contribution":{label:"Policy Advocacy, Research & Governance",category:"POLICY & ADVOCACY",fields:[["documents_contributed","Policy & research outputs"],["institutions_engaged","Institutions engaged"]]},
-  "community-health":{label:"Community Health & Wellbeing",category:"HEALTH & WELLBEING",fields:[["male_reached","Male reached"],["female_reached","Female reached"],["institutions_engaged","Health facilities / institutions engaged"]]},
+  "community-health":{label:"Community Health & Wellbeing",category:"HEALTH & WELLBEING",fields:[["people_reached","People reached"],["institutions_engaged","Health facilities / institutions engaged"]]},
   "youth-skills":{label:"Youth Skills, Innovation & Economic Empowerment",category:"YOUTH DEVELOPMENT",fields:[["male_reached","Male reached"],["female_reached","Female reached"]]}
 };
 const blank={programme_key:"ovc-support",catalogue_activity_id:"",activity_name:"",activity_date:new Date().toISOString().slice(0,10),province:"",district:"",constituency:"",ward:"",partner:"",male_reached:"",female_reached:"",marketeers_reached:"",documents_contributed:"",institutions_engaged:"",notes:"",male_marketeers_reached:"",female_marketeers_reached:"",people_reached:"",items_donated:"",schools_supported:"",youth_participants:"",trees_planted:""};
