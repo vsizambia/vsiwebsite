@@ -28,7 +28,7 @@ const CATALOGUE_FILTERS={
 };
 
 export default function ImpactAdminPage(){
- const[programmes,setProgrammes]=useState([]),[activities,setActivities]=useState([]),[catalogue,setCatalogue]=useState([]),[form,setForm]=useState(blank),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[deleting,setDeleting]=useState(null),[authenticated,setAuthenticated]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
+ const[programmes,setProgrammes]=useState([]),[activities,setActivities]=useState([]),[catalogue,setCatalogue]=useState([]),[form,setForm]=useState(blank),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[deleting,setDeleting]=useState(null),[editingId,setEditingId]=useState(null),[authenticated,setAuthenticated]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
  async function load(){setLoading(true);setError("");try{const r=await fetch("/api/admin/impact",{cache:"no-store"}),d=await r.json();if(r.status===401){setAuthenticated(false);return}if(!r.ok)throw new Error(d.error||"Unable to load Impact register.");setProgrammes(d.programmes||[]);setActivities(d.activities||[]);setAuthenticated(true)}catch(e){setError(e.message)}finally{setLoading(false)}}
  useEffect(()=>{load();(async()=>{try{const r=await fetch("/api/admin/activity-catalogue?active=true",{cache:"no-store"});const d=await r.json();if(r.ok)setCatalogue(d.activities||[])}catch(e){console.error(e)}})()},[]);
  const selected=PROGRAMME_META[form.programme_key];
