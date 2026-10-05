@@ -10,7 +10,11 @@ const SDG_NAMES={"1":"No Poverty","2":"Zero Hunger","3":"Good Health and Well-be
 const AU_ASPIRATION_NAMES={"1":"A prosperous Africa based on inclusive growth and sustainable development","2":"An integrated continent, politically united and based on the ideals of Pan-Africanism","3":"An Africa of good governance, democracy, respect for human rights, justice and the rule of law","4":"A peaceful and secure Africa","5":"An Africa with a strong cultural identity, common heritage, shared values and ethics","6":"An Africa whose development is people-driven, relying on the potential of African people, especially its women and youth","7":"Africa as a strong, united, resilient and influential global player and partner"};
 const shareStyle=(male,female)=>{const total=male+female;if(!total)return {background:"#e8eef3"};const split=male/total*100;return {background:"conic-gradient(#094074 0 "+split+"%, #ffd60a "+split+"% 100%)"}};
 
-function BarList({items,empty}){const max=Math.max(1,...items.map(item=>item.value));return items.length?<div className="impact-bar-list">{items.map((item,index)=><div className="impact-bar-row" key={item.label}><div className="impact-bar-label"><span>{item.label}</span><strong>{formatValue(item.value)}</strong></div><div className="impact-bar-track"><i style={{width:Math.max(3,item.value/max*100)+"%",background:PALETTE[index%PALETTE.length]}}/></div></div>):<div className="impact-empty">{empty}</div>}
+function BarList({items,empty}){
+ const max=Math.max(1,...items.map(item=>item.value));
+ if(!items.length)return <div className="impact-empty">{empty}</div>;
+ return <div className="impact-bar-list">{items.map((item,index)=><div className="impact-bar-row" key={item.label}><div className="impact-bar-label"><span>{item.label}</span><strong>{formatValue(item.value)}</strong></div><div className="impact-bar-track"><i style={{width:Math.max(3,item.value/max*100)+"%",background:PALETTE[index%PALETTE.length]}}/></div></div>)}</div>;
+}
 
 function AlignmentList({items,type}){
  const names=type==="sdg"?SDG_NAMES:AU_ASPIRATION_NAMES;
