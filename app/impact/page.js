@@ -31,7 +31,7 @@ const programmeImpact = [
   {
     programme_key: "education-support",
     number: "03",
-    title: "Education Support",
+    title: "VSI On-Campus Mentorship Programme",
     category: "LEARNING & OPPORTUNITY",
     description: "Helping learners access support and opportunities that can strengthen their educational journey.",
     metrics: [
