@@ -23,7 +23,7 @@ function AlignmentList({items,type}){
   {items.map(([label,value],index)=>{
    const match=String(label).match(/([0-9]+)/);
    const number=match?.[1];
-   const name=number?(names[number]||label):label;
+   const name=number?`${type==="sdg"?"SDG":"Aspiration"} ${number} — ${names[number]||label}`:label;
    return <div className="impact-alignment-item" key={label}>
     <span className="impact-alignment-dot" style={{background:PALETTE[index%PALETTE.length]}}/>
     <div><strong>{name}</strong><small>{value} catalogue {value===1?"activity":"activities"}</small></div>
