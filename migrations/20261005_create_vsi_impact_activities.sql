@@ -61,3 +61,8 @@ UPDATE vsi_impact_programmes SET title = 'VSI On-Campus Mentorship Programme' WH
 
 ALTER TABLE vsi_impact_activities ADD COLUMN IF NOT EXISTS institution_name text;
 CREATE INDEX IF NOT EXISTS vsi_impact_activities_institution_name_idx ON vsi_impact_activities (LOWER(TRIM(institution_name))) WHERE institution_name IS NOT NULL AND TRIM(institution_name) <> '';
+
+
+-- Store descriptive donation/supply details rather than a numeric item count in the admin register.
+ALTER TABLE vsi_impact_activities
+  ADD COLUMN IF NOT EXISTS items_description text;
