@@ -69,10 +69,6 @@ export default function ImpactPage() {
         description="Explore VSI’s programmes and the people, communities and institutions they connect with across charity work, education, community action and policy contribution."
         image="/images/research.JPG"
         alt="VSI research and advocacy work"
-        primaryLabel="Explore projects"
-        primaryHref="/projects"
-        secondaryLabel="See VSI News"
-        secondaryHref="/news"
       />
 
       <section className="impact-programmes">
