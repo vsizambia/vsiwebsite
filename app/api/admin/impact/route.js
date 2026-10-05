@@ -24,7 +24,8 @@ export async function GET(request){
 }
 export async function POST(request){
  if(!isAdminAuthenticated(request))return unauthorized();let b;try{b=await request.json()}catch{return NextResponse.json({error:"A valid JSON request is required."},{status:400})}
- const key=clean(b?.programme_key,60),name=clean(b?.activity_name,160),date=clean(b?.activity_date,20);\n const nums={male_reached:intOrNull(b?.male_reached),female_reached:intOrNull(b?.female_reached),male_marketeers_reached:intOrNull(b?.male_marketeers_reached),female_marketeers_reached:intOrNull(b?.female_marketeers_reached),marketeers_reached:intOrNull(b?.marketeers_reached),documents_contributed:intOrNull(b?.documents_contributed),institutions_engaged:intOrNull(b?.institutions_engaged)};
+ const key=clean(b?.programme_key,60),name=clean(b?.activity_name,160),date=clean(b?.activity_date,20);
+ const nums={male_reached:intOrNull(b?.male_reached),female_reached:intOrNull(b?.female_reached),male_marketeers_reached:intOrNull(b?.male_marketeers_reached),female_marketeers_reached:intOrNull(b?.female_marketeers_reached),marketeers_reached:intOrNull(b?.marketeers_reached),documents_contributed:intOrNull(b?.documents_contributed),institutions_engaged:intOrNull(b?.institutions_engaged)};
  const catalogueId=b?.catalogue_activity_id?Number(b.catalogue_activity_id):null;
  if(catalogueId!==null&&(!Number.isSafeInteger(catalogueId)||catalogueId<1))return NextResponse.json({error:"Select a valid activity from the VSI Master Activity Catalogue."},{status:400});
  if(!PROGRAMME_KEYS.includes(key)||!name||!/^\d{4}-\d{2}-\d{2}$/.test(date)||Object.values(nums).some(v=>!validInt(v)))return NextResponse.json({error:"Select a programme, enter an activity name and date, and use whole numbers zero or higher for figures."},{status:400});
