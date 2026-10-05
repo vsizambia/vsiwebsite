@@ -25,23 +25,11 @@
 .impact-programme-title-row{min-height:124px}
 .impact-programme-card h3{margin:17px 0 8px;color:var(--regal-navy);font-size:clamp(21px,2.15vw,27px);line-height:1.08;letter-spacing:-.04em}
 .impact-programme-description{margin:0;color:#71808d;font-size:12px;line-height:1.6}
-.impact-main-stat{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;padding:17px 0;border-top:1px solid #edf1f4;border-bottom:1px solid #edf1f4}
-.impact-main-stat span{max-width:150px;color:#71808d;font-size:10px;font-weight:800;line-height:1.35}
-.impact-main-stat strong{color:#003566;font-size:34px;line-height:.9;font-weight:900;letter-spacing:-.05em}
-.impact-reach-chart{padding:15px 0 4px}
-.impact-reach-head{display:flex;justify-content:space-between;gap:12px;color:#778692;font-size:9px;font-weight:800}
-.impact-reach-bar{height:7px;margin:9px 0 9px;border-radius:999px;background:#f0dfe7;overflow:hidden}
-.impact-reach-bar span{display:block;height:100%;border-radius:inherit;background:#003566}
-.impact-reach-legend{display:flex;justify-content:space-between;gap:12px;color:#7a8893;font-size:9px;font-weight:700}
-.impact-reach-legend span{display:inline-flex;align-items:center;gap:5px}
-.impact-reach-legend i{width:6px;height:6px;border-radius:50%;background:#003566}
-.impact-reach-legend span:last-child i{background:#d88ca8}
-.impact-reach-legend b{color:#3e5261;font-weight:900}
 .impact-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:14px}
 .impact-metric{display:flex;flex-direction:column;justify-content:center;min-height:66px;padding:10px 11px;border-radius:12px;background:#f5f7f9}
 .impact-metric strong{color:#183f5e;font-size:20px;line-height:1;font-weight:900;letter-spacing:-.035em}
 .impact-metric span{margin-top:7px;color:#72818d;font-size:9px;line-height:1.25;font-weight:700}
 @media(max-width:900px){.impact-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.impact-programme-grid{gap:12px}.impact-programme-card{padding:19px}}
-@media(max-width:600px){.impact-programmes{padding:58px 0 76px}.impact-dashboard-heading,.impact-section-heading{align-items:flex-start;flex-direction:column;gap:12px}.impact-dashboard-status{font-size:9px}.impact-kpi-grid{grid-template-columns:1fr 1fr;gap:9px;margin-bottom:38px}.impact-kpi{min-height:122px;padding:16px 15px}.impact-kpi strong{margin-top:13px;font-size:28px}.impact-kpi small{font-size:9px}.impact-programme-grid{grid-template-columns:1fr}.impact-programme-card{padding:19px;border-radius:19px}.impact-programme-title-row{min-height:0}.impact-programme-card h3{font-size:23px}.impact-main-stat strong{font-size:31px}.impact-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.impact-programmes{padding:58px 0 76px}.impact-dashboard-heading,.impact-section-heading{align-items:flex-start;flex-direction:column;gap:12px}.impact-dashboard-status{font-size:9px}.impact-kpi-grid{grid-template-columns:1fr 1fr;gap:9px;margin-bottom:38px}.impact-kpi{min-height:122px;padding:16px 15px}.impact-kpi strong{margin-top:13px;font-size:28px}.impact-kpi small{font-size:9px}.impact-programme-grid{grid-template-columns:1fr}.impact-programme-card{padding:19px;border-radius:19px}.impact-programme-title-row{min-height:0}.impact-programme-card h3{font-size:23px}.impact-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:390px){.impact-kpi-grid{grid-template-columns:1fr}.impact-kpi{min-height:112px}}
 @media(prefers-reduced-motion:reduce){.impact-programme-card{transition:none}.impact-programme-card:hover{transform:none}}
