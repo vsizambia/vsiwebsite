@@ -32,5 +32,29 @@ CREATE TABLE IF NOT EXISTS vsi_impact_activities (
   )
 );
 CREATE INDEX IF NOT EXISTS vsi_impact_activities_programme_idx ON vsi_impact_activities(programme_key);
+ALTER TABLE vsi_impact_activities
+  ADD COLUMN IF NOT EXISTS people_reached integer,
+  ADD COLUMN IF NOT EXISTS items_donated integer,
+  ADD COLUMN IF NOT EXISTS schools_supported integer,
+  ADD COLUMN IF NOT EXISTS youth_participants integer,
+  ADD COLUMN IF NOT EXISTS trees_planted integer;
+
+DO $
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'vsi_impact_activities_public_outputs_nonnegative'
+  ) THEN
+    ALTER TABLE vsi_impact_activities
+      ADD CONSTRAINT vsi_impact_activities_public_outputs_nonnegative CHECK (
+        COALESCE(people_reached,0) >= 0 AND
+        COALESCE(items_donated,0) >= 0 AND
+        COALESCE(schools_supported,0) >= 0 AND
+        COALESCE(youth_participants,0) >= 0 AND
+        COALESCE(trees_planted,0) >= 0
+      );
+  END IF;
+END $;
+
+
 CREATE INDEX IF NOT EXISTS vsi_impact_activities_date_idx ON vsi_impact_activities(activity_date DESC);
 UPDATE vsi_impact_programmes SET title = 'VSI On-Campus Mentorship Programme' WHERE programme_key = 'education-support';
