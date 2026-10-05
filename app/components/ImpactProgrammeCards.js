@@ -59,12 +59,15 @@ function DetailKpis({selected,detail}){
 function DetailOutputPanel({selected,detail}){
  const key=selected.programme_key;
  const isGender=key==="ovc-support"||key==="education-support"||key==="civic-voter"||key==="community-health"||key==="youth-skills"||key==="youth-policy";
- const isYouthEducation=key==="ovc-support"||key==="education-support";
+
  if(isGender){
   const title=key==="youth-policy"?"Participation by gender":"Reach by gender";
   const maleLabel=(key==="ovc-support"||key==="education-support")?"Boys":"Male";
   const femaleLabel=(key==="ovc-support"||key==="education-support")?"Girls":"Female";
 
+  const isYouthEducation=key==="ovc-support"||key==="education-support";
+  const maleLabel=isYouthEducation?"Boys":"Male";
+  const femaleLabel=isYouthEducation?"Girls":"Female";
   return <article className="impact-panel impact-reach-panel"><div className="impact-panel-head"><div><span>REACH COMPOSITION</span><h4>{title}</h4></div></div><div className="impact-donut-wrap"><div className="impact-donut" style={shareStyle(detail.male,detail.female)}><div><strong>{formatValue(detail.male+detail.female)}</strong><small>Total recorded</small></div></div><div className="impact-legend"><span><i/>{maleLabel} <b>{formatValue(detail.male)}</b></span><span><i/>{femaleLabel} <b>{formatValue(detail.female)}</b></span></div></div></article>;
  }
  const isMarketeers=key==="clean-green-healthy";
