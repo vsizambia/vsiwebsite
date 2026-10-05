@@ -58,3 +58,6 @@ END $;
 
 CREATE INDEX IF NOT EXISTS vsi_impact_activities_date_idx ON vsi_impact_activities(activity_date DESC);
 UPDATE vsi_impact_programmes SET title = 'VSI On-Campus Mentorship Programme' WHERE programme_key = 'education-support';
+
+ALTER TABLE vsi_impact_activities ADD COLUMN IF NOT EXISTS institution_name text;
+CREATE INDEX IF NOT EXISTS vsi_impact_activities_institution_name_idx ON vsi_impact_activities (LOWER(TRIM(institution_name))) WHERE institution_name IS NOT NULL AND TRIM(institution_name) <> '';
