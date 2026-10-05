@@ -33,6 +33,31 @@ function AlignmentList({items,type}){
  </div>;
 }
 
+
+function DetailKpis({selected,detail}){
+ const key=selected.programme_key;
+ if(key==="ovc-support"||key==="education-support"){
+  return <><div><span>Boys reached</span><strong>{formatValue(detail.male)}</strong></div><div><span>Girls reached</span><strong>{formatValue(detail.female)}</strong></div></>;
+ }
+ if(key==="clean-green-healthy"){
+  return <div><span>Marketeers reached</span><strong>{formatValue(detail.primary)}</strong></div>;
+ }
+ return <><div><span>Documents contributed</span><strong>{formatValue(metricValue(selected,"documents"))}</strong></div><div><span>Institutions engaged</span><strong>{formatValue(metricValue(selected,"institutions"))}</strong></div></>;
+}
+
+function DetailOutputPanel({selected,detail}){
+ const key=selected.programme_key;
+ const isGender=key==="ovc-support"||key==="education-support"||key==="civic-voter"||key==="community-health"||key==="youth-skills"||key==="youth-policy";
+ if(isGender){
+  const title=key==="youth-policy"?"Participation by gender":"Reach by gender";
+  return <article className="impact-panel impact-reach-panel"><div className="impact-panel-head"><div><span>REACH COMPOSITION</span><h4>{title}</h4></div></div><div className="impact-donut-wrap"><div className="impact-donut" style={shareStyle(detail.male,detail.female)}><div><strong>{formatValue(detail.male+detail.female)}</strong><small>Total recorded</small></div></div><div className="impact-legend"><span><i/>Male <b>{formatValue(detail.male)}</b></span><span><i/>Female <b>{formatValue(detail.female)}</b></span></div></div></article>;
+ }
+ const isMarketeers=key==="clean-green-healthy";
+ const title=isMarketeers?"Marketeers reached":"Policy contribution";
+ const label=isMarketeers?"Marketeers reached":"Documents contributed";
+ return <article className="impact-panel impact-reach-panel"><div className="impact-panel-head"><div><span>PROGRAMME OUTPUT</span><h4>{title}</h4></div></div><div className="impact-output-number"><strong>{formatValue(detail.primary)}</strong><span>{label}</span>{isMarketeers&&(detail.maleMarketeers||detail.femaleMarketeers)?<div className="impact-output-breakdown"><span>Men <b>{formatValue(detail.maleMarketeers)}</b></span><span>Women <b>{formatValue(detail.femaleMarketeers)}</b></span></div>:null}</div></article>;
+}
+
 export default function ImpactProgrammeCards({initialProgrammes}){
  const[programmes,setProgrammes]=useState(initialProgrammes||[]);
  const[activities,setActivities]=useState([]);
@@ -74,7 +99,7 @@ export default function ImpactProgrammeCards({initialProgrammes}){
     <header className="impact-detail-header"><div><span className="impact-detail-kicker">{selected.category}</span><h3>{selected.title}</h3><p>{selected.description}</p></div><span className="impact-live-chip">{detail.count} recorded activities</span></header>
     <div className="impact-detail-kpis">
      <div><span>Activities</span><strong>{formatValue(detail.count)}</strong></div>
-     {selected.programme_key==="ovc-support"||selected.programme_key==="education-support"?<><div><span>Boys reached</span><strong>{formatValue(detail.male)}</strong></div><div><span>Girls reached</span><strong>{formatValue(detail.female)}</strong></div></>:selected.programme_key==="clean-green-healthy"?<div><span>Marketeers reached</span><strong>{formatValue(detail.primary)}</strong></div>:<><div><span>Documents contributed</span><strong>{formatValue(metricValue(selected,"documents"))}</strong></div><div><span>Institutions engaged</span><strong>{formatValue(metricValue(selected,"institutions"))}</strong></div>}
+     <DetailKpis selected={selected} detail={detail}/>
     </div>
     <div className="impact-detail-grid">
      <article className="impact-panel impact-location-panel"><div className="impact-panel-head"><div><span>GEOGRAPHIC REACH</span><h4>Performance by location</h4></div><small>{detail.locations.length} locations</small></div><BarList items={detail.locations} empty="No locations recorded yet."/></article>
