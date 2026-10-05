@@ -1,127 +1,61 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
+import { ECZ_2026_LOCATION_HIERARCHY } from "../../data/ecz-2026-location-hierarchy";
 import styles from "./impact.module.css";
 
-export default function ImpactAdminPage() {
-  const [programmes, setProgrammes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [authenticated, setAuthenticated] = useState(true);
-  const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+const PROGRAMME_META={
+  "ovc-support":{label:"OVC Support",category:"CHARITY WORK",fields:[["male_reached","Male reached"],["female_reached","Female reached"]]},
+  "clean-green-healthy":{label:"Keep Zambia Clean, Green and Healthy",category:"COMMUNITY ACTION",fields:[["marketeers_reached","Marketeers reached"]]},
+  "education-support":{label:"VSI On-Campus Mentorship Programme",category:"LEARNING & OPPORTUNITY",fields:[["male_reached","Male reached"],["female_reached","Female reached"]]},
+  "policy-contribution":{label:"Policy Contribution",category:"POLICY & ADVOCACY",fields:[["documents_contributed","Documents contributed"],["institutions_engaged","Ministries & departments engaged"]]}
+};
+const blank={programme_key:"ovc-support",activity_name:"",activity_date:new Date().toISOString().slice(0,10),province:"",district:"",constituency:"",ward:"",partner:"",male_reached:"",female_reached:"",marketeers_reached:"",documents_contributed:"",institutions_engaged:"",notes:""};
 
-  async function load() {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await fetch("/api/admin/impact", { cache: "no-store" });
-      const data = await response.json();
-      if (response.status === 401) { setAuthenticated(false); return; }
-      if (!response.ok) throw new Error(data.error || "Unable to load Impact cards.");
-      setProgrammes(data.programmes || []);
-      setAuthenticated(true);
-    } catch (e) {
-      setError(e.message || "Unable to load Impact cards.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  useEffect(() => { load(); }, []);
-
-  function updateProgramme(index, field, value) {
-    setProgrammes((current) => current.map((item, i) => i === index ? { ...item, [field]: value } : item));
-    setNotice("");
-  }
-
-  function updateMetric(programmeIndex, metricIndex, field, value) {
-    setProgrammes((current) => current.map((programme, i) => i !== programmeIndex ? programme : {
-      ...programme,
-      metrics: programme.metrics.map((metric, j) => j === metricIndex ? { ...metric, [field]: value } : metric),
-    }));
-    setNotice("");
-  }
-
-  async function save(event) {
-    event.preventDefault();
-    setSaving(true);
-    setError("");
-    setNotice("");
-    try {
-      const payload = { programmes: programmes.map((programme) => ({
-        ...programme,
-        metrics: programme.metrics.map((metric) => ({ ...metric, value: metric.value === "" || metric.value === null || metric.value === undefined ? null : Number(metric.value) })),
-      })) };
-      const response = await fetch("/api/admin/impact", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await response.json();
-      if (response.status === 401) { setAuthenticated(false); throw new Error("Your admin session has expired. Please return to Admin and sign in again."); }
-      if (!response.ok) throw new Error(data.error || "Unable to save Impact cards.");
-      setProgrammes(data.programmes || []);
-      setNotice("Impact cards saved. The public Impact page will show the updated figures.");
-    } catch (e) {
-      setError(e.message || "Unable to save Impact cards.");
-    } finally {
-      setSaving(false);
-    }
-  }
-
-  return (
-    <>
-      <SiteHeader ctaLabel="Administration" ctaHref="/admin" />
-      <main className={styles.page}>
-        <div className={styles.shell}>
-          <div className={styles.breadcrumb}><Link href="/admin">← Admin dashboard</Link><span> / Impact & Evidence</span></div>
-          <header className={styles.hero}>
-            <div><p className={styles.eyebrow}>CONTENT MANAGEMENT</p><h1>Impact & Evidence</h1><p>Update programme descriptions and the figures displayed on the public Impact page.</p></div>
-            <span className={styles.heroMark}>IM</span>
-          </header>
-          {!authenticated ? (
-            <section className={styles.message}><h2>Admin sign-in required</h2><p>Your secure session is missing or has expired.</p><Link href="/admin">Return to VSI Admin to sign in</Link></section>
-          ) : loading ? (
-            <section className={styles.message}>Loading Impact cards…</section>
-          ) : (
-            <form className={styles.form} onSubmit={save}>
-              {error && <div className={styles.error} role="alert">{error}</div>}
-              {notice && <div className={styles.notice} role="status">{notice}</div>}
-              {programmes.map((programme, index) => (
-                <section className={styles.card} key={programme.programme_key}>
-                  <div className={styles.cardHead}>
-                    <span className={styles.number}>{programme.number}</span>
-                    <div><p className={styles.cardEyebrow}>PROGRAMME CARD {programme.number}</p><h2>{programme.title}</h2></div>
-                  </div>
-                  <div className={styles.fields}>
-                    <label>Card title<input value={programme.title} maxLength={120} onChange={(e) => updateProgramme(index, "title", e.target.value)} required /></label>
-                    <label>Category label<input value={programme.category} maxLength={80} onChange={(e) => updateProgramme(index, "category", e.target.value)} required /></label>
-                    <label className={styles.full}>Description<textarea value={programme.description} maxLength={500} rows={3} onChange={(e) => updateProgramme(index, "description", e.target.value)} required /></label>
-                  </div>
-                  <div className={styles.metricHeading}><h3>Impact figures</h3><span>Leave a figure blank if it is not yet verified.</span></div>
-                  <div className={styles.metrics}>
-                    {programme.metrics.map((metric, metricIndex) => (
-                      <div className={styles.metric} key={metric.key}>
-                        <label>Metric label<input value={metric.label} maxLength={90} onChange={(e) => updateMetric(index, metricIndex, "label", e.target.value)} required /></label>
-                        <label>Figure<input type="number" min="0" step="1" inputMode="numeric" placeholder="Not entered" value={metric.value ?? ""} onChange={(e) => updateMetric(index, metricIndex, "value", e.target.value)} /></label>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-              ))}
-              <div className={styles.footerActions}>
-                <p>Changes are published to the public Impact page when you save.</p>
-                <button type="submit" disabled={saving || loading || programmes.length !== 4}>{saving ? "Saving changes…" : "Save and publish impact cards"}</button>
-              </div>
-            </form>
-          )}
-          {error && (!authenticated || loading) && <div className={styles.error} role="alert">{error}</div>}
-        </div>
-      </main>
-      <SiteFooter />
-    </>
-  );
+export default function ImpactAdminPage(){
+ const[programmes,setProgrammes]=useState([]),[activities,setActivities]=useState([]),[form,setForm]=useState(blank),[loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[deleting,setDeleting]=useState(null),[authenticated,setAuthenticated]=useState(true),[error,setError]=useState(""),[notice,setNotice]=useState("");
+ async function load(){setLoading(true);setError("");try{const r=await fetch("/api/admin/impact",{cache:"no-store"}),d=await r.json();if(r.status===401){setAuthenticated(false);return}if(!r.ok)throw new Error(d.error||"Unable to load Impact register.");setProgrammes(d.programmes||[]);setActivities(d.activities||[]);setAuthenticated(true)}catch(e){setError(e.message)}finally{setLoading(false)}}
+ useEffect(()=>{load()},[]);
+ const selected=PROGRAMME_META[form.programme_key];
+ const province=useMemo(()=>ECZ_2026_LOCATION_HIERARCHY.find(x=>x.name===form.province),[form.province]);
+ const districts=province?.districts||[];
+ const district=districts.find(x=>x.name===form.district);
+ const constituencies=district?.constituencies||[];
+ const constituency=constituencies.find(x=>x.name===form.constituency);
+ const wards=constituency?.wards||[];
+ function change(field,value){setForm(f=>{const n={...f,[field]:value};if(field==="province"){n.district="";n.constituency="";n.ward=""}if(field==="district"){n.constituency="";n.ward=""}if(field==="constituency")n.ward="";return n});setNotice("");setError("")}
+ function programmeChange(value){setForm({...blank,programme_key:value,activity_date:form.activity_date});setNotice("");setError("")}
+ async function save(e){e.preventDefault();setSaving(true);setError("");setNotice("");try{const payload={...form};for(const k of ["male_reached","female_reached","marketeers_reached","documents_contributed","institutions_engaged"])payload[k]=payload[k]===""?null:Number(payload[k]);const r=await fetch("/api/admin/impact",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)}),d=await r.json();if(r.status===401){setAuthenticated(false);throw new Error("Your admin session has expired. Please sign in again.")}if(!r.ok)throw new Error(d.error||"Unable to save activity.");setActivities(a=>[d.activity,...a]);setProgrammes(d.programmes||programmes);setForm({...blank,programme_key:form.programme_key,activity_date:form.activity_date});setNotice("Activity saved. The public Impact figures have been updated.");}catch(e){setError(e.message)}finally{setSaving(false)}}
+ async function remove(id){if(!window.confirm("Delete this Impact activity? The public totals will be recalculated."))return;setDeleting(id);setError("");try{const r=await fetch("/api/admin/impact",{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})}),d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to delete activity.");setActivities(a=>a.filter(x=>x.id!==id));setProgrammes(d.programmes||programmes);setNotice("Activity deleted and Impact totals recalculated.")}catch(e){setError(e.message)}finally{setDeleting(null)}}
+ const programmeName=key=>PROGRAMME_META[key]?.label||key;
+ if(!authenticated)return <><SiteHeader ctaLabel="Administration" ctaHref="/admin"/><main className={styles.page}><div className={styles.shell}><section className={styles.message}><h2>Admin sign-in required</h2><p>Your secure session is missing or has expired.</p><Link href="/admin">Return to VSI Admin to sign in</Link></section></div></main><SiteFooter/></>;
+ return <><SiteHeader ctaLabel="Administration" ctaHref="/admin"/><main className={styles.page}><div className={styles.shell}>
+  <div className={styles.breadcrumb}><Link href="/admin">← Admin dashboard</Link><span> / Impact &amp; Evidence</span></div>
+  <header className={styles.hero}><div><p className={styles.eyebrow}>IMPACT &amp; EVIDENCE</p><h1>Impact Activity Register</h1><p>Record the activities that make up the figures shown on the public Impact dashboard.</p></div><span className={styles.heroMark}>IM</span></header>
+  {error&&<div className={styles.error} role="alert">{error}</div>}{notice&&<div className={styles.notice} role="status">{notice}</div>}
+  {loading?<section className={styles.message}>Loading Impact register…</section>:<form className={styles.formCard} onSubmit={save}>
+   <section className={styles.section}><div className={styles.sectionIntro}><span>01</span><div><h2>Select programme</h2><p>Choose the programme first. The relevant Impact fields will appear automatically.</p></div></div>
+    <div className={styles.programmeSelect}><label>Programme<select value={form.programme_key} onChange={e=>programmeChange(e.target.value)}>{Object.entries(PROGRAMME_META).map(([key,m])=><option key={key} value={key}>{m.label}</option>)}</select></label><div className={styles.programmeBadge}><strong>{selected.label}</strong><span>{selected.category}</span></div></div>
+   </section>
+   <section className={styles.section}><div className={styles.sectionIntro}><span>02</span><div><h2>Activity details</h2><p>Every saved activity contributes to the programme totals.</p></div></div>
+    <div className={styles.grid}><label className={styles.field}>Activity name *<input value={form.activity_name} onChange={e=>change("activity_name",e.target.value)} placeholder="Name or short description of the activity" required/></label><label className={styles.field}>Activity date *<input type="date" value={form.activity_date} onChange={e=>change("activity_date",e.target.value)} required/></label><label className={styles.field}>Partners involved<input value={form.partner} onChange={e=>change("partner",e.target.value)} placeholder="Organisation(s), institution(s) or partner(s)"/></label><label className={styles.field}>Notes<input value={form.notes} onChange={e=>change("notes",e.target.value)} placeholder="Optional context or evidence note"/></label></div>
+   </section>
+   <section className={styles.section}><div className={styles.sectionIntro}><span>03</span><div><h2>Location</h2><p>Use the verified ECZ hierarchy. Selecting a level filters the next level automatically.</p></div></div>
+    <div className={styles.locationGrid}>
+     <label className={styles.field}>Province<select value={form.province} onChange={e=>change("province",e.target.value)}><option value="">Select province</option>{ECZ_2026_LOCATION_HIERARCHY.map(x=><option key={x.id}>{x.name}</option>)}</select></label>
+     <label className={styles.field}>District<select value={form.district} onChange={e=>change("district",e.target.value)} disabled={!form.province}><option value="">{form.province?"Select district":"Select province first"}</option>{districts.map(x=><option key={x.id}>{x.name}</option>)}</select></label>
+     <label className={styles.field}>Constituency<select value={form.constituency} onChange={e=>change("constituency",e.target.value)} disabled={!form.district}><option value="">{form.district?"Select constituency":"Select district first"}</option>{constituencies.map(x=><option key={x.id}>{x.name}</option>)}</select></label>
+     <label className={styles.field}>Ward<select value={form.ward} onChange={e=>change("ward",e.target.value)} disabled={!form.constituency}><option value="">{form.constituency?"Select ward":"Select constituency first"}</option>{wards.map(x=><option key={x.id}>{x.name}</option>)}</select></label>
+    </div>
+   </section>
+   <section className={styles.section}><div className={styles.sectionIntro}><span>04</span><div><h2>Impact figures</h2><p>Enter only the measures relevant to the selected programme. These figures are automatically rolled into the public dashboard.</p></div></div>
+    <div className={styles.metrics}>{selected.fields.map(([key,label])=><label className={styles.metric} key={key}>{label}<input type="number" min="0" step="1" inputMode="numeric" value={form[key]} onChange={e=>change(key,e.target.value)} placeholder="0"/></label>)}</div>
+   </section>
+   <div className={styles.formActions}><span>Save the activity to update the public Impact totals.</span><button type="submit" disabled={saving}>{saving?"Saving activity…":"Save activity →"}</button></div>
+  </form>}
+  {!loading&&<section className={styles.registerPanel}><div className={styles.registerHeader}><div><p className={styles.eyebrowDark}>ACTIVITY REGISTER</p><h2>Activities contributing to Impact figures</h2><p>Each row is the evidence behind the programme totals.</p></div><strong>{activities.length} activities</strong></div>
+   {activities.length===0?<div className={styles.empty}>No Impact activities have been entered yet.</div>:<div className={styles.tableWrap}><table><thead><tr><th>Date</th><th>Programme / activity</th><th>Location</th><th>Partner</th><th>Figures</th><th></th></tr></thead><tbody>{activities.map(a=><tr key={a.id}><td>{new Date(a.activity_date+"T00:00:00").toLocaleDateString("en-GB")}</td><td><strong>{programmeName(a.programme_key)}</strong><span>{a.activity_name}</span></td><td><strong>{a.ward||"—"}</strong><span>{[a.constituency,a.district,a.province].filter(Boolean).join(" · ")||"Location not recorded"}</span></td><td>{a.partner||"—"}</td><td><span className={styles.figureList}>{[["M",a.male_reached],["F",a.female_reached],["Mk",a.marketeers_reached],["D",a.documents_contributed],["I",a.institutions_engaged]].filter(([,v])=>v!==null&&v!==undefined).map(([k,v])=><b key={k}>{k} {Number(v).toLocaleString()}</b>)}</span></td><td><button type="button" className={styles.deleteButton} onClick={()=>remove(a.id)} disabled={deleting===a.id}>{deleting===a.id?"…":"Delete"}</button></td></tr>)}</tbody></table></div>}
+  </section>}
+ </div></main><SiteFooter/></>;
 }
