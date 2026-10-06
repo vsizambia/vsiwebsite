@@ -1,10 +1,30 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const PALETTE=["#094074","#3c6997","#003566","#ffc300","#ffd60a"];
 const metricValue=(programme,key)=>{const metric=(programme?.metrics||[]).find(item=>item.key===key);return metric?.value==null||metric.value===""?0:Number(metric.value)||0};
 const formatValue=value=>Number(value||0).toLocaleString();
+
+function CountUp({value,duration=900}){
+ const target=Number(value)||0;
+ const [display,setDisplay]=useState(0);
+ const frame=useRef(null);
+ useEffect(()=>{
+  const start=performance.now();
+  const from=0;
+  const animate=now=>{
+   const progress=Math.min(1,(now-start)/duration);
+   const eased=1-Math.pow(1-progress,3);
+   setDisplay(Math.round(from+(target-from)*eased));
+   if(progress<1) frame.current=requestAnimationFrame(animate);
+  };
+  if(frame.current) cancelAnimationFrame(frame.current);
+  frame.current=requestAnimationFrame(animate);
+  return()=>{if(frame.current)cancelAnimationFrame(frame.current)};
+ },[target,duration]);
+ return <>{formatValue(display)}</>;
+}
 const genderLabels=key=>key==="ovc-support"||key==="education-support"?["Boys","Girls"]:["Male","Female"];
 const PROGRAMME_COPY={
  "ovc-support":{title:"Community Service & Humanitarian Action",category:"COMMUNITY IMPACT",description:"Supporting vulnerable communities through community-led service, humanitarian assistance, donations and social support."},
@@ -98,10 +118,10 @@ export default function ImpactProgrammeCards({initialProgrammes}){
  return <div className="impact-dashboard">
   <div className="impact-dashboard-heading"><div><span className="impact-dashboard-kicker">IMPACT &amp; EVIDENCE</span><h2>Impact at a glance</h2></div><span className="impact-dashboard-status"><i/> Live programme register</span></div>
   <div className="impact-kpi-grid" aria-label="Impact overview">
-   <div className="impact-kpi"><span className="impact-kpi-label">Activities conducted</span><strong>{formatValue(overview.activities)}</strong><small>Across tracked programmes</small></div>
-   <div className="impact-kpi"><span className="impact-kpi-label">People reached</span><strong>{formatValue(overview.people)}</strong><small>Reported people reached</small></div>
-   <div className="impact-kpi"><span className="impact-kpi-label">Institutions &amp; facilities engaged</span><strong>{formatValue(overview.institutions)}</strong><small>Schools, health facilities &amp; organisations</small></div>
-   <div className="impact-kpi impact-kpi-accent"><span className="impact-kpi-label">Policy &amp; research outputs</span><strong>{formatValue(overview.documents)}</strong><small>Contributions recorded</small></div>
+   <div className="impact-kpi"><span className="impact-kpi-label">Activities conducted</span><strong><CountUp value={overview.activities}/></strong><small>Across tracked programmes</small></div>
+   <div className="impact-kpi"><span className="impact-kpi-label">People reached</span><strong><CountUp value={overview.people}/></strong><small>Reported people reached</small></div>
+   <div className="impact-kpi"><span className="impact-kpi-label">Institutions &amp; facilities engaged</span><strong><CountUp value={overview.institutions}/></strong><small>Schools, health facilities &amp; organisations</small></div>
+   <div className="impact-kpi impact-kpi-accent"><span className="impact-kpi-label">Policy &amp; research outputs</span><strong><CountUp value={overview.documents}/></strong><small>Contributions recorded</small></div>
   </div>
   <div className="impact-section-heading"><div><span>PROGRAMME PERFORMANCE</span><h3>Where the work is happening</h3></div><span>{programmes.length} programmes tracked</span></div>
   <div className="impact-dashboard-shell">
@@ -110,9 +130,9 @@ export default function ImpactProgrammeCards({initialProgrammes}){
     {programmes.map(programme=><button type="button" className={programme.programme_key===selectedKey?"is-active":""} onClick={()=>setSelectedKey(programme.programme_key)} key={programme.programme_key}><span className="impact-nav-number">{programme.number}</span><span><strong>{programme.title}</strong><small>{programme.category}</small></span><b>→</b></button>)}
    </aside>
    <section className="impact-detail-panel">
-    <header className="impact-detail-header"><div><span className="impact-detail-kicker">{selected.category}</span><h3>{selected.title}</h3><p>{selected.description}</p></div><span className="impact-live-chip">{detail.count} recorded {detail.count===1?"activity":"activities"}</span></header>
+    <header className="impact-detail-header"><div><span className="impact-detail-kicker">{selected.category}</span><h3>{selected.title}</h3><p>{selected.description}</p></div><span className="impact-live-chip"><CountUp value={detail.count}/> recorded {detail.count===1?"activity":"activities"}</span></header>
     <div className="impact-detail-kpis">
-     <div><span>Activities</span><strong>{formatValue(detail.count)}</strong></div>
+     <div><span>Activities</span><strong><CountUp value={detail.count}/></strong></div>
      <DetailKpis selected={selected} detail={detail}/>
     </div>
     <div className="impact-detail-grid">
