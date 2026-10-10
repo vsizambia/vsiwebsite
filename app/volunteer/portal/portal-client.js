@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import styles from "./portal.module.css";
+import { SiteHeader, SiteFooter } from "../../components/SiteChrome";
 
 const money = value => new Intl.NumberFormat("en-ZM",{style:"currency",currency:"ZMW",maximumFractionDigits:2}).format(Number(value)||0);
 const monthLabel = value => {
@@ -87,12 +88,13 @@ export default function VolunteerPortalClient() {
     ["Activity",listValue(volunteer?.activity)],
   ].filter(([,v])=>v && v!=="—"),[volunteer]);
 
-  if (phase === "loading") return <main className={styles.page}><div className={styles.shell}><a className={styles.brand} href="/volunteer">VSI <span>VOLUNTEER PORTAL</span></a><div className={styles.loading}>Loading your secure portal…</div></div></main>;
+  if (phase === "loading") return <><SiteHeader ctaLabel="Volunteer" ctaHref="/volunteer" className="portal-site-header" /><main className={styles.page}><div className={styles.shell}><div className={styles.loading}>Loading your secure portal…</div></div></main><SiteFooter className="portal-site-footer" /></>;
 
   if (phase === "login" || phase === "verify") return (
+    <>
+    <SiteHeader ctaLabel="Volunteer" ctaHref="/volunteer" className="portal-site-header" />
     <main className={styles.page}>
       <div className={styles.shell}>
-        <a className={styles.brand} href="/volunteer">VSI <span>VOLUNTEER PORTAL</span></a>
         <section className={styles.authCard}>
           <div className={styles.eyebrow}>VISIONARY STUDENTS INITIATIVE</div>
           <h1>{phase === "verify" ? "Check your email" : "Welcome back, volunteer."}</h1>
@@ -116,13 +118,17 @@ export default function VolunteerPortalClient() {
         <a className={styles.backLink} href="/volunteer">← Back to VSI volunteering</a>
       </div>
     </main>
+    <SiteFooter className="portal-site-footer" />
+    </>
   );
 
   return (
+    <>
+    <SiteHeader ctaLabel="Volunteer" ctaHref="/volunteer" className="portal-site-header" />
     <main className={styles.page}>
       <div className={styles.dashboardShell}>
         <header className={styles.topbar}>
-          <a className={styles.brand} href="/volunteer">VSI <span>VOLUNTEER PORTAL</span></a>
+          <span className={styles.accountLabel}>SECURE VOLUNTEER ACCOUNT</span>
           <button className={styles.signOut} onClick={signOut} disabled={busy}>Sign out</button>
         </header>
         <section className={styles.welcome}>
@@ -179,8 +185,9 @@ export default function VolunteerPortalClient() {
             </> : <p className={styles.muted}>The contribution statement could not be loaded. Please refresh the page or try again later.</p>}
           </section>
         )}
-        <footer className={styles.footer}>© 2026 Visionary Students Initiative <a href="/privacy-policy">Privacy Policy</a><a href="/volunteer">Volunteer information</a></footer>
       </div>
     </main>
+    <SiteFooter className="portal-site-footer" />
+    </>
   );
 }
