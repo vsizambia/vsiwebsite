@@ -445,3 +445,34 @@
   object-fit:cover;
   border-radius:50%;
 }
+
+
+/* Section navigation: land content below the fixed/sticky portal navigation. */
+.sectionContent{scroll-margin-top:155px}
+@media(max-width:600px){.sectionContent{scroll-margin-top:138px}}
+
+/* Mobile-first service history cards: no sideways scrolling or squeezed columns. */
+.mobileActivityCards{display:none}
+.activityCard{min-width:0;padding:15px;border:1px solid #dce6ee;border-radius:14px;background:#fff;box-shadow:0 5px 16px rgba(11,48,82,.045)}
+.activityCardTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.activityDate{font-size:11px;font-weight:850;color:#577286}
+.activityCard h4{margin:10px 0 12px;color:#0b3052;font-size:16px;line-height:1.4;overflow-wrap:anywhere}
+.activityHours{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 11px;border-radius:10px;background:#f1f6fa;color:#0b4678}
+.activityHours strong{font-size:13px;font-weight:900}
+.activityHours span{font-size:11px;color:#607789}
+.activityDetails{display:grid;gap:0;margin:10px 0 0}
+.activityDetails>div{display:grid;grid-template-columns:minmax(84px, .42fr) minmax(0,1fr);gap:10px;padding:9px 0;border-bottom:1px solid #edf1f4}
+.activityDetails>div:last-child{border-bottom:0}
+.activityDetails dt{font-size:10px;font-weight:850;letter-spacing:.045em;text-transform:uppercase;color:#708596}
+.activityDetails dd{min-width:0;margin:0;color:#294b62;font-size:12px;line-height:1.55;overflow-wrap:anywhere;word-break:normal}
+.activityEmpty{padding:18px;border:1px dashed #cbd9e3;border-radius:12px;color:#708596;text-align:center;font-size:13px}
+@media(max-width:600px){
+  .serviceHistoryTable{display:none}
+  .mobileActivityCards{display:grid;gap:12px}
+  .serviceHistorySection{padding-top:16px}
+  .serviceHistorySection h3{margin-bottom:12px}
+  .activityCard{padding:13px;border-radius:12px}
+  .activityDetails>div{grid-template-columns:88px minmax(0,1fr);gap:8px}
+  .activityDetails dd{font-size:12px}
+  .activityHours strong{font-size:12px}
+}
