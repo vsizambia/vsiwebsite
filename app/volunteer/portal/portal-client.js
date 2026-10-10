@@ -191,7 +191,7 @@ export default function VolunteerPortalClient() {
         </nav>
         {message && <p className={styles.notice} role="status">{message}</p>}
         {tab==="overview" ? (
-          <section className={styles.metrics} aria-label="Volunteer summary">
+          <section className={`${styles.metrics} ${styles.overviewMetrics}`} aria-label="Volunteer summary">
             <article><span>TOTAL VERIFIED SERVICE HOURS</span><strong>{Number(profileDetails?.hours?.total||0).toFixed(2)}</strong><small>Verified volunteer service</small></article>
             <article><span>PROFESSIONAL DEVELOPMENT HOURS</span><strong>{Number(profileDetails?.hours?.development||0).toFixed(2)}</strong><small>Verified development activities</small></article>
             <article className={styles.membershipMetric}>
