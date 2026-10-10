@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { pool } from "../../../../../lib/db";
-import { VOLUNTEER_PORTAL_COOKIE, originAllowed, sha256 } from "../../../../../lib/volunteer-portal-auth";
-
+import { pool } from "../../../../lib/db";
+import { VOLUNTEER_PORTAL_COOKIE, originAllowed, sha256 } from "../../../../lib/volunteer-portal-auth";
 export const runtime = "nodejs";
 export async function POST(request) {
   if (!originAllowed(request)) return NextResponse.json({error:"Request could not be verified."},{status:403});
