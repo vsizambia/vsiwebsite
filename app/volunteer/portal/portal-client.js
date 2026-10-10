@@ -145,12 +145,12 @@ export default function VolunteerPortalClient() {
     return value === null || value === undefined || value === "" ? "—" : String(value);
   };
 
-  if (phase === "loading") return <main className={styles.page}><div className={styles.shell}><a className={styles.brand} href="/volunteer">VSI <span>VOLUNTEER PORTAL</span></a><div className={styles.loading}>Loading your secure portal…</div></div></main>;
+  if (phase === "loading") return <main className={styles.page}><div className={styles.shell}><a className={styles.brand} href="/volunteer"><img className={styles.brandLogo} src="/images/vsi logo blue text.png" alt="Visionary Students Initiative" /><span>VOLUNTEER PORTAL</span></a><div className={styles.loading}>Loading your secure portal…</div></div></main>;
 
   if (phase === "login" || phase === "verify") return (
     <main className={styles.page}>
       <div className={styles.shell}>
-        <a className={styles.brand} href="/volunteer">VSI <span>VOLUNTEER PORTAL</span></a>
+        <a className={styles.brand} href="/volunteer"><img className={styles.brandLogo} src="/images/vsi logo blue text.png" alt="Visionary Students Initiative" /><span>VOLUNTEER PORTAL</span></a>
         <section className={styles.authCard}>
           <div className={styles.eyebrow}>VISIONARY STUDENTS INITIATIVE</div>
           <h1>{phase === "verify" ? "Check your email" : "Welcome back, volunteer."}</h1>
@@ -180,21 +180,23 @@ export default function VolunteerPortalClient() {
   return (
     <main className={styles.page}>
       <div className={styles.dashboardShell}>
-        <header className={styles.topbar}>
-          <a className={styles.brand} href="/volunteer">VSI <span>VOLUNTEER PORTAL</span></a>
-          <button className={styles.signOut} onClick={signOut} disabled={busy}>Sign out</button>
-        </header>
+        <div className={styles.stickyHeader}>
+          <header className={styles.topbar}>
+            <a className={styles.brand} href="/volunteer"><img className={styles.brandLogo} src="/images/vsi logo blue text.png" alt="Visionary Students Initiative" /><span>VOLUNTEER PORTAL</span></a>
+            <button className={styles.signOut} onClick={signOut} disabled={busy}>Sign out</button>
+          </header>
+          <nav className={styles.tabs} aria-label="Volunteer portal sections">
+            <button className={tab==="overview"?styles.activeTab:""} onClick={()=>setTab("overview")}>Overview</button>
+            <button className={tab==="profile"?styles.activeTab:""} onClick={()=>setTab("profile")}>Full profile</button>
+            <button className={tab==="service"?styles.activeTab:""} onClick={()=>setTab("service")}>Service & development</button>
+            <button className={tab==="finance"?styles.activeTab:""} onClick={()=>setTab("finance")}>Contribution statement</button>
+            <button className={tab==="records"?styles.activeTab:""} onClick={()=>setTab("records")}>Finance records</button>
+          </nav>
+        </div>
         <section className={styles.welcome}>
           <div><div className={styles.eyebrow}>YOUR VSI ACCOUNT</div><h1>Hello, {volunteer?.full_name?.split(" ")[0] || "volunteer"}.</h1><p>Your volunteer profile and membership contribution summary.</p></div>
           <div className={styles.idCard}><span>VOLUNTEER ID</span><strong>{volunteer?.volunteer_id || "—"}</strong><small>Status: {volunteer?.status || "Approved"}</small></div>
         </section>
-        <nav className={styles.tabs} aria-label="Volunteer portal sections">
-          <button className={tab==="overview"?styles.activeTab:""} onClick={()=>setTab("overview")}>Overview</button>
-          <button className={tab==="profile"?styles.activeTab:""} onClick={()=>setTab("profile")}>Full profile</button>
-          <button className={tab==="service"?styles.activeTab:""} onClick={()=>setTab("service")}>Service & development</button>
-          <button className={tab==="finance"?styles.activeTab:""} onClick={()=>setTab("finance")}>Contribution statement</button>
-          <button className={tab==="records"?styles.activeTab:""} onClick={()=>setTab("records")}>Finance records</button>
-        </nav>
         {message && <p className={styles.notice} role="status">{message}</p>}
         {tab==="overview" ? (
           <section className={`${styles.metrics} ${styles.overviewMetrics}`} aria-label="Volunteer summary">

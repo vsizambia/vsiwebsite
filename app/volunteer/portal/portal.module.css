@@ -27,3 +27,82 @@
 .developmentActivityList li strong{flex-shrink:0;color:#123b59;font-size:10px;white-space:nowrap}
 .developmentActivityList .noDevelopmentActivity{color:#718493;font-style:italic}
 @media(max-width:600px){.developmentActivityList{max-height:130px}.performanceNote{font-size:10px;padding:9px}}
+
+
+/* VSI-branded volunteer portal shell and responsive profile/data views. */
+.page{display:flex;flex-direction:column;min-height:100vh;background:#f4f7fa;padding:0 20px 0}
+.shell,.dashboardShell{flex:1}
+.dashboardShell{display:flex;flex-direction:column;padding-top:0}
+.brand{gap:12px;text-decoration:none;min-width:0}
+.brandLogo{display:block;width:auto;height:38px;max-width:min(240px,48vw);object-fit:contain;object-position:left center}
+.brand span{display:inline-flex;align-items:center;min-height:28px;padding:0 0 0 12px;border-left:1px solid #d4e0e8;font-size:9px;letter-spacing:.14em;white-space:nowrap}
+.stickyHeader{position:sticky;top:0;z-index:60;margin-left:calc((100% - 100vw)/2);margin-right:calc((100% - 100vw)/2);padding:0 max(20px,calc((100vw - 1160px)/2));background:rgba(255,255,255,.97);border-bottom:1px solid #dfe8ee;box-shadow:0 8px 24px rgba(0,53,102,.07);backdrop-filter:blur(14px)}
+.topbar{min-height:76px;padding:10px 0}
+.tabs{position:relative;display:flex;gap:4px;align-items:stretch;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#c8d7e1 transparent;margin:0;border-bottom:0;white-space:nowrap}
+.tabs button{flex:0 0 auto;padding:13px 16px 12px;font-size:12px;border-bottom-width:3px}
+.welcome{margin:30px 0 24px}
+.footer{margin-top:auto;padding:22px 0 24px;border-top:1px solid #d8e3ea;gap:14px;min-height:68px}
+.footer a{text-decoration:none}
+.footer a:hover{text-decoration:underline}
+.panel{border-radius:20px}
+.panel h2{line-height:1.2}
+.panelHeading{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.panelHeading h2{font-size:clamp(23px,3vw,30px);margin:8px 0 10px}
+.panelHeading p{max-width:760px;margin:0}
+.readOnlySection{min-width:0}
+.readOnlySection .tableWrap{max-width:100%;overflow:auto;overscroll-behavior-x:contain;box-shadow:inset 0 1px 0 #fff}
+.tableWrap{scrollbar-width:thin;scrollbar-color:#b8cad7 #f2f6f8}
+.tableWrap table{min-width:680px}
+.tableWrap th{position:sticky;top:0;z-index:1;white-space:normal;line-height:1.4}
+.tableWrap td{line-height:1.55;vertical-align:top;overflow-wrap:anywhere}
+.tableWrap tbody tr:nth-child(even){background:#fbfdfe}
+.tableWrap tbody tr:hover{background:#f1f7fb}
+.readOnlySection table{min-width:0;width:100%;table-layout:auto}
+.readOnlySection .tableWrap table{min-width:760px}
+.details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px;align-items:start}
+.details>div{display:flex;flex-direction:column;gap:6px;min-width:0;padding:13px 0}
+.details dt{font-size:10px;text-transform:uppercase;letter-spacing:.055em;font-weight:800;color:#6d8291}
+.details dd{font-size:13px;line-height:1.55;overflow-wrap:anywhere}
+.readOnlySection h3{display:flex;align-items:center;gap:10px}
+.readOnlySection h3:before{content:"";display:block;width:4px;height:18px;border-radius:99px;background:#ffc300}
+.statementTotals>div{min-width:0}
+.statementTotals strong{overflow-wrap:anywhere}
+.metrics article{min-width:0}
+.notice{overflow-wrap:anywhere}
+@media(max-width:900px){
+ .stickyHeader{margin:0 -20px;padding:0 20px}
+ .topbar{min-height:68px}
+ .tabs button{padding:12px 13px 11px}
+ .details{column-gap:18px}
+}
+@media(max-width:600px){
+ .page{padding:0 14px}
+ .dashboardShell{width:100%}
+ .stickyHeader{margin:0 -14px;padding:0 14px}
+ .topbar{min-height:64px;gap:10px}
+ .brand{gap:8px}
+ .brandLogo{height:30px;max-width:42vw}
+ .brand span{font-size:8px;letter-spacing:.09em;padding-left:8px}
+ .signOut{min-height:36px;padding:0 12px;font-size:11px}
+ .tabs{margin:0 -2px}
+ .tabs button{padding:11px 12px 10px;font-size:11px}
+ .welcome{margin:24px 0 18px}
+ .details{grid-template-columns:1fr;column-gap:0}
+ .details>div{gap:5px;padding:10px 0}
+ .readOnlySection .tableWrap table{min-width:720px}
+ .statementTotals{gap:8px}
+ .statementTotals>div{padding:12px}
+ .statementTotals strong{font-size:14px}
+ .panel{padding:18px 15px}
+ .panelHeading{display:block}
+ .footer{padding:18px 0 22px}
+}
+@media print{
+ .stickyHeader,.footer{display:none!important}
+ .page{display:block;padding:0;background:#fff}
+ .dashboardShell{display:block}
+ .panel{box-shadow:none;border:0;padding:0}
+ .tableWrap{overflow:visible;border:1px solid #ddd}
+ .tableWrap table,.readOnlySection .tableWrap table{min-width:0;width:100%;font-size:9px}
+ .details{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
