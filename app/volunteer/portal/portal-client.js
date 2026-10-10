@@ -195,7 +195,7 @@ export default function VolunteerPortalClient() {
         </div>
         <section className={styles.profileDashboard} aria-label="Volunteer profile dashboard">
           <div className={styles.profileHeroCard}>
-            <div className={styles.profilePortrait} aria-hidden="true">{String(volunteer?.full_name || "V").trim().split(/\s+/).slice(0,2).map(part=>part.charAt(0)).join("").toUpperCase()}</div>
+            <div className={styles.profilePortrait}>{profileDetails?.profile?.profile_picture ? <img className={styles.profilePhoto} src="/api/volunteer-portal/profile-picture" alt={`${volunteer?.full_name || "Volunteer"} profile`} /> : <span aria-hidden="true">{String(volunteer?.full_name || "V").trim().split(/\s+/).slice(0,2).map(part=>part.charAt(0)).join("").toUpperCase()}</span>}</div>
             <div className={styles.profileIdentity}>
               <div className={styles.eyebrow}>VOLUNTEER PROFILE</div>
               <h1>{volunteer?.full_name || "Volunteer profile"}</h1>
