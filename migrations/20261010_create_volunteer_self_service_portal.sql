@@ -2,7 +2,7 @@
 -- Apply through the normal controlled migration process before enabling the portal.
 CREATE TABLE IF NOT EXISTS volunteer_portal_challenges (
   id UUID PRIMARY KEY,
-  volunteer_application_id BIGINT NULL REFERENCES volunteer_applications(id) ON DELETE CASCADE,
+  volunteer_application_id INTEGER NULL REFERENCES volunteer_applications(id) ON DELETE CASCADE,
   code_hash TEXT NOT NULL,
   identity_hash TEXT NOT NULL,
   client_ip_hash TEXT NOT NULL,
@@ -20,7 +20,7 @@ CREATE INDEX IF NOT EXISTS volunteer_portal_challenges_expiry_idx
 
 CREATE TABLE IF NOT EXISTS volunteer_portal_sessions (
   id BIGSERIAL PRIMARY KEY,
-  volunteer_application_id BIGINT NOT NULL REFERENCES volunteer_applications(id) ON DELETE CASCADE,
+  volunteer_application_id INTEGER NOT NULL REFERENCES volunteer_applications(id) ON DELETE CASCADE,
   token_hash TEXT NOT NULL UNIQUE,
   expires_at TIMESTAMPTZ NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
