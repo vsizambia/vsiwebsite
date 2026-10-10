@@ -45,7 +45,16 @@ export async function POST(request) {
             AND LOWER(status)='approved' AND volunteer_id IS NOT NULL LIMIT 1`,
         [volunteerId, email]
       );
-      if (found.rowCount) volunteer = found.rows[0];
+      if (found.rowCount) {
+        volunteer = found.rows[0];
+        // Only the newest verification request should remain usable for this identity.
+        await client.query(
+          `UPDATE volunteer_portal_challenges
+              SET expires_at=NOW()
+            WHERE identity_hash=$1 AND consumed_at IS NULL AND expires_at > NOW()`,
+          [identityHash]
+        );
+      }
       const codeHash = hmac(`otp:${challengeId}:${code}`);
       await client.query(
         `INSERT INTO volunteer_portal_challenges
@@ -60,7 +69,9 @@ export async function POST(request) {
     } finally { client.release(); }
 
     if (volunteer) {
-      const mail = await fetch("https://api.resend.com/emails", {
+      let mail;
+      try {
+        mail = await fetch("https://api.resend.com/emails", {
         method:"POST",
         headers:{"Authorization":`Bearer ${apiKey}`,"Content-Type":"application/json"},
         body:JSON.stringify({
@@ -68,7 +79,12 @@ export async function POST(request) {
           text:`Your VSI Volunteer Portal verification code is ${code}. It expires in 10 minutes. Do not share this code with anyone. If you did not request it, you can ignore this email.`,
           html:`<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0b2942"><h2>VSI Volunteer Portal</h2><p>Use this one-time verification code to sign in:</p><p style="font-size:32px;font-weight:700;letter-spacing:8px">${code}</p><p>This code expires in 10 minutes. Do not share it with anyone.</p><p>If you did not request this code, you can ignore this email.</p></div>`
         })
-      });
+        });
+      } catch {
+        await pool.query("DELETE FROM volunteer_portal_challenges WHERE id=$1", [challengeId]).catch(()=>{});
+        console.error("Volunteer portal email provider request failed before confirmation.");
+        return json({error:"Email verification is temporarily unavailable. Please try again later."},503);
+      }
       if (!mail.ok) {
         await pool.query("DELETE FROM volunteer_portal_challenges WHERE id=$1", [challengeId]).catch(()=>{});
         console.error("Volunteer portal email provider rejected a verification email.", {status:mail.status});
