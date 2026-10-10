@@ -106,3 +106,78 @@
  .tableWrap table,.readOnlySection .tableWrap table{min-width:0;width:100%;font-size:9px}
  .details{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+
+/* Volunteer portal finance view — visual language borrowed from VSI Admin Volunteer Finance.
+   Intentionally presentation-only: no portal state, data, access, or workflow changes. */
+.readOnlySection .tableWrap{
+  border:1px solid #d9e2ec;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(11,48,82,.035);
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.readOnlySection .tableWrap table{
+  width:100%;
+  min-width:760px;
+  border-collapse:separate;
+  border-spacing:0;
+  background:#fff;
+  font-size:13px;
+}
+.readOnlySection .tableWrap thead tr,
+.readOnlySection .tableWrap th{
+  background:#0b4678;
+  color:#fff;
+}
+.readOnlySection .tableWrap th{
+  padding:13px 14px;
+  border:0;
+  border-bottom:0;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.07em;
+  line-height:1.4;
+  text-transform:uppercase;
+  white-space:nowrap;
+}
+.readOnlySection .tableWrap th:first-child{border-top-left-radius:9px}
+.readOnlySection .tableWrap th:last-child{border-top-right-radius:9px}
+.readOnlySection .tableWrap td{
+  padding:12px 14px;
+  border-top:0;
+  border-bottom:1px solid #e8edf2;
+  color:#334e68;
+  font-size:12px;
+  line-height:1.55;
+  vertical-align:middle;
+  overflow-wrap:anywhere;
+}
+.readOnlySection .tableWrap tbody tr:nth-child(even){background:#fbfdff}
+.readOnlySection .tableWrap tbody tr:hover{background:#f4f8fb}
+.readOnlySection .tableWrap tbody tr:last-child td{border-bottom:0}
+.readOnlySection .tableWrap td:last-child{white-space:normal}
+.readOnlySection .tableWrap td:nth-child(2),
+.readOnlySection .tableWrap td:nth-child(3),
+.readOnlySection .tableWrap td:nth-child(4){font-variant-numeric:tabular-nums}
+.readOnlySection .tableWrap td[colspan]{padding:18px 14px;color:#718493;text-align:center}
+.readOnlySection .tableWrap::-webkit-scrollbar{height:9px}
+.readOnlySection .tableWrap::-webkit-scrollbar-track{background:#f2f6f8;border-radius:99px}
+.readOnlySection .tableWrap::-webkit-scrollbar-thumb{background:#b8cad7;border-radius:99px}
+.readOnlySection h3{color:#0b3052}
+.readOnlySection h3:before{background:#ffca05}
+.readOnlySection .tableWrap + h3{margin-top:22px}
+.metrics article{
+  border-color:#d9e2ec;
+  border-radius:18px;
+  box-shadow:0 8px 25px rgba(11,48,82,.04);
+}
+.metrics article span{color:#829ab1}
+.metrics article strong{color:#0b3052}
+@media(max-width:700px){
+  .readOnlySection .tableWrap{border-radius:10px}
+  .readOnlySection .tableWrap table{min-width:760px}
+  .readOnlySection .tableWrap th{padding:11px 10px;font-size:10px}
+  .readOnlySection .tableWrap td{padding:11px 10px}
+}
