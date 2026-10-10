@@ -181,3 +181,68 @@
   .readOnlySection .tableWrap th{padding:11px 10px;font-size:10px}
   .readOnlySection .tableWrap td{padding:11px 10px}
 }
+
+
+/* Consistent VSI section titles and finance table treatment across every portal tab. */
+.profileIdentity{min-width:0}
+.profileIdentity h1{margin:8px 0 0;font-size:clamp(30px,4.3vw,42px);line-height:1.12;letter-spacing:-.045em;color:#0b3052}
+.profileMeta{display:flex;align-items:center;gap:9px!important;margin:10px 0 0!important;color:#516b7d!important;font-size:13px;font-weight:700}
+.profileMeta strong{color:#0b4678;font-weight:900}
+.profileIntro{margin:8px 0 0!important;color:#718493!important;font-size:12px!important}
+.welcome{align-items:flex-start;padding:0 0 22px;border-bottom:1px solid #dce6ec}
+.panelHeading,.statementHeading{padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid #e5edf2}
+.panelHeading h2,.statementHeading h2{margin:8px 0 8px;font-size:clamp(23px,3vw,30px);line-height:1.2;letter-spacing:-.035em;color:#0b3052;font-weight:850}
+.panelHeading p,.statementHeading p{margin:0;max-width:760px;color:#62798b;font-size:13px;line-height:1.7}
+.panelHeading .eyebrow,.statementHeading .eyebrow{color:#3c6997}
+.tableWrap{
+  border:1px solid #d9e2ec;
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 4px 14px rgba(11,48,82,.035);
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+.tableWrap table{
+  border-collapse:separate;
+  border-spacing:0;
+  background:#fff;
+}
+.tableWrap thead tr,.tableWrap th{background:#0b4678;color:#fff}
+.tableWrap th{
+  padding:13px 14px;
+  border:0;
+  color:#fff;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.07em;
+  line-height:1.4;
+  text-transform:uppercase;
+}
+.tableWrap th:first-child{border-top-left-radius:9px}
+.tableWrap th:last-child{border-top-right-radius:9px}
+.tableWrap td{
+  padding:12px 14px;
+  border-top:0;
+  border-bottom:1px solid #e8edf2;
+  color:#334e68;
+  font-size:12px;
+  line-height:1.55;
+  vertical-align:middle;
+}
+.tableWrap tbody tr:nth-child(even){background:#fbfdff}
+.tableWrap tbody tr:hover{background:#f4f8fb}
+.tableWrap tbody tr:last-child td{border-bottom:0}
+.tableWrap td[colspan]{padding:18px 14px;color:#718493;text-align:center}
+.tableWrap::-webkit-scrollbar{height:9px}
+.tableWrap::-webkit-scrollbar-track{background:#f2f6f8;border-radius:99px}
+.tableWrap::-webkit-scrollbar-thumb{background:#b8cad7;border-radius:99px}
+.readOnlySection .tableWrap th{white-space:nowrap}
+.statementHeading{align-items:flex-start}
+@media(max-width:600px){
+  .welcome{padding-bottom:18px}
+  .profileIdentity h1{font-size:30px}
+  .panelHeading,.statementHeading{padding-bottom:15px;margin-bottom:16px}
+  .tableWrap{border-radius:10px}
+  .tableWrap th{padding:11px 10px;font-size:10px}
+  .tableWrap td{padding:11px 10px}
+}
