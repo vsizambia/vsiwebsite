@@ -198,9 +198,9 @@ export default function VolunteerPortalClient() {
               <span>MEMBERSHIP FINANCE</span>
               {statement ? <div className={styles.membershipBreakdown}>
                 <div className={styles.membershipBreakdownHeading}>Amount Paid · Month</div>
-                {(statement.months||[]).filter(row=>Number(row.amountPaid||0)>0).length ? (statement.months||[]).filter(row=>Number(row.amountPaid||0)>0).map(row=><div className={styles.membershipLine} key={`paid-${row.month}`}><span>{monthLabel(row.month)}</span><strong>{money(row.amountPaid)}</strong></div>) : <p className={styles.membershipEmpty}>No payments recorded.</p>}
+                {(statement.months||[]).filter(row=>Number(row.amountPaid||0)>0).length ? (statement.months||[]).filter(row=>Number(row.amountPaid||0)>0).map(row=><div className={styles.membershipLine} key={"paid-"+row.month}><span>{monthLabel(row.month)}</span><strong>{money(row.amountPaid)}</strong></div>) : <p className={styles.membershipEmpty}>No payments recorded.</p>}
                 <div className={styles.membershipBreakdownHeading}>Amount Not Paid · Month</div>
-                {(statement.months||[]).filter(row=>Number(row.balance||0)>0).length ? (statement.months||[]).filter(row=>Number(row.balance||0)>0).map(row=><div className={styles.membershipLine} key={`due-${row.month}`}><span>{monthLabel(row.month)}</span><strong>{money(row.balance)}</strong></div>) : <p className={styles.membershipEmpty}>No unpaid months.</p>}
+                {(statement.months||[]).filter(row=>Number(row.balance||0)>0).length ? (statement.months||[]).filter(row=>Number(row.balance||0)>0).map(row=><div className={styles.membershipLine} key={"due-"+row.month}><span>{monthLabel(row.month)}</span><strong>{money(row.balance)}</strong></div>) : <p className={styles.membershipEmpty}>No unpaid months.</p>}
               </div> : <small>Contribution statement unavailable.</small>}
             </article>
           </section>
