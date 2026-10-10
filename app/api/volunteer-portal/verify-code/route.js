@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { pool } from "../../../../../lib/db";
-import { VOLUNTEER_PORTAL_COOKIE, hmac, originAllowed, portalSecret, safeEqualHex, sha256, newSessionToken, sessionCookieOptions, sessionExpiry } from "../../../../../lib/volunteer-portal-auth";
+import { pool } from "../../../../lib/db";
+import { VOLUNTEER_PORTAL_COOKIE, hmac, originAllowed, portalSecret, safeEqualHex, sha256, newSessionToken, sessionCookieOptions, sessionExpiry } from "../../../../lib/volunteer-portal-auth";
 
 export const runtime = "nodejs";
 const json = (body,status=200) => NextResponse.json(body,{status,headers:{"Cache-Control":"no-store"}});
@@ -18,8 +18,7 @@ export async function POST(request) {
       await client.query("BEGIN");
       const result = await client.query(
         `SELECT id,volunteer_application_id,code_hash,attempts,expires_at,consumed_at
-           FROM volunteer_portal_challenges WHERE id=$1 FOR UPDATE`,
-        [challengeId]
+           FROM volunteer_portal_challenges WHERE id=$1 FOR UPDATE`, [challengeId]
       );
       if (!result.rowCount) { await client.query("ROLLBACK"); return json({error:"The code is invalid or expired."},400); }
       const row = result.rows[0];
@@ -40,7 +39,6 @@ export async function POST(request) {
       await client.query("ROLLBACK").catch(()=>{});
       throw error;
     } finally { client.release(); }
-
     const token = newSessionToken();
     const expiresAt = sessionExpiry();
     await pool.query("INSERT INTO volunteer_portal_sessions(volunteer_application_id,token_hash,expires_at) VALUES($1,$2,$3)",[volunteerId,sha256(token),expiresAt]);
