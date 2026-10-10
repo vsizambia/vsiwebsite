@@ -36,7 +36,7 @@
 .brand{gap:12px;text-decoration:none;min-width:0}
 .brandLogo{display:block;width:auto;height:38px;max-width:min(240px,48vw);object-fit:contain;object-position:left center}
 .brand span{display:inline-flex;align-items:center;min-height:28px;padding:0 0 0 12px;border-left:1px solid #d4e0e8;font-size:9px;letter-spacing:.14em;white-space:nowrap}
-.stickyHeader{position:sticky;top:0;z-index:60;margin:0 calc((min(1160px,100vw - 40px) - 100vw + 40px)/2);padding:0 max(20px,calc((100vw - 1160px)/2));background:rgba(255,255,255,.97);border-bottom:1px solid #dfe8ee;box-shadow:0 8px 24px rgba(0,53,102,.07);backdrop-filter:blur(14px)}
+.stickyHeader{position:sticky;top:0;z-index:60;margin-left:calc((100% - 100vw)/2);margin-right:calc((100% - 100vw)/2);padding:0 max(20px,calc((100vw - 1160px)/2));background:rgba(255,255,255,.97);border-bottom:1px solid #dfe8ee;box-shadow:0 8px 24px rgba(0,53,102,.07);backdrop-filter:blur(14px)}
 .topbar{min-height:76px;padding:10px 0}
 .tabs{position:relative;display:flex;gap:4px;align-items:stretch;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin;scrollbar-color:#c8d7e1 transparent;margin:0;border-bottom:0;white-space:nowrap}
 .tabs button{flex:0 0 auto;padding:13px 16px 12px;font-size:12px;border-bottom-width:3px}
@@ -59,7 +59,6 @@
 .tableWrap tbody tr:hover{background:#f1f7fb}
 .readOnlySection table{min-width:0;width:100%;table-layout:auto}
 .readOnlySection .tableWrap table{min-width:760px}
-.readOnlySection .tableWrap:has(th:nth-child(10)){max-width:100%}
 .details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:24px;align-items:start}
 .details>div{display:flex;flex-direction:column;gap:6px;min-width:0;padding:13px 0}
 .details dt{font-size:10px;text-transform:uppercase;letter-spacing:.055em;font-weight:800;color:#6d8291}
