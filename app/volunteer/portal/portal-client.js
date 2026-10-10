@@ -14,7 +14,21 @@ const dateLabel = value => {
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? "—" : new Intl.DateTimeFormat("en-GB",{day:"2-digit",month:"short",year:"numeric",timeZone:"Africa/Lusaka"}).format(d);
 };
-const listValue = value => Array.isArray(value) ? value.join(", ") : typeof value === "string" ? value : "—";
+const listValue = value => {
+  if (Array.isArray(value)) return value.map(item => String(item ?? "").trim()).filter(Boolean).join(", ") || "—";
+  if (value === null || value === undefined) return "—";
+  if (typeof value !== "string") return String(value);
+  const text = value.trim();
+  if (!text) return "—";
+  if ((text.startsWith("[") && text.endsWith("]")) || (text.startsWith('"') && text.endsWith('"'))) {
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) return parsed.map(item => String(item ?? "").trim()).filter(Boolean).join(", ") || "—";
+      if (typeof parsed === "string") return parsed.trim() || "—";
+    } catch {}
+  }
+  return text;
+};
 
 export default function VolunteerPortalClient() {
   const [volunteerId,setVolunteerId] = useState("");
@@ -121,7 +135,7 @@ export default function VolunteerPortalClient() {
       if (value === false || value === "false" || value === 0) return "No";
     }
     if (key === "created_at") return dateLabel(value);
-    if (["programme","project","activity"].includes(key)) return listValue(value);
+    if (["programme","project","activity"].includes(key)) { const formatted = listValue(value); return key === "activity" && formatted === "—" ? "No specific activity assigned" : formatted; }
     return value === null || value === undefined || value === "" ? "—" : String(value);
   };
 
@@ -177,25 +191,11 @@ export default function VolunteerPortalClient() {
         </nav>
         {message && <p className={styles.notice} role="status">{message}</p>}
         {tab==="overview" ? (
-          <>
-            <section className={styles.metrics}>
-              <article><span>MONTHLY CONTRIBUTION</span><strong>{money(30)}</strong><small>Per calendar month</small></article>
-              <article><span>TOTAL EXPECTED</span><strong>{money(statement?.expectedTotal)}</strong><small>{statement?.monthsExpected ?? 0} contribution months</small></article>
-              <article><span>RECORDED PAYMENTS</span><strong>{money(statement?.paidTotal)}</strong><small>From VSI finance records</small></article>
-              <article><span>OUTSTANDING</span><strong>{money(statement?.outstanding)}</strong><small>{statement?.credit>0 ? `Credit: ${money(statement.credit)}` : "Based on records currently available"}</small></article>
-            </section>
-            <section className={styles.contentGrid}>
-              <article className={styles.panel}><div className={styles.panelHeading}><div><div className={styles.eyebrow}>VOLUNTEER PROFILE</div><h2>Your details</h2></div></div>
-                <dl className={styles.details}>
-                  <div><dt>Full name</dt><dd>{volunteer?.full_name || "—"}</dd></div><div><dt>Registered email</dt><dd>{volunteer?.email || "—"}</dd></div><div><dt>Application submitted</dt><dd>{dateLabel(volunteer?.created_at)}</dd></div><div><dt>Current occupation</dt><dd>{volunteer?.current_occupation || "—"}</dd></div><div><dt>Education</dt><dd>{volunteer?.education || "—"}</dd></div><div><dt>Skills</dt><dd>{volunteer?.skills || "—"}</dd></div><div><dt>Availability</dt><dd>{volunteer?.availability || "—"}</dd></div><div><dt>Hours per week</dt><dd>{volunteer?.hours_per_week ? `${volunteer.hours_per_week} hours` : "—"}</dd></div>
-                </dl><p className={styles.readOnlyNote}>Read-only view of your official VSI record. Contact VSI administration to request a correction.</p>
-              </article>
-              <article className={styles.panel}><div className={styles.eyebrow}>YOUR ASSIGNMENT</div><h2>Programme placement</h2>
-                {assigned.length ? <dl className={styles.details}>{assigned.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl> : <p className={styles.muted}>No programme placement details are currently recorded on your profile. Contact VSI administration if you believe this is incorrect.</p>}
-                <div className={styles.callout}><strong>Need to update your details?</strong><p>Contact VSI administration so changes can be reviewed and reflected in the official record.</p><a href="mailto:vsizambia@gmail.com">Contact VSI →</a></div>
-              </article>
-            </section>
-          </>
+          <section className={styles.metrics} aria-label="Volunteer summary">
+            <article><span>TOTAL VERIFIED SERVICE HOURS</span><strong>{Number(profileDetails?.hours?.total||0).toFixed(2)}</strong><small>Verified volunteer service</small></article>
+            <article><span>PROFESSIONAL DEVELOPMENT HOURS</span><strong>{Number(profileDetails?.hours?.development||0).toFixed(2)}</strong><small>Verified development activities</small></article>
+            <article><span>MEMBERSHIP FINANCE</span><strong>{money(statement?.outstanding)}</strong><small>{money(statement?.paidTotal)} paid of {money(statement?.expectedTotal)} expected · outstanding balance</small></article>
+          </section>
         ) : tab==="finance" ? (
           <section className={styles.panel}>
             <div className={styles.statementHeading}><div><div className={styles.eyebrow}>MEMBERSHIP FINANCE</div><h2>Your contribution statement</h2><p>Expected contributions start in the month your application was submitted and run through the current calendar month.</p></div><button className={styles.refresh} onClick={()=>{setPhase("loading");loadPortal().then(()=>setTab("finance")).catch(()=>setPhase("portal"));}}>Refresh statement</button></div>
