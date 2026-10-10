@@ -246,3 +246,138 @@
   .tableWrap th{padding:11px 10px;font-size:10px}
   .tableWrap td{padding:11px 10px}
 }
+
+
+/* Profile dashboard inspired by the supplied modern profile-card reference.
+   VSI identity, live portal data and all existing workflows remain unchanged. */
+.profileDashboard{
+  display:grid;
+  grid-template-columns:minmax(0,1.7fr) minmax(280px,.9fr);
+  gap:12px;
+  margin:28px 0 24px;
+  padding:14px;
+  border-radius:24px;
+  background:#2810d8;
+  box-shadow:0 18px 42px rgba(40,16,216,.16);
+}
+.profileHeroCard{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:28px 26px 24px;
+  border-radius:17px;
+  background:#fff;
+  text-align:center;
+}
+.profilePortrait{
+  display:grid;
+  place-items:center;
+  width:84px;
+  height:84px;
+  margin:0 auto 13px;
+  border:4px solid #edf2ff;
+  border-radius:50%;
+  background:linear-gradient(145deg,#d9f4ff,#d9d2ff);
+  color:#2810a9;
+  font-size:27px;
+  font-weight:950;
+  letter-spacing:-.05em;
+  box-shadow:0 5px 16px rgba(40,16,216,.12);
+}
+.profileIdentity{width:100%;text-align:center}
+.profileIdentity .eyebrow{color:#5b4bdc}
+.profileIdentity h1{margin:7px 0 5px;font-size:clamp(27px,3.2vw,37px);color:#193b5a}
+.profileRole{color:#566b7e;font-size:13px;font-weight:650}
+.profileMeta{justify-content:center;flex-wrap:wrap;margin-top:9px!important}
+.statusPill{display:inline-flex;align-items:center;padding:4px 9px;border-radius:999px;background:#e7f8ee;color:#176b39;font-size:10px;font-weight:900;text-transform:capitalize}
+.profileIntro{max-width:500px;margin:9px auto 0!important;font-size:12px!important}
+.profileQuickStats{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  width:100%;
+  margin-top:22px;
+}
+.profileQuickStats>div{
+  display:flex;
+  min-width:0;
+  min-height:82px;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:10px 7px;
+  border-radius:12px;
+  color:#fff;
+}
+.profileQuickStats strong{max-width:100%;font-size:clamp(18px,2.2vw,27px);line-height:1.15;letter-spacing:-.035em;overflow-wrap:anywhere}
+.profileQuickStats span{font-size:11px;line-height:1.35;opacity:.94}
+.quickStatCyan{background:#20b6e9}
+.quickStatViolet{background:#5834ed}
+.quickStatOrange{background:#ff6b20}
+.profileProgressCard{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  justify-content:center;
+  padding:25px 24px 20px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:17px;
+  background:linear-gradient(150deg,#5735ef 0%,#4524df 100%);
+  color:#fff;
+}
+.progressCardTitle{font-size:18px;font-weight:900;letter-spacing:-.02em}
+.profileProgressCard>p{margin:7px 0 20px;color:#e0dcff;font-size:12px;line-height:1.6}
+.serviceProgress{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap}
+.progressRing{
+  display:grid;
+  flex:0 0 auto;
+  place-items:center;
+  width:146px;
+  aspect-ratio:1;
+  padding:8px;
+  border-radius:50%;
+  background:conic-gradient(#24c5f4 var(--progress,0%),rgba(255,255,255,.95) 0);
+}
+.progressRing>div{
+  display:flex;
+  width:100%;
+  height:100%;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  border-radius:50%;
+  background:#4d2de9;
+  text-align:center;
+}
+.progressRing strong{font-size:28px;line-height:1.1;letter-spacing:-.04em}
+.progressRing span{max-width:95px;color:#e3dfff;font-size:10px;line-height:1.3}
+.progressDetails{display:grid;gap:7px;max-width:190px}
+.progressDetails strong{font-size:13px;line-height:1.4}
+.progressDetails span{color:#e0dcff;font-size:11px;line-height:1.55}
+.snapshotDivider{height:1px;margin:22px 0 15px;background:rgba(255,255,255,.2)}
+.snapshotFooter{display:flex;align-items:center;gap:8px;color:#e0dcff;font-size:11px}
+.snapshotFooter strong{margin-left:auto;color:#fff;text-transform:capitalize}
+.snapshotDot{width:7px;height:7px;flex:0 0 auto;border-radius:50%;background:#55e6a5;box-shadow:0 0 0 4px rgba(85,230,165,.13)}
+@media(max-width:900px){
+  .profileDashboard{grid-template-columns:minmax(0,1fr);padding:12px}
+  .profileProgressCard{padding:22px}
+  .serviceProgress{justify-content:flex-start}
+}
+@media(max-width:600px){
+  .profileDashboard{margin:20px 0;padding:9px;gap:9px;border-radius:19px}
+  .profileHeroCard{padding:22px 14px 16px}
+  .profilePortrait{width:72px;height:72px;font-size:23px}
+  .profileIdentity h1{font-size:28px}
+  .profileQuickStats{gap:6px;margin-top:18px}
+  .profileQuickStats>div{min-height:76px;padding:9px 4px;border-radius:10px}
+  .profileQuickStats strong{font-size:18px}
+  .profileQuickStats span{font-size:9px}
+  .profileProgressCard{padding:19px 16px}
+  .serviceProgress{gap:14px}
+  .progressRing{width:128px}
+  .progressRing strong{font-size:25px}
+}
