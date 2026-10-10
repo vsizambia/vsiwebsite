@@ -26,6 +26,7 @@ export default function VolunteerPortalClient() {
   const [busy,setBusy] = useState(false);
   const [volunteer,setVolunteer] = useState(null);
   const [statement,setStatement] = useState(null);
+  const [profileDetails,setProfileDetails] = useState(null);
   const [tab,setTab] = useState("overview");
 
   const loadPortal = useCallback(async () => {
@@ -33,6 +34,8 @@ export default function VolunteerPortalClient() {
     if (!response.ok) { setPhase("login"); return; }
     const data = await response.json();
     setVolunteer(data.volunteer);
+    const detailResponse = await fetch("/api/volunteer-portal/profile-details",{cache:"no-store"});
+    setProfileDetails(detailResponse.ok ? await detailResponse.json() : null);
     const statementResponse = await fetch("/api/volunteer-portal/statement",{cache:"no-store"});
     if (statementResponse.ok) {
       const statementData = await statementResponse.json();
@@ -94,7 +97,7 @@ export default function VolunteerPortalClient() {
   async function signOut() {
     setBusy(true);
     try { await fetch("/api/volunteer-portal/logout",{method:"POST"}); }
-    finally { setVolunteer(null); setStatement(null); setChallengeId(""); setCode(""); setPhase("login"); setMessage("You have signed out."); setBusy(false); }
+    finally { setVolunteer(null); setStatement(null); setProfileDetails(null); setChallengeId(""); setCode(""); setPhase("login"); setMessage("You have signed out."); setBusy(false); }
   }
 
   const assigned = useMemo(() => [
@@ -103,6 +106,24 @@ export default function VolunteerPortalClient() {
     ["Project",listValue(volunteer?.project)],
     ["Activity",listValue(volunteer?.activity)],
   ].filter(([,v])=>v && v!=="—"),[volunteer]);
+
+  const profileSections = [
+    ["Identity and contact", [["VSI ID","volunteer_id"],["Full name","full_name"],["Status","status"],["Email","email"],["Phone","phone"],["Date of birth","age"],["Nationality","nationality"],["Gender","gender"],["Faith","faith"]]],
+    ["Location", [["Province","province"],["District","district"],["Constituency","constituency"],["Ward","ward"],["Location","location"]]],
+    ["Education, skills and availability", [["Current occupation","current_occupation"],["Education","education"],["Volunteer area","category"],["Skills","skills"],["Availability","availability"],["Hours per week","hours_per_week"],["Motivation","motivation"],["Past volunteer positions","past_volunteer_positions"],["Volunteering elsewhere","volunteering_elsewhere"],["Other volunteering details","other_volunteering_details"]]],
+    ["References and emergency contact", [["Reference name","reference_name"],["Reference organisation","reference_organization"],["Reference phone","reference_phone"],["Reference email","reference_email"],["Emergency contact","emergency_name"],["Emergency phone","emergency_phone"]]],
+    ["Safeguarding and declarations", [["Criminal conviction declared","criminal_conviction"],["Criminal offence details","criminal_offence_details"],["Disability declared","disability"],["Disability certificate","disability_certificate"],["Membership fee acknowledged","membership_fee_acknowledged"]]],
+    ["Assignment and supervision", [["Directorate","directorate"],["Programme","programme"],["Project","project"],["Activity","activity"],["Supervisor name","line_manager_name"],["Supervisor title","line_manager_title"],["Supervisor phone","line_manager_phone"],["Supervisor email","line_manager_email"],["Application submitted","created_at"]]]
+  ];
+  const displayField = (key,value) => {
+    if (["volunteering_elsewhere","criminal_conviction","disability","membership_fee_acknowledged"].includes(key)) {
+      if (value === true || value === "true" || value === 1) return "Yes";
+      if (value === false || value === "false" || value === 0) return "No";
+    }
+    if (key === "created_at") return dateLabel(value);
+    if (["programme","project","activity"].includes(key)) return listValue(value);
+    return value === null || value === undefined || value === "" ? "—" : String(value);
+  };
 
   if (phase === "loading") return <main className={styles.page}><div className={styles.shell}><a className={styles.brand} href="/volunteer">VSI <span>VOLUNTEER PORTAL</span></a><div className={styles.loading}>Loading your secure portal…</div></div></main>;
 
@@ -149,7 +170,10 @@ export default function VolunteerPortalClient() {
         </section>
         <nav className={styles.tabs} aria-label="Volunteer portal sections">
           <button className={tab==="overview"?styles.activeTab:""} onClick={()=>setTab("overview")}>Overview</button>
+          <button className={tab==="profile"?styles.activeTab:""} onClick={()=>setTab("profile")}>Full profile</button>
+          <button className={tab==="service"?styles.activeTab:""} onClick={()=>setTab("service")}>Service & development</button>
           <button className={tab==="finance"?styles.activeTab:""} onClick={()=>setTab("finance")}>Contribution statement</button>
+          <button className={tab==="records"?styles.activeTab:""} onClick={()=>setTab("records")}>Finance records</button>
         </nav>
         {message && <p className={styles.notice} role="status">{message}</p>}
         {tab==="overview" ? (
@@ -161,40 +185,45 @@ export default function VolunteerPortalClient() {
               <article><span>OUTSTANDING</span><strong>{money(statement?.outstanding)}</strong><small>{statement?.credit>0 ? `Credit: ${money(statement.credit)}` : "Based on records currently available"}</small></article>
             </section>
             <section className={styles.contentGrid}>
-              <article className={styles.panel}>
-                <div className={styles.panelHeading}><div><div className={styles.eyebrow}>VOLUNTEER PROFILE</div><h2>Your details</h2></div></div>
+              <article className={styles.panel}><div className={styles.panelHeading}><div><div className={styles.eyebrow}>VOLUNTEER PROFILE</div><h2>Your details</h2></div></div>
                 <dl className={styles.details}>
-                  <div><dt>Full name</dt><dd>{volunteer?.full_name || "—"}</dd></div>
-                  <div><dt>Registered email</dt><dd>{volunteer?.email || "—"}</dd></div>
-                  <div><dt>Application submitted</dt><dd>{dateLabel(volunteer?.created_at)}</dd></div>
-                  <div><dt>Current occupation</dt><dd>{volunteer?.current_occupation || "—"}</dd></div>
-                  <div><dt>Education</dt><dd>{volunteer?.education || "—"}</dd></div>
-                  <div><dt>Skills</dt><dd>{volunteer?.skills || "—"}</dd></div>
-                  <div><dt>Availability</dt><dd>{volunteer?.availability || "—"}</dd></div>
-                  <div><dt>Hours per week</dt><dd>{volunteer?.hours_per_week ? `${volunteer.hours_per_week} hours` : "—"}</dd></div>
-                </dl>
+                  <div><dt>Full name</dt><dd>{volunteer?.full_name || "—"}</dd></div><div><dt>Registered email</dt><dd>{volunteer?.email || "—"}</dd></div><div><dt>Application submitted</dt><dd>{dateLabel(volunteer?.created_at)}</dd></div><div><dt>Current occupation</dt><dd>{volunteer?.current_occupation || "—"}</dd></div><div><dt>Education</dt><dd>{volunteer?.education || "—"}</dd></div><div><dt>Skills</dt><dd>{volunteer?.skills || "—"}</dd></div><div><dt>Availability</dt><dd>{volunteer?.availability || "—"}</dd></div><div><dt>Hours per week</dt><dd>{volunteer?.hours_per_week ? `${volunteer.hours_per_week} hours` : "—"}</dd></div>
+                </dl><p className={styles.readOnlyNote}>Read-only view of your official VSI record. Contact VSI administration to request a correction.</p>
               </article>
-              <article className={styles.panel}>
-                <div className={styles.eyebrow}>YOUR ASSIGNMENT</div><h2>Programme placement</h2>
+              <article className={styles.panel}><div className={styles.eyebrow}>YOUR ASSIGNMENT</div><h2>Programme placement</h2>
                 {assigned.length ? <dl className={styles.details}>{assigned.map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl> : <p className={styles.muted}>No programme placement details are currently recorded on your profile. Contact VSI administration if you believe this is incorrect.</p>}
                 <div className={styles.callout}><strong>Need to update your details?</strong><p>Contact VSI administration so changes can be reviewed and reflected in the official record.</p><a href="mailto:vsizambia@gmail.com">Contact VSI →</a></div>
               </article>
             </section>
           </>
-        ) : (
+        ) : tab==="finance" ? (
           <section className={styles.panel}>
             <div className={styles.statementHeading}><div><div className={styles.eyebrow}>MEMBERSHIP FINANCE</div><h2>Your contribution statement</h2><p>Expected contributions start in the month your application was submitted and run through the current calendar month.</p></div><button className={styles.refresh} onClick={()=>{setPhase("loading");loadPortal().then(()=>setTab("finance")).catch(()=>setPhase("portal"));}}>Refresh statement</button></div>
-            {statement ? <>
-              <div className={styles.statementTotals}>
-                <div><span>Contribution period</span><strong>{monthLabel(statement.firstContributionMonth)} – {monthLabel(statement.throughMonth)}</strong></div>
-                <div><span>Expected</span><strong>{money(statement.expectedTotal)}</strong></div>
-                <div><span>Payments recorded</span><strong>{money(statement.paidTotal)}</strong></div>
-                <div><span>Balance outstanding</span><strong>{money(statement.outstanding)}</strong></div>
-              </div>
+            {statement ? <><div className={styles.statementTotals}><div><span>Contribution period</span><strong>{monthLabel(statement.firstContributionMonth)} – {monthLabel(statement.throughMonth)}</strong></div><div><span>Expected</span><strong>{money(statement.expectedTotal)}</strong></div><div><span>Payments recorded</span><strong>{money(statement.paidTotal)}</strong></div><div><span>Balance outstanding</span><strong>{money(statement.outstanding)}</strong></div></div>
               <div className={styles.tableWrap}><table><thead><tr><th>Contribution month</th><th>Expected</th><th>Paid</th><th>Balance</th><th>Status</th><th>Payment reference</th></tr></thead><tbody>{statement.months.map(row=><tr key={row.month}><td>{monthLabel(row.month)}</td><td>{money(row.amountDue)}</td><td>{money(row.amountPaid)}</td><td>{money(row.balance)}</td><td><span className={row.status==="Paid"?styles.paid:row.status==="Part-paid"?styles.partial:styles.unpaid}>{row.status}</span></td><td>{row.reference || "—"}</td></tr>)}</tbody></table></div>
-              {statement.credit>0 && <p className={styles.notice}>Your recorded payments exceed expected contributions by {money(statement.credit)}. Please contact VSI administration to reconcile this credit.</p>}
-              <p className={styles.disclaimer}>{statement.adjustmentNote} This is a read-only statement, not a payment receipt. If a payment is missing or a figure appears incorrect, contact VSI administration for reconciliation.</p>
+              {statement.credit>0 && <p className={styles.notice}>Your recorded payments exceed expected contributions by {money(statement.credit)}. Please contact VSI administration to reconcile this credit.</p>}<p className={styles.disclaimer}>{statement.adjustmentNote} This is a read-only statement, not a payment receipt. If a payment is missing or a figure appears incorrect, contact VSI administration for reconciliation.</p>
             </> : <p className={styles.muted}>The contribution statement could not be loaded. Please refresh the page or try again later.</p>}
+          </section>
+        ) : tab==="profile" ? (
+          <section className={styles.panel}>
+            <div className={styles.panelHeading}><div><div className={styles.eyebrow}>OFFICIAL RECORD · READ ONLY</div><h2>Complete volunteer profile</h2><p className={styles.muted}>The same official profile information available to VSI administration, displayed read-only for the account owner.</p></div></div>
+            {profileSections.map(([heading,fields])=><div className={styles.readOnlySection} key={heading}><h3>{heading}</h3><dl className={styles.details}>{fields.map(([label,key])=><div key={key}><dt>{label}</dt><dd>{displayField(key,profileDetails?.profile?.[key])}</dd></div>)}</dl></div>)}
+            <p className={styles.readOnlyNote}>Only authorised VSI administration staff can edit profile details, assignments or approval status. Contact administration to request a correction.</p>
+          </section>
+        ) : tab==="service" ? (
+          <section className={styles.panel}>
+            <div className={styles.panelHeading}><div><div className={styles.eyebrow}>SERVICE & DEVELOPMENT</div><h2>Your activity history</h2><p className={styles.muted}>This is a read-only record. Verified hours are identified separately.</p></div></div>
+            <section className={styles.metrics}><article><span>VERIFIED SERVICE HOURS</span><strong>{Number(profileDetails?.hours?.total||0).toFixed(2)}</strong><small>Recorded service</small></article><article><span>THIS WEEK</span><strong>{Number(profileDetails?.hours?.week||0).toFixed(2)}</strong><small>Verified hours</small></article><article><span>VERIFIED ACTIVITIES</span><strong>{profileDetails?.hours?.verifiedActivities||0}</strong><small>Service entries</small></article><article><span>DEVELOPMENT HOURS</span><strong>{Number(profileDetails?.hours?.development||0).toFixed(2)}</strong><small>Verified professional development</small></article></section>
+            <div className={styles.readOnlySection}><h3>Volunteer service history</h3><div className={styles.tableWrap}><table><thead><tr><th>Date</th><th>Activity</th><th>Project</th><th>Location</th><th>Time</th><th>Hours</th><th>Status</th><th>Description</th></tr></thead><tbody>{(profileDetails?.activities||[]).filter(a=>!String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).length ? (profileDetails?.activities||[]).filter(a=>!String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).map(a=><tr key={a.id}><td>{dateLabel(a.activity_date)}</td><td>{a.activity_name||a.activity_code||"—"}</td><td>{a.project||"—"}</td><td>{a.location||"—"}</td><td>{String(a.start_time||"").slice(0,5)}–{String(a.end_time||"").slice(0,5)}</td><td>{Number(a.hours||0).toFixed(2)}</td><td>{a.verified?"Verified":"Unverified"}</td><td>{a.description||"—"}</td></tr>) : <tr><td colSpan="8">No service activity recorded.</td></tr>}</tbody></table></div></div>
+            <div className={styles.readOnlySection}><h3>Professional development history</h3><div className={styles.tableWrap}><table><thead><tr><th>Date</th><th>Activity</th><th>Description</th><th>Hours</th><th>Status</th></tr></thead><tbody>{(profileDetails?.activities||[]).filter(a=>String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).length ? (profileDetails?.activities||[]).filter(a=>String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).map(a=><tr key={a.id}><td>{dateLabel(a.activity_date)}</td><td>{a.activity_name||a.activity_code||"—"}</td><td>{a.description||"—"}</td><td>{Number(a.hours||0).toFixed(2)}</td><td>{a.verified?"Verified":"Unverified"}</td></tr>) : <tr><td colSpan="5">No professional development recorded.</td></tr>}</tbody></table></div></div>
+          </section>
+        ) : (
+          <section className={styles.panel}>
+            <div className={styles.panelHeading}><div><div className={styles.eyebrow}>FINANCIAL RECORDS · READ ONLY</div><h2>Membership, donations and other payments</h2><p className={styles.muted}>Records currently linked to your volunteer account. Contact VSI administration if a payment or donation is missing.</p></div></div>
+            <div className={styles.readOnlySection}><h3>Membership payments</h3><div className={styles.tableWrap}><table><thead><tr><th>Month</th><th>Due</th><th>Paid</th><th>Status</th><th>Payment date</th><th>Method</th><th>Reference</th></tr></thead><tbody>{profileDetails?.finance?.payments?.length ? profileDetails.finance.payments.map(p=><tr key={p.id}><td>{monthLabel(String(p.payment_month||"").slice(0,7))}</td><td>{money(p.amount_due)}</td><td>{money(p.amount_paid)}</td><td>{p.status||"—"}</td><td>{dateLabel(p.payment_date)}</td><td>{p.payment_method||"—"}</td><td>{p.reference||"—"}</td></tr>) : <tr><td colSpan="7">No membership payment records.</td></tr>}</tbody></table></div></div>
+            <div className={styles.readOnlySection}><h3>Donations</h3><div className={styles.tableWrap}><table><thead><tr><th>Cause</th><th>Amount</th><th>Date</th><th>Method</th><th>Reference</th></tr></thead><tbody>{profileDetails?.finance?.donations?.length ? profileDetails.finance.donations.map(d=><tr key={d.id}><td>{d.cause||"—"}</td><td>{money(d.amount)}</td><td>{dateLabel(d.donation_date)}</td><td>{d.payment_method||"—"}</td><td>{d.reference||"—"}</td></tr>) : <tr><td colSpan="5">No donations recorded.</td></tr>}</tbody></table></div></div>
+            <div className={styles.readOnlySection}><h3>Other payments</h3><div className={styles.tableWrap}><table><thead><tr><th>Description</th><th>Amount</th><th>Date</th><th>Method</th><th>Reference</th></tr></thead><tbody>{profileDetails?.finance?.otherPayments?.length ? profileDetails.finance.otherPayments.map(p=><tr key={p.id}><td>{p.description||"—"}</td><td>{money(p.amount)}</td><td>{dateLabel(p.payment_date)}</td><td>{p.payment_method||"—"}</td><td>{p.reference||"—"}</td></tr>) : <tr><td colSpan="5">No other payment records.</td></tr>}</tbody></table></div></div>
+            <p className={styles.readOnlyNote}>Finance records cannot be edited or deleted from the volunteer portal. Corrections and reconciliations remain under VSI administration control.</p>
           </section>
         )}
         <footer className={styles.footer}>© 2026 Visionary Students Initiative <a href="/privacy-policy">Privacy Policy</a><a href="/volunteer">Volunteer information</a></footer>
