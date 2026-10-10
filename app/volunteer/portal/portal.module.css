@@ -476,3 +476,24 @@
   .activityDetails dd{font-size:12px}
   .activityHours strong{font-size:12px}
 }
+
+
+/* Shared responsive cards for every remaining portal data table.
+   Desktop retains the complete tabular layout; phones use stacked records. */
+.mobileTableCards{display:none}
+.dataCard{min-width:0;padding:15px;border:1px solid #dce6ee;border-radius:14px;background:#fff;box-shadow:0 5px 16px rgba(11,48,82,.045)}
+.dataCardTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-bottom:10px;border-bottom:1px solid #edf1f4}
+.dataCardTop h4{min-width:0;flex:1;margin:0;color:#0b3052;font-size:14px;line-height:1.45;overflow-wrap:anywhere}
+.dataCardTop>strong{flex-shrink:0;color:#0b4678;font-size:14px;font-weight:900;overflow-wrap:anywhere}
+.dataCardDetails{display:grid;gap:0;margin:4px 0 0}
+.dataCardDetails>div{display:grid;grid-template-columns:minmax(90px,.42fr) minmax(0,1fr);gap:10px;padding:9px 0;border-bottom:1px solid #edf1f4}
+.dataCardDetails>div:last-child{border-bottom:0}
+.dataCardDetails dt{font-size:10px;font-weight:850;letter-spacing:.045em;text-transform:uppercase;color:#708596}
+.dataCardDetails dd{min-width:0;margin:0;color:#294b62;font-size:12px;line-height:1.55;overflow-wrap:anywhere;word-break:normal}
+@media(max-width:600px){
+  .desktopTable{display:none}
+  .mobileTableCards{display:grid;gap:12px}
+  .dataCard{padding:13px;border-radius:12px}
+  .dataCardDetails>div{grid-template-columns:88px minmax(0,1fr);gap:8px}
+  .dataCardDetails dd{font-size:12px}
+}
