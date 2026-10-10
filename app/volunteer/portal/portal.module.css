@@ -497,3 +497,63 @@
   .dataCardDetails>div{grid-template-columns:88px minmax(0,1fr);gap:8px}
   .dataCardDetails dd{font-size:12px}
 }
+
+
+/* Full profile: keep the existing desktop presentation, but make every
+   profile field read like a compact, individually scannable card on phones. */
+@media(max-width:600px){
+  .sectionContent .readOnlySection{
+    margin-top:16px;
+    padding:15px 12px 12px;
+    border:1px solid #e0e9ef;
+    border-radius:15px;
+    background:linear-gradient(180deg,#ffffff 0%,#fbfdff 100%);
+    box-shadow:0 5px 16px rgba(11,48,82,.04);
+  }
+  .sectionContent .readOnlySection h3{
+    margin:0 0 10px;
+    font-size:14px;
+    line-height:1.45;
+  }
+  .sectionContent .details{
+    display:grid;
+    grid-template-columns:minmax(0,1fr);
+    gap:8px;
+    margin:0;
+  }
+  .sectionContent .details>div{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:5px;
+    min-width:0;
+    padding:10px 11px;
+    border:1px solid #edf1f4;
+    border-radius:10px;
+    background:#fff;
+  }
+  .sectionContent .details dt{
+    font-size:9px;
+    line-height:1.4;
+    font-weight:850;
+    letter-spacing:.065em;
+    text-transform:uppercase;
+    color:#708596;
+  }
+  .sectionContent .details dd{
+    min-width:0;
+    margin:0;
+    color:#193c54;
+    font-size:13px;
+    font-weight:700;
+    line-height:1.6;
+    overflow-wrap:anywhere;
+    word-break:normal;
+  }
+  .sectionContent .readOnlyNote{
+    margin-top:16px;
+    padding:12px;
+    border-radius:11px;
+    font-size:12px;
+  }
+}
