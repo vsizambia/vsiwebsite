@@ -212,7 +212,15 @@ export default function VolunteerPortalClient() {
           <aside className={styles.profileProgressCard}>
             <div className={styles.progressCardTitle}>Your service snapshot</div>
             <p>Verified service activity and weekly commitment at a glance.</p>
-            {#PLACEHOLDER#}
+            <div className={styles.serviceProgress}>
+              {statedWeeklyHours > 0 ? <div className={styles.progressRing} style={{"--progress": `${Math.min(100,Math.round((verifiedWeeklyHours/statedWeeklyHours)*100))}%`}}><div><strong>{Math.min(100,Math.round((verifiedWeeklyHours/statedWeeklyHours)*100))}%</strong><span>of weekly goal</span></div></div> : <div className={styles.progressRing} style={{"--progress":"100%"}}><div><strong>{Number(profileDetails?.hours?.total||0).toFixed(1)}</strong><span>hours logged</span></div></div>}
+              <div className={styles.progressDetails}>
+                <strong>{Number(profileDetails?.hours?.verifiedActivities||0)} verified activities</strong>
+                <span>{statedWeeklyHours > 0 ? verifiedWeeklyHours.toFixed(1) + " of " + statedWeeklyHours.toFixed(1) + " hours this week" : "Your verified service hours appear here as activities are approved."}</span>
+              </div>
+            </div>
+            <div className={styles.snapshotDivider}></div>
+            <div className={styles.snapshotFooter}><span className={styles.snapshotDot}></span> Profile status <strong>{volunteer?.status || "Approved"}</strong></div>
           </aside>
         </section>
         {message && <p className={styles.notice} role="status">{message}</p>}
