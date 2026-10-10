@@ -194,8 +194,12 @@ export default function VolunteerPortalClient() {
           </nav>
         </div>
         <section className={styles.welcome}>
-          <div><div className={styles.eyebrow}>YOUR VSI ACCOUNT</div><h1>Hello, {volunteer?.full_name?.split(" ")[0] || "volunteer"}.</h1><p>Your volunteer profile and membership contribution summary.</p></div>
-          <div className={styles.idCard}><span>VOLUNTEER ID</span><strong>{volunteer?.volunteer_id || "—"}</strong><small>Status: {volunteer?.status || "Approved"}</small></div>
+          <div className={styles.profileIdentity}>
+            <div className={styles.eyebrow}>VOLUNTEER PROFILE</div>
+            <h1>{volunteer?.full_name || "Volunteer profile"}</h1>
+            <p className={styles.profileMeta}><strong>{volunteer?.volunteer_id || "—"}</strong><span aria-hidden="true">·</span><span>{volunteer?.status || "Approved"}</span></p>
+            <p className={styles.profileIntro}>Your official volunteer profile and membership contribution summary.</p>
+          </div>
         </section>
         {message && <p className={styles.notice} role="status">{message}</p>}
         {tab==="overview" ? (
@@ -227,7 +231,7 @@ export default function VolunteerPortalClient() {
           </section>
         ) : tab==="finance" ? (
           <section className={styles.panel}>
-            <div className={styles.statementHeading}><div><div className={styles.eyebrow}>MEMBERSHIP FINANCE</div><h2>Your contribution statement</h2><p>Expected contributions start in the month your application was submitted and run through the current calendar month.</p></div><button className={styles.refresh} onClick={()=>{setPhase("loading");loadPortal().then(()=>setTab("finance")).catch(()=>setPhase("portal"));}}>Refresh statement</button></div>
+            <div className={styles.statementHeading}><div><div className={styles.eyebrow}>CONTRIBUTION STATEMENT · READ ONLY</div><h2>Membership contributions</h2><p>Expected contributions start in the month your application was submitted and run through the current calendar month.</p></div><button className={styles.refresh} onClick={()=>{setPhase("loading");loadPortal().then(()=>setTab("finance")).catch(()=>setPhase("portal"));}}>Refresh statement</button></div>
             {statement ? <><div className={styles.statementTotals}><div><span>Contribution period</span><strong>{monthLabel(statement.firstContributionMonth)} – {monthLabel(statement.throughMonth)}</strong></div><div><span>Expected</span><strong>{money(statement.expectedTotal)}</strong></div><div><span>Payments recorded</span><strong>{money(statement.paidTotal)}</strong></div><div><span>Balance outstanding</span><strong>{money(statement.outstanding)}</strong></div></div>
               <div className={styles.tableWrap}><table><thead><tr><th>Contribution month</th><th>Expected</th><th>Paid</th><th>Balance</th><th>Status</th><th>Payment reference</th></tr></thead><tbody>{statement.months.map(row=><tr key={row.month}><td>{monthLabel(row.month)}</td><td>{money(row.amountDue)}</td><td>{money(row.amountPaid)}</td><td>{money(row.balance)}</td><td><span className={row.status==="Paid"?styles.paid:row.status==="Part-paid"?styles.partial:styles.unpaid}>{row.status}</span></td><td>{row.reference || "—"}</td></tr>)}</tbody></table></div>
               {statement.credit>0 && <p className={styles.notice}>Your recorded payments exceed expected contributions by {money(statement.credit)}. Please contact VSI administration to reconcile this credit.</p>}<p className={styles.disclaimer}>{statement.adjustmentNote} This is a read-only statement, not a payment receipt. If a payment is missing or a figure appears incorrect, contact VSI administration for reconciliation.</p>
@@ -235,7 +239,7 @@ export default function VolunteerPortalClient() {
           </section>
         ) : tab==="profile" ? (
           <section className={styles.panel}>
-            <div className={styles.panelHeading}><div><div className={styles.eyebrow}>OFFICIAL RECORD · READ ONLY</div><h2>Complete volunteer profile</h2><p className={styles.muted}>The same official profile information available to VSI administration, displayed read-only for the account owner.</p></div></div>
+            <div className={styles.panelHeading}><div><div className={styles.eyebrow}>VOLUNTEER PROFILE · READ ONLY</div><h2>Full profile</h2><p className={styles.muted}>Your official profile information as held by VSI administration. This view is read-only.</p></div></div>
             {profileSections.map(([heading,fields])=><div className={styles.readOnlySection} key={heading}><h3>{heading}</h3><dl className={styles.details}>{fields.map(([label,key])=><div key={key}><dt>{label}</dt><dd>{displayField(key,profileDetails?.profile?.[key])}</dd></div>)}</dl></div>)}
             <p className={styles.readOnlyNote}>Only authorised VSI administration staff can edit profile details, assignments or approval status. Contact administration to request a correction.</p>
           </section>
