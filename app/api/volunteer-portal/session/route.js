@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentVolunteer } from "../../../../../lib/volunteer-portal-auth";
-
+import { currentVolunteer } from "../../../../lib/volunteer-portal-auth";
 export const runtime = "nodejs";
 export async function GET() {
   try {
