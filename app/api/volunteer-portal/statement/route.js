@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { pool } from "../../../../../lib/db";
-import { currentVolunteer } from "../../../../../lib/volunteer-portal-auth";
+import { pool } from "../../../../lib/db";
+import { currentVolunteer } from "../../../../lib/volunteer-portal-auth";
 
 export const runtime = "nodejs";
 const money = value => Math.round((Number(value)||0)*100)/100;
@@ -8,19 +8,11 @@ export async function GET() {
   try {
     const volunteer = await currentVolunteer();
     if (!volunteer) return NextResponse.json({error:"Please sign in to view your volunteer portal."},{status:401,headers:{"Cache-Control":"no-store"}});
-    const [paymentsResult, adjustmentResult] = await Promise.all([
-      pool.query(
-        `SELECT payment_month,amount_due,amount_paid,status,payment_date,payment_method,reference,notes
-           FROM volunteer_membership_payments
-          WHERE volunteer_id=$1
-          ORDER BY payment_month ASC`,
-        [volunteer.id]
-      ),
-      // Only explicit, approved adjustment records are included if such a table is installed.
-      pool.query(
-        `SELECT to_regclass('public.volunteer_membership_adjustments') IS NOT NULL AS exists`
-      )
-    ]);
+    const paymentsResult = await pool.query(
+      `SELECT payment_month,amount_due,amount_paid,status,payment_date,payment_method,reference,notes
+         FROM volunteer_membership_payments WHERE volunteer_id=$1 ORDER BY payment_month ASC`,
+      [volunteer.id]
+    );
     const start = new Date(volunteer.created_at);
     const now = new Date();
     const first = new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth(),1));
