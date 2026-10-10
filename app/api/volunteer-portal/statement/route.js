@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { pool } from "../../../../lib/db";
 import { currentVolunteer } from "../../../../lib/volunteer-portal-auth";
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 const money = value => Math.round((Number(value)||0)*100)/100;
 const localMonthParts = date => Object.fromEntries(new Intl.DateTimeFormat("en-CA",{timeZone:"Africa/Lusaka",year:"numeric",month:"2-digit"}).formatToParts(date).filter(p=>p.type==="year"||p.type==="month").map(p=>[p.type,p.value]));
 const monthKey = date => { const p=localMonthParts(date); return `${p.year}-${p.month}`; };
