@@ -557,3 +557,20 @@
     font-size:12px;
   }
 }
+
+
+/* Align the volunteer profile's deep-purple shell with VSI navy #030164. */
+.profileDashboard{
+  background:#030164;
+  box-shadow:0 18px 42px rgba(3,1,100,.18);
+}
+.profilePortrait{
+  color:#030164;
+  box-shadow:0 5px 16px rgba(3,1,100,.12);
+}
+.profileProgressCard{
+  background:linear-gradient(150deg,#363199 0%,#030164 100%);
+}
+.progressRing>div{
+  background:#17156f;
+}
