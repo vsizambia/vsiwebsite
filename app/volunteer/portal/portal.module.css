@@ -381,3 +381,67 @@
   .progressRing{width:128px}
   .progressRing strong{font-size:25px}
 }
+
+
+/* Requested VSI colour palette for the three Overview KPI cards. */
+.overviewMetrics .overviewServiceMetric{
+  background:#030164;
+  border-color:#030164;
+  color:#fff;
+}
+.overviewMetrics .overviewDevelopmentMetric{
+  background:#363199;
+  border-color:#363199;
+  color:#fff;
+}
+.overviewMetrics .membershipMetric{
+  background:#2D7495;
+  border-color:#2D7495;
+  color:#fff;
+}
+.overviewMetrics .overviewServiceMetric span,
+.overviewMetrics .overviewDevelopmentMetric span,
+.overviewMetrics .membershipMetric span,
+.overviewMetrics .overviewServiceMetric strong,
+.overviewMetrics .overviewDevelopmentMetric strong,
+.overviewMetrics .membershipMetric strong,
+.overviewMetrics .overviewServiceMetric small,
+.overviewMetrics .overviewDevelopmentMetric small,
+.overviewMetrics .membershipMetric small{
+  color:#fff;
+}
+.overviewMetrics .performanceNote{
+  background:rgba(255,255,255,.12);
+  border-color:rgba(255,255,255,.28);
+  color:#fff;
+}
+.overviewMetrics .developmentActivityList{
+  border-top-color:rgba(255,255,255,.28);
+}
+.overviewMetrics .developmentActivityList li,
+.overviewMetrics .developmentActivityList li strong,
+.overviewMetrics .developmentActivityList .noDevelopmentActivity{
+  color:#fff;
+}
+.overviewMetrics .membershipBreakdown{
+  border-top-color:rgba(255,255,255,.3);
+}
+.overviewMetrics .membershipBreakdownHeading,
+.overviewMetrics .membershipLine span,
+.overviewMetrics .membershipLine strong,
+.overviewMetrics .membershipEmpty{
+  color:#fff;
+}
+.overviewMetrics .membershipLine{
+  border-bottom-color:rgba(255,255,255,.2);
+}
+
+/* Use the actual application photo when one was submitted. */
+.profilePortrait{overflow:hidden;padding:0}
+.profilePortrait .profilePhoto{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:50%;
+}
