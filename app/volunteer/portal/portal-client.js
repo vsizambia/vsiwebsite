@@ -193,13 +193,27 @@ export default function VolunteerPortalClient() {
             <button className={tab==="records"?styles.activeTab:""} onClick={()=>setTab("records")}>Finance records</button>
           </nav>
         </div>
-        <section className={styles.welcome}>
-          <div className={styles.profileIdentity}>
-            <div className={styles.eyebrow}>VOLUNTEER PROFILE</div>
-            <h1>{volunteer?.full_name || "Volunteer profile"}</h1>
-            <p className={styles.profileMeta}><strong>{volunteer?.volunteer_id || "—"}</strong><span aria-hidden="true">·</span><span>{volunteer?.status || "Approved"}</span></p>
-            <p className={styles.profileIntro}>Your official volunteer profile and membership contribution summary.</p>
+        <section className={styles.profileDashboard} aria-label="Volunteer profile dashboard">
+          <div className={styles.profileHeroCard}>
+            <div className={styles.profilePortrait} aria-hidden="true">{String(volunteer?.full_name || "V").trim().split(/\\s+/).slice(0,2).map(part=>part.charAt(0)).join("").toUpperCase()}</div>
+            <div className={styles.profileIdentity}>
+              <div className={styles.eyebrow}>VOLUNTEER PROFILE</div>
+              <h1>{volunteer?.full_name || "Volunteer profile"}</h1>
+              <div className={styles.profileRole}>{volunteer?.directorate || "Visionary Students Initiative"} · Volunteer</div>
+              <p className={styles.profileMeta}><strong>{volunteer?.volunteer_id || "—"}</strong><span aria-hidden="true">·</span><span className={styles.statusPill}>{volunteer?.status || "Approved"}</span></p>
+              <p className={styles.profileIntro}>Your official volunteer profile and membership contribution summary.</p>
+            </div>
+            <div className={styles.profileQuickStats}>
+              <div className={styles.quickStatCyan}><strong>{Number(profileDetails?.hours?.total||0).toFixed(1)}</strong><span>Service hours</span></div>
+              <div className={styles.quickStatViolet}><strong>{Number(profileDetails?.hours?.development||0).toFixed(1)}</strong><span>Development hours</span></div>
+              <div className={styles.quickStatOrange}><strong>{money(statement?.paidTotal||0)}</strong><span>Contributions paid</span></div>
+            </div>
           </div>
+          <aside className={styles.profileProgressCard}>
+            <div className={styles.progressCardTitle}>Your service snapshot</div>
+            <p>Verified service activity and weekly commitment at a glance.</p>
+            {#PLACEHOLDER#}
+          </aside>
         </section>
         {message && <p className={styles.notice} role="status">{message}</p>}
         {tab==="overview" ? (
