@@ -4,8 +4,4 @@
 /* Shared VSI site chrome for the volunteer self-service portal. */
 .page{padding:30px 20px 42px;}
 .accountLabel{color:#567287;font-size:10px;font-weight:900;letter-spacing:.14em;}
-:global(.portal-site-header){position:relative;z-index:20;}
-:global(.portal-site-header .nav-shell){max-width:1280px;}
-:global(.portal-site-header .nav-cta){white-space:nowrap;}
-:global(.portal-site-footer){margin-top:0;}
 @media(max-width:600px){.page{padding:22px 14px 32px}.accountLabel{font-size:9px;letter-spacing:.1em}}
