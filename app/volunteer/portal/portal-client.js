@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import styles from "./portal.module.css";
 
 const money = value => new Intl.NumberFormat("en-ZM",{style:"currency",currency:"ZMW",maximumFractionDigits:2}).format(Number(value)||0);
@@ -42,6 +42,7 @@ export default function VolunteerPortalClient() {
   const [statement,setStatement] = useState(null);
   const [profileDetails,setProfileDetails] = useState(null);
   const [tab,setTab] = useState("overview");
+  const sectionContentRef = useRef(null);
 
   const loadPortal = useCallback(async () => {
     const response = await fetch("/api/volunteer-portal/session",{cache:"no-store"});
@@ -62,6 +63,11 @@ export default function VolunteerPortalClient() {
   },[]);
 
   useEffect(() => { loadPortal().catch(()=>{setPhase("login");}); },[loadPortal]);
+
+  useEffect(() => {
+    if (phase !== "portal" || tab === "overview" || !sectionContentRef.current) return;
+    sectionContentRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [tab, phase]);
 
   async function requestCode(event) {
     event.preventDefault();
@@ -252,7 +258,7 @@ export default function VolunteerPortalClient() {
             </article>
           </section>
         ) : tab==="finance" ? (
-          <section className={styles.panel}>
+          <section ref={sectionContentRef} className={`${styles.panel} ${styles.sectionContent}`}>
             <div className={styles.statementHeading}><div><div className={styles.eyebrow}>CONTRIBUTION STATEMENT · READ ONLY</div><h2>Membership contributions</h2><p>Expected contributions start in the month your application was submitted and run through the current calendar month.</p></div><button className={styles.refresh} onClick={()=>{setPhase("loading");loadPortal().then(()=>setTab("finance")).catch(()=>setPhase("portal"));}}>Refresh statement</button></div>
             {statement ? <><div className={styles.statementTotals}><div><span>Contribution period</span><strong>{monthLabel(statement.firstContributionMonth)} – {monthLabel(statement.throughMonth)}</strong></div><div><span>Expected</span><strong>{money(statement.expectedTotal)}</strong></div><div><span>Payments recorded</span><strong>{money(statement.paidTotal)}</strong></div><div><span>Balance outstanding</span><strong>{money(statement.outstanding)}</strong></div></div>
               <div className={styles.tableWrap}><table><thead><tr><th>Contribution month</th><th>Expected</th><th>Paid</th><th>Balance</th><th>Status</th><th>Payment reference</th></tr></thead><tbody>{statement.months.map(row=><tr key={row.month}><td>{monthLabel(row.month)}</td><td>{money(row.amountDue)}</td><td>{money(row.amountPaid)}</td><td>{money(row.balance)}</td><td><span className={row.status==="Paid"?styles.paid:row.status==="Part-paid"?styles.partial:styles.unpaid}>{row.status}</span></td><td>{row.reference || "—"}</td></tr>)}</tbody></table></div>
@@ -260,20 +266,23 @@ export default function VolunteerPortalClient() {
             </> : <p className={styles.muted}>The contribution statement could not be loaded. Please refresh the page or try again later.</p>}
           </section>
         ) : tab==="profile" ? (
-          <section className={styles.panel}>
+          <section ref={sectionContentRef} className={`${styles.panel} ${styles.sectionContent}`}>
             <div className={styles.panelHeading}><div><div className={styles.eyebrow}>VOLUNTEER PROFILE · READ ONLY</div><h2>Full profile</h2><p className={styles.muted}>Your official profile information as held by VSI administration. This view is read-only.</p></div></div>
             {profileSections.map(([heading,fields])=><div className={styles.readOnlySection} key={heading}><h3>{heading}</h3><dl className={styles.details}>{fields.map(([label,key])=><div key={key}><dt>{label}</dt><dd>{displayField(key,profileDetails?.profile?.[key])}</dd></div>)}</dl></div>)}
             <p className={styles.readOnlyNote}>Only authorised VSI administration staff can edit profile details, assignments or approval status. Contact administration to request a correction.</p>
           </section>
         ) : tab==="service" ? (
-          <section className={styles.panel}>
+          <section ref={sectionContentRef} className={`${styles.panel} ${styles.sectionContent}`}>
             <div className={styles.panelHeading}><div><div className={styles.eyebrow}>SERVICE & DEVELOPMENT</div><h2>Your activity history</h2><p className={styles.muted}>This is a read-only record. Verified hours are identified separately.</p></div></div>
             <section className={styles.metrics}><article><span>VERIFIED SERVICE HOURS</span><strong>{Number(profileDetails?.hours?.total||0).toFixed(2)}</strong><small>Recorded service</small></article><article><span>THIS WEEK</span><strong>{Number(profileDetails?.hours?.week||0).toFixed(2)}</strong><small>Verified hours</small></article><article><span>VERIFIED ACTIVITIES</span><strong>{profileDetails?.hours?.verifiedActivities||0}</strong><small>Service entries</small></article><article><span>DEVELOPMENT HOURS</span><strong>{Number(profileDetails?.hours?.development||0).toFixed(2)}</strong><small>Verified professional development</small></article></section>
-            <div className={styles.readOnlySection}><h3>Volunteer service history</h3><div className={styles.tableWrap}><table><thead><tr><th>Date</th><th>Activity</th><th>Project</th><th>Location</th><th>Time</th><th>Hours</th><th>Status</th><th>Supervisor</th><th>Facilitator</th><th>SDGs / AU Agenda</th><th>Description</th></tr></thead><tbody>{(profileDetails?.activities||[]).filter(a=>!String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).length ? (profileDetails?.activities||[]).filter(a=>!String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).map(a=><tr key={a.id}><td>{dateLabel(a.activity_date)}</td><td>{a.activity_name||a.activity_code||"—"}</td><td>{a.project||"—"}</td><td>{a.location||"—"}</td><td>{String(a.start_time||"").slice(0,5)}–{String(a.end_time||"").slice(0,5)}</td><td>{Number(a.hours||0).toFixed(2)}</td><td>{a.verified?"Verified":"Unverified"}</td><td>{a.supervisor_name||"—"}</td><td>{a.facilitator||"—"}</td><td>{[a.sdgs,a.au_agenda].filter(Boolean).join(" / ")||"—"}</td><td>{a.description||"—"}</td></tr>) : <tr><td colSpan="11">No service activity recorded.</td></tr>}</tbody></table></div></div>
+            <div className={`${styles.readOnlySection} ${styles.serviceHistorySection}`}><h3>Volunteer service history</h3>
+              <div className={styles.serviceHistoryTable}><div className={styles.tableWrap}><table><thead><tr><th>Date</th><th>Activity</th><th>Project</th><th>Location</th><th>Time</th><th>Hours</th><th>Status</th><th>Supervisor</th><th>Facilitator</th><th>SDGs / AU Agenda</th><th>Description</th></tr></thead><tbody>{(profileDetails?.activities||[]).filter(a=>!String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).length ? (profileDetails?.activities||[]).filter(a=>!String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).map(a=><tr key={a.id}><td>{dateLabel(a.activity_date)}</td><td>{a.activity_name||a.activity_code||"—"}</td><td>{a.project||"—"}</td><td>{a.location||"—"}</td><td>{String(a.start_time||"").slice(0,5)}–{String(a.end_time||"").slice(0,5)}</td><td>{Number(a.hours||0).toFixed(2)}</td><td><span className={a.verified?styles.paid:styles.unpaid}>{a.verified?"Verified":"Unverified"}</span></td><td>{a.supervisor_name||"—"}</td><td>{a.facilitator||"—"}</td><td>{[a.sdgs,a.au_agenda].filter(Boolean).join(" / ")||"—"}</td><td>{a.description||"—"}</td></tr>) : <tr><td colSpan="11">No service activity recorded.</td></tr>}</tbody></table></div></div>
+              <div className={styles.mobileActivityCards} aria-label="Volunteer service history activities">{(profileDetails?.activities||[]).filter(a=>!String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).length ? (profileDetails?.activities||[]).filter(a=>!String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).map(a=><article className={styles.activityCard} key={a.id}><div className={styles.activityCardTop}><span className={styles.activityDate}>{dateLabel(a.activity_date)}</span><span className={a.verified?styles.paid:styles.unpaid}>{a.verified?"Verified":"Unverified"}</span></div><h4>{a.activity_name||a.activity_code||"Volunteer activity"}</h4><div className={styles.activityHours}><strong>{Number(a.hours||0).toFixed(2)} hours</strong><span>{String(a.start_time||"").slice(0,5)}–{String(a.end_time||"").slice(0,5)}</span></div><dl className={styles.activityDetails}>{[["Project",a.project],["Location",a.location],["Supervisor",a.supervisor_name],["Facilitator",a.facilitator],["SDGs / AU Agenda",[a.sdgs,a.au_agenda].filter(Boolean).join(" / ")],["Description",a.description]].filter(([,value])=>value && String(value).trim()).map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></article>) : <div className={styles.activityEmpty}>No service activity recorded.</div>}</div>
+            </div>
             <div className={styles.readOnlySection}><h3>Professional development history</h3><div className={styles.tableWrap}><table><thead><tr><th>Date</th><th>Activity</th><th>Description</th><th>Hours</th><th>Status</th></tr></thead><tbody>{(profileDetails?.activities||[]).filter(a=>String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).length ? (profileDetails?.activities||[]).filter(a=>String(a.activity_code||"").trim().toUpperCase().startsWith("FAHR")).map(a=><tr key={a.id}><td>{dateLabel(a.activity_date)}</td><td>{a.activity_name||a.activity_code||"—"}</td><td>{a.description||"—"}</td><td>{Number(a.hours||0).toFixed(2)}</td><td>{a.verified?"Verified":"Unverified"}</td></tr>) : <tr><td colSpan="5">No professional development recorded.</td></tr>}</tbody></table></div></div>
           </section>
         ) : (
-          <section className={styles.panel}>
+          <section ref={sectionContentRef} className={`${styles.panel} ${styles.sectionContent}`}>
             <div className={styles.panelHeading}><div><div className={styles.eyebrow}>FINANCIAL RECORDS · READ ONLY</div><h2>Membership, donations and other payments</h2><p className={styles.muted}>Records currently linked to your volunteer account. Contact VSI administration if a payment or donation is missing.</p></div></div>
             <section className={styles.metrics}><article><span>MEMBERSHIP PAID</span><strong>{money((profileDetails?.finance?.payments||[]).reduce((sum,p)=>sum+Number(p.amount_paid||0),0))}</strong><small>Recorded contributions</small></article><article><span>DONATIONS</span><strong>{money((profileDetails?.finance?.donations||[]).reduce((sum,d)=>sum+Number(d.amount||0),0))}</strong><small>Recorded donations</small></article><article><span>OTHER PAYMENTS</span><strong>{money((profileDetails?.finance?.otherPayments||[]).reduce((sum,p)=>sum+Number(p.amount||0),0))}</strong><small>Recorded other payments</small></article></section>
             <div className={styles.readOnlySection}><h3>Membership payments</h3><div className={styles.tableWrap}><table><thead><tr><th>Month</th><th>Due</th><th>Paid</th><th>Status</th><th>Payment date</th><th>Method</th><th>Reference</th><th>Notes</th></tr></thead><tbody>{profileDetails?.finance?.payments?.length ? profileDetails.finance.payments.map(p=><tr key={p.id}><td>{monthLabel(String(p.payment_month||"").slice(0,7))}</td><td>{money(p.amount_due)}</td><td>{money(p.amount_paid)}</td><td>{p.status||"—"}</td><td>{dateLabel(p.payment_date)}</td><td>{p.payment_method||"—"}</td><td>{p.reference||"—"}</td><td>{p.notes||"—"}</td></tr>) : <tr><td colSpan="8">No membership payment records.</td></tr>}</tbody></table></div></div>
