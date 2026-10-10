@@ -4,7 +4,14 @@
 .readOnlySection{margin-top:24px;padding-top:20px;border-top:1px solid #e4edf3;min-width:0}.readOnlySection h3{margin:0 0 14px;color:#123b59;font-size:16px;font-weight:850;letter-spacing:-.015em}.readOnlyNote{margin:18px 0 0;padding:13px 15px;border:1px solid #d7e6f2;border-radius:12px;background:#f4f9fd;color:#466176;font-size:13px;line-height:1.65}.readOnlySection .tableWrap{max-width:100%;overflow-x:auto}.readOnlySection table{min-width:680px}.readOnlySection td,.readOnlySection th{white-space:normal;vertical-align:top}.readOnlySection td{overflow-wrap:anywhere}@media(max-width:700px){.readOnlySection{margin-top:18px;padding-top:16px}.readOnlySection table{min-width:760px}.readOnlyNote{font-size:12px}}
 
 
-/* Overview membership finance reconciliation */
-.overviewMetrics{grid-template-columns:repeat(4,minmax(0,1fr))}.overviewMetrics .membershipMetric{grid-column:span 2;min-width:0}.membershipBreakdown{display:grid;gap:0;margin-top:8px;border-top:1px solid #e5edf2}.membershipBreakdownHeading{padding:12px 0 7px;color:#294b62;font-size:11px;font-weight:900}.membershipLine{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:7px 0;border-bottom:1px solid #edf2f5}.membershipLine span{font-size:11px;color:#62798b;overflow-wrap:anywhere}.membershipLine strong{font-size:12px;color:#123b59;white-space:nowrap}.membershipEmpty{margin:4px 0 10px;font-size:11px;color:#718493;line-height:1.5}.membershipCalculation{margin-top:12px;padding:12px;background:#f4f8fa;border-radius:12px;display:grid;gap:8px}.membershipCalculation>div{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.membershipCalculation span{font-size:11px;color:#62798b}.membershipCalculation strong{font-size:12px;color:#123b59;white-space:nowrap}.membershipCalculation .membershipBalanceLine{border-top:1px solid #dce6ec;padding-top:9px}.membershipBalanceLine span,.membershipBalanceLine strong{font-weight:900;color:#003566}.membershipPeriod{margin-top:10px;line-height:1.6!important;white-space:normal}.overviewMetrics .membershipMetric>strong{font-size:clamp(22px,2.5vw,30px)}
-@media(max-width:900px){.overviewMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.overviewMetrics .membershipMetric{grid-column:span 2}}
-@media(max-width:600px){.overviewMetrics{grid-template-columns:1fr}.overviewMetrics .membershipMetric{grid-column:auto}.membershipLine span{font-size:11px}.membershipCalculation{padding:10px}}
+/* Compact overview cards follow the VSI administration dashboard rhythm. */
+.overviewMetrics{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+.overviewMetrics .membershipMetric{grid-column:auto;min-width:0;align-content:start}
+.membershipBreakdown{display:grid;gap:0;margin-top:5px;border-top:1px solid #e5edf2;max-height:260px;overflow-y:auto;overscroll-behavior:contain}
+.membershipBreakdownHeading{padding:10px 0 6px;color:#294b62;font-size:10px;font-weight:900}
+.membershipLine{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid #edf2f5}
+.membershipLine span{font-size:11px;color:#62798b;overflow-wrap:anywhere;min-width:0}
+.membershipLine strong{font-size:11px;color:#123b59;white-space:nowrap}
+.membershipEmpty{margin:4px 0 8px;font-size:11px;color:#718493;line-height:1.5}
+@media(max-width:900px){.overviewMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.overviewMetrics{grid-template-columns:1fr}.membershipBreakdown{max-height:220px}}

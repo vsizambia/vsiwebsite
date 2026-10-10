@@ -196,22 +196,12 @@ export default function VolunteerPortalClient() {
             <article><span>PROFESSIONAL DEVELOPMENT HOURS</span><strong>{Number(profileDetails?.hours?.development||0).toFixed(2)}</strong><small>Verified development activities</small></article>
             <article className={styles.membershipMetric}>
               <span>MEMBERSHIP FINANCE</span>
-              <strong>{money(statement?.outstanding)}</strong>
-              <small>Outstanding membership balance</small>
-              {statement ? <>
-                <div className={styles.membershipBreakdown}>
-                  <div className={styles.membershipBreakdownHeading}>Months paid and amounts</div>
-                  {(statement.months||[]).filter(row=>Number(row.amountPaid||0)>0).length ? (statement.months||[]).filter(row=>Number(row.amountPaid||0)>0).map(row=><div className={styles.membershipLine} key={`paid-${row.month}`}><span>{monthLabel(row.month)}{row.status==="Part-paid"?" · Part-paid":""}</span><strong>{money(row.amountPaid)}</strong></div>) : <p className={styles.membershipEmpty}>No membership payments recorded for this period.</p>}
-                  <div className={styles.membershipBreakdownHeading}>Months unpaid / amount still due</div>
-                  {(statement.months||[]).filter(row=>Number(row.balance||0)>0).length ? (statement.months||[]).filter(row=>Number(row.balance||0)>0).map(row=><div className={styles.membershipLine} key={`due-${row.month}`}><span>{monthLabel(row.month)}{Number(row.amountPaid||0)>0?" · Part-paid":" · Unpaid"}</span><strong>{money(row.balance)}</strong></div>) : <p className={styles.membershipEmpty}>No outstanding monthly contributions.</p>}
-                  <div className={styles.membershipCalculation}>
-                    <div><span>Expected ({statement.monthsExpected} months × {money(statement.monthlyRate)})</span><strong>{money(statement.expectedTotal)}</strong></div>
-                    <div><span>Less payments recorded</span><strong>− {money(statement.paidTotal)}</strong></div>
-                    <div className={styles.membershipBalanceLine}><span>Outstanding balance</span><strong>{money(statement.outstanding)}</strong></div>
-                  </div>
-                </div>
-                <small className={styles.membershipPeriod}>Period: {monthLabel(statement.firstContributionMonth)} to {monthLabel(statement.throughMonth)}. Only recorded membership payments are deducted. Waivers or adjustments are not included unless reconciled by VSI administration.</small>
-              </> : <small>Contribution statement unavailable.</small>}
+              {statement ? <div className={styles.membershipBreakdown}>
+                <div className={styles.membershipBreakdownHeading}>Amount Paid · Month</div>
+                {(statement.months||[]).filter(row=>Number(row.amountPaid||0)>0).length ? (statement.months||[]).filter(row=>Number(row.amountPaid||0)>0).map(row=><div className={styles.membershipLine} key={"paid-"+row.month}><span>{monthLabel(row.month)}</span><strong>{money(row.amountPaid)}</strong></div>) : <p className={styles.membershipEmpty}>No payments recorded.</p>}
+                <div className={styles.membershipBreakdownHeading}>Amount Not Paid · Month</div>
+                {(statement.months||[]).filter(row=>Number(row.balance||0)>0).length ? (statement.months||[]).filter(row=>Number(row.balance||0)>0).map(row=><div className={styles.membershipLine} key={"due-"+row.month}><span>{monthLabel(row.month)}</span><strong>{money(row.balance)}</strong></div>) : <p className={styles.membershipEmpty}>No unpaid months.</p>}
+              </div> : <small>Contribution statement unavailable.</small>}
             </article>
           </section>
         ) : tab==="finance" ? (
