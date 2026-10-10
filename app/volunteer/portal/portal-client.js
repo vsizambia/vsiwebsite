@@ -121,6 +121,12 @@ export default function VolunteerPortalClient() {
     ["Activity",listValue(volunteer?.activity)],
   ].filter(([,v])=>v && v!=="—"),[volunteer]);
 
+  const overviewServiceActivities = (profileDetails?.activities || []).filter(a => !String(a.activity_code || "").trim().toUpperCase().startsWith("FAHR") && a.verified);
+  const overviewDevelopmentActivities = (profileDetails?.activities || []).filter(a => String(a.activity_code || "").trim().toUpperCase().startsWith("FAHR") && a.verified);
+  const statedWeeklyHours = Number(profileDetails?.profile?.hours_per_week || 0);
+  const verifiedWeeklyHours = Number(profileDetails?.hours?.week || 0);
+  const profileNeedsHoursReminder = statedWeeklyHours > 0 && verifiedWeeklyHours < statedWeeklyHours;
+
   const profileSections = [
     ["Identity and contact", [["VSI ID","volunteer_id"],["Full name","full_name"],["Status","status"],["Email","email"],["Phone","phone"],["Date of birth","age"],["Nationality","nationality"],["Gender","gender"],["Faith","faith"]]],
     ["Location", [["Province","province"],["District","district"],["Constituency","constituency"],["Ward","ward"],["Location","location"]]],
@@ -192,8 +198,21 @@ export default function VolunteerPortalClient() {
         {message && <p className={styles.notice} role="status">{message}</p>}
         {tab==="overview" ? (
           <section className={`${styles.metrics} ${styles.overviewMetrics}`} aria-label="Volunteer summary">
-            <article><span>TOTAL VERIFIED SERVICE HOURS</span><strong>{Number(profileDetails?.hours?.total||0).toFixed(2)}</strong><small>Verified volunteer service</small></article>
-            <article><span>PROFESSIONAL DEVELOPMENT HOURS</span><strong>{Number(profileDetails?.hours?.development||0).toFixed(2)}</strong><small>Verified development activities</small></article>
+            <article className={styles.overviewServiceMetric}>
+              <span>TOTAL VERIFIED SERVICE HOURS</span>
+              <strong>{Number(profileDetails?.hours?.total||0).toFixed(2)}</strong>
+              <small>{Number(profileDetails?.hours?.verifiedActivities||0)} verified service activities</small>
+              {statedWeeklyHours > 0 && <small className={styles.weeklyHoursLine}>This week: {verifiedWeeklyHours.toFixed(2)} / {statedWeeklyHours.toFixed(2)} stated hours</small>}
+              {profileNeedsHoursReminder && <p className={styles.performanceNote} role="note">Recommendation: You are below your stated weekly hours. Plan your remaining service time and submit activity records for supervisor verification.</p>}
+            </article>
+            <article className={styles.overviewDevelopmentMetric}>
+              <span>PROFESSIONAL DEVELOPMENT HOURS</span>
+              <strong>{Number(profileDetails?.hours?.development||0).toFixed(2)}</strong>
+              <small>Verified hours from these activities</small>
+              <ul className={styles.developmentActivityList}>
+                {overviewDevelopmentActivities.length ? overviewDevelopmentActivities.map(a=><li key={a.id}><span>{a.activity_name||a.activity_code||"Development activity"}</span><strong>{Number(a.hours||0).toFixed(2)} h</strong></li>) : <li className={styles.noDevelopmentActivity}>No verified development activities recorded.</li>}
+              </ul>
+            </article>
             <article className={styles.membershipMetric}>
               <span>MEMBERSHIP FINANCE</span>
               {statement ? <div className={styles.membershipBreakdown}>
