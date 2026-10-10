@@ -61,6 +61,23 @@ export default function VolunteerPortalClient() {
     finally { setBusy(false); }
   }
 
+  async function resendCode() {
+    setBusy(true); setMessage("");
+    try {
+      const response = await fetch("/api/volunteer-portal/request-code",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({volunteerId,email})});
+      const data = await response.json();
+      if (!response.ok) { setMessage(data.error || data.message || "We could not send another code. Please try again."); return; }
+      if (!data.challengeId) { setMessage("Too many attempts. Please wait before requesting another code."); return; }
+      setChallengeId(data.challengeId);
+      setCode("");
+      setMessage("A new verification request has been made. Use the newest code email if it arrives; codes expire after 10 minutes.");
+    } catch {
+      setMessage("Connection problem. Please try requesting another code.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function verifyCode(event) {
     event.preventDefault();
     setBusy(true); setMessage("");
@@ -107,6 +124,7 @@ export default function VolunteerPortalClient() {
             <form className={styles.form} onSubmit={verifyCode}>
               <label>Six-digit verification code<input inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={code} onChange={e=>setCode(e.target.value.replace(/\D/g,"").slice(0,6))} placeholder="000000" required/></label>
               <button disabled={busy || code.length!==6} type="submit">{busy ? "Verifying…" : "Verify and sign in"} <span aria-hidden="true">→</span></button>
+              <button className={styles.secondaryButton} type="button" disabled={busy} onClick={resendCode}>{busy ? "Please wait…" : "Didn't receive a code? Send again"}</button>
               <button className={styles.secondaryButton} type="button" disabled={busy} onClick={()=>{setPhase("login");setCode("");setMessage("");}}>Back to sign in</button>
             </form>
           )}
