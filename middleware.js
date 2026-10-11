@@ -1,19 +1,17 @@
 import {NextResponse} from "next/server";
 
 const SAFE_METHODS=new Set(["GET","HEAD","OPTIONS"]);
-const ALLOWED_ORIGINS=new Set([
-  "https://www.vsizambia.org",
-  "https://vsizambia.org",
-  "https://vsiwebsite-vsi-zm.vercel.app",
-]);
 const ADMIN_COOKIE="vsi_admin_session";
 
+// Validate against the actual request origin so protected admin writes work on
+// branch/deployment previews without allowing cross-site requests.
 function sameOrigin(request){
+  const requestOrigin=new URL(request.url).origin;
   const origin=request.headers.get("origin")?.trim();
-  if(origin)return ALLOWED_ORIGINS.has(origin);
+  if(origin)return origin===requestOrigin;
   const referer=request.headers.get("referer")?.trim();
   if(!referer)return false;
-  try{return ALLOWED_ORIGINS.has(new URL(referer).origin);}catch{return false;}
+  try{return new URL(referer).origin===requestOrigin;}catch{return false;}
 }
 
 async function isValidAdminSession(request){
