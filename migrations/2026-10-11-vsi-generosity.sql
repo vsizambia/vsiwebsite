@@ -72,14 +72,9 @@ CREATE TABLE IF NOT EXISTS public.vsi_generosity_audit_log (
 CREATE INDEX IF NOT EXISTS vsi_generosity_audit_offer_idx
   ON public.vsi_generosity_audit_log (offer_id, created_at DESC);
 
--- The anonymous application role may create offers, add offer items and maintain
--- its own hashed-IP rate-limit rows. It cannot read contributor records.
-GRANT INSERT (id, reference, first_name, last_name, gender, age_range, email, phone, town_area, pickup_address, phone_consent, email_consent, consent_version)
-  ON public.vsi_generosity_offers TO vsi_gen_public;
-GRANT SELECT (id, reference, created_at) ON public.vsi_generosity_offers TO vsi_gen_public;
-GRANT INSERT (id, offer_id, category, item_key, item_label, quantity_pledged, unit, size_details)
-  ON public.vsi_generosity_offer_items TO vsi_gen_public;
-GRANT SELECT (id) ON public.vsi_generosity_offer_items TO vsi_gen_public;
+-- The anonymous application role may submit approved offer fields and item
+-- rows only. It cannot read contributor records or directly access rate limits.
+GRANT USAGE ON SCHEMA public TO vsi_gen_public;
 
 -- Administrative operations use the existing privileged server-side pool.
 
@@ -181,8 +176,8 @@ GRANT INSERT (id, reference, first_name, last_name, gender, age_range, email, ph
   ON public.vsi_generosity_offers TO vsi_gen_public;
 GRANT INSERT (id, offer_id, category, item_key, item_label, quantity_pledged, unit, size_details)
   ON public.vsi_generosity_offer_items TO vsi_gen_public;
-GRANT SELECT, INSERT, DELETE ON public.vsi_generosity_rate_limits TO vsi_gen_public;
-GRANT USAGE, SELECT ON SEQUENCE public.vsi_generosity_rate_limits_id_seq TO vsi_gen_public;
+-- The public role intentionally receives no direct rate-limit table or sequence
+-- privileges. It can call only the SECURITY DEFINER rate-limit function above.
 
 -- Production may use the existing restricted application login for the admin
 -- API. Grant access only if that role exists; never grant admin privileges to
