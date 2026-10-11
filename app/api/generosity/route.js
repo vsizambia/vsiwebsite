@@ -142,12 +142,14 @@ export async function POST(request) {
   const ageRange = clean(body?.ageRange, 40) || null;
   const email = clean(body?.email, 254).toLowerCase();
   const phone = clean(body?.phone, 40);
+  const phoneDigits = phone.replace(/\D/g, "").replace(/^260/, "").replace(/^0/, "");
+  const zambiaPhone = "+260" + phoneDigits;
   const townArea = clean(body?.townArea, 120);
   const pickupAddress = clean(body?.pickupAddress, 300) || null;
   const phoneConsent = body?.phoneConsent === true;
   const emailConsent = body?.emailConsent === true;
-  if (!firstName || !lastName || !email || !phone || !townArea || !validEmail(email)) {
-    return NextResponse.json({ error: "Please provide your first name, last name, valid email, phone number and town / area." }, { status: 400 });
+  if (!firstName || !lastName || !email || phoneDigits.length !== 9 || !townArea || !validEmail(email)) {
+    return NextResponse.json({ error: "Please provide your first name, last name, valid email, a valid Zambian phone number and town / area." }, { status: 400 });
   }
   let items;
   try { items = normaliseItems(body?.items); } catch (error) {
@@ -170,7 +172,7 @@ export async function POST(request) {
        (id,reference,first_name,last_name,gender,age_range,email,phone,town_area,pickup_address,phone_consent,email_consent,consent_version)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        RETURNING id,reference,created_at`,
-      [id,reference,firstName,lastName,gender,ageRange,email,phone,townArea,pickupAddress,phoneConsent,emailConsent,CONSENT_VERSION]
+      [id,reference,firstName,lastName,gender,ageRange,email,zambiaPhone,townArea,pickupAddress,phoneConsent,emailConsent,CONSENT_VERSION]
     );
     for (const item of items) {
       await client.query(
