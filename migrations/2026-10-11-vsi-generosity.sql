@@ -80,8 +80,6 @@ GRANT SELECT (id, reference, created_at) ON public.vsi_generosity_offers TO vsi_
 GRANT INSERT (id, offer_id, category, item_key, item_label, quantity_pledged, unit, size_details)
   ON public.vsi_generosity_offer_items TO vsi_gen_public;
 GRANT SELECT (id) ON public.vsi_generosity_offer_items TO vsi_gen_public;
-GRANT SELECT, INSERT, DELETE ON public.vsi_generosity_rate_limits TO vsi_gen_public;
-GRANT USAGE, SELECT ON SEQUENCE public.vsi_generosity_rate_limits_id_seq TO vsi_gen_public;
 
 -- Administrative operations use the existing privileged server-side pool.
 
@@ -125,18 +123,45 @@ CREATE POLICY vsi_generosity_rate_server_all ON public.vsi_generosity_rate_limit
   FOR ALL TO PUBLIC
   USING (current_user <> 'vsi_gen_public')
   WITH CHECK (current_user <> 'vsi_gen_public');
-DROP POLICY IF EXISTS vsi_generosity_rate_public_select ON public.vsi_generosity_rate_limits;
-CREATE POLICY vsi_generosity_rate_public_select ON public.vsi_generosity_rate_limits
-  FOR SELECT TO vsi_gen_public
-  USING (key_hash = current_setting('app.vsi_generosity_rate_key', true));
-DROP POLICY IF EXISTS vsi_generosity_rate_public_insert ON public.vsi_generosity_rate_limits;
-CREATE POLICY vsi_generosity_rate_public_insert ON public.vsi_generosity_rate_limits
-  FOR INSERT TO vsi_gen_public
-  WITH CHECK (key_hash = current_setting('app.vsi_generosity_rate_key', true));
-DROP POLICY IF EXISTS vsi_generosity_rate_public_delete ON public.vsi_generosity_rate_limits;
-CREATE POLICY vsi_generosity_rate_public_delete ON public.vsi_generosity_rate_limits
-  FOR DELETE TO vsi_gen_public
-  USING (key_hash = current_setting('app.vsi_generosity_rate_key', true));
+
+-- Rate limiting is encapsulated in a SECURITY DEFINER function. The public
+-- role cannot query or mutate rate-limit rows directly, nor can it alter the
+-- per-request key used by the policy. The function runs atomically under the
+-- trusted migration owner and exposes only a boolean allow/deny result.
+CREATE OR REPLACE FUNCTION public.vsi_generosity_allow_submission(
+  p_key_hash text,
+  p_limit integer,
+  p_window_seconds integer
+) RETURNS boolean
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = pg_catalog
+AS $function$
+DECLARE
+  v_count integer;
+  v_window interval;
+BEGIN
+  IF p_key_hash IS NULL OR p_key_hash = '' OR p_limit < 1 OR p_window_seconds < 1 THEN
+    RAISE EXCEPTION 'Invalid rate-limit parameters';
+  END IF;
+  v_window := make_interval(secs => p_window_seconds);
+  PERFORM pg_advisory_xact_lock(hashtext(p_key_hash));
+  DELETE FROM public.vsi_generosity_rate_limits
+   WHERE created_at < clock_timestamp() - v_window;
+  SELECT count(*)::integer INTO v_count
+    FROM public.vsi_generosity_rate_limits
+   WHERE key_hash = p_key_hash
+     AND created_at >= clock_timestamp() - v_window;
+  IF v_count >= p_limit THEN
+    RETURN false;
+  END IF;
+  INSERT INTO public.vsi_generosity_rate_limits (key_hash) VALUES (p_key_hash);
+  RETURN true;
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.vsi_generosity_allow_submission(text, integer, integer) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.vsi_generosity_allow_submission(text, integer, integer) TO vsi_gen_public;
 
 DROP POLICY IF EXISTS vsi_generosity_audit_server_all ON public.vsi_generosity_audit_log;
 CREATE POLICY vsi_generosity_audit_server_all ON public.vsi_generosity_audit_log
