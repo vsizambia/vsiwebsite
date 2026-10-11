@@ -61,7 +61,7 @@ export default function GenerosityAdminDashboard() {
     try {
       const response=await fetch("/api/admin/generosity",{cache:"no-store"});
       const data=await response.json();
-      if(!response.ok)throw new Error(data.error||"Unable to load generosity records.");
+      if(!response.ok)throw new Error(data.error||"Unable to load pledge records.");
       const nextOffers=(data.offers||[]).map(offer=>({...offer,items:Array.isArray(offer.items)?offer.items:[]}));
       setSummary(data.summary||{});setOffers(nextOffers);
       setDrafts(Object.fromEntries(nextOffers.map(offer=>[offer.id,{status:offer.status,staffNotes:offer.staff_notes||"",closureReason:offer.closure_reason||"",items:offer.items.map(item=>({...item,quantityCollected:String(item.quantityCollected??0)}))}])));
@@ -89,7 +89,7 @@ export default function GenerosityAdminDashboard() {
         items:draft.items.map(item=>({id:item.id,quantityCollected:Number(item.quantityCollected)}))
       })});
       const data=await response.json();
-      if(!response.ok)throw new Error(data.error||"Unable to save changes.");
+      if(!response.ok)throw new Error(data.error||"Unable to save pledge updates.");
       setNotice("Saved "+data.offer.reference+" — "+(statusLabels[data.offer.status]||data.offer.status.replaceAll("_"," "))+".");
       await load();
     } catch(e) { setError(e.message); }
@@ -108,7 +108,7 @@ export default function GenerosityAdminDashboard() {
     <section className={styles.register}>
       <div className={styles.registerHeader}><div><p className={styles.kicker}>PLEDGE REGISTER</p><h2>Generosity pledges</h2><p>{filtered.length} of {offers.length} pledges shown</p></div><div className={styles.filters}><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search reference, name, item, area…"/><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All statuses</option>{statusOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)}><option value="all">All categories</option>{Object.entries(categoryLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div></div>
       {error&&<div role="alert" className={styles.error}>{error}</div>}{notice&&<div role="status" className={styles.notice}>{notice}</div>}
-      {loading&&!offers.length?<div className={styles.empty}>Loading generosity offers…</div>:!filtered.length?<div className={styles.empty}>{offers.length?"No offers match the selected filters.":"No generosity pledges have been received yet."}</div>:<div className={styles.offerList}>{filtered.map(offer=>{
+      {loading&&!offers.length?<div className={styles.empty}>Loading generosity pledges…</div>:!filtered.length?<div className={styles.empty}>{offers.length?"No pledges match the selected filters.":"No generosity pledges have been received yet."}</div>:<div className={styles.offerList}>{filtered.map(offer=>{
         const draft=drafts[offer.id]||{items:[]};
         const pledged=offer.items.reduce((sum,item)=>sum+Number(item.quantityPledged??item.quantity_pledged??0),0);
         const collected=offer.items.reduce((sum,item)=>sum+Number(item.quantityCollected??item.quantity_collected??0),0);
