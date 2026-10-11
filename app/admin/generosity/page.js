@@ -43,7 +43,7 @@ export default function GenerosityAdminDashboard() {
   const [expanded,setExpanded] = useState(null);
   const [saving,setSaving] = useState(null);
 
-  useEffect(()=>{fetch("/api/admin/volunteers",{cache:"no-store"}).then(r=>setAuthenticated(r.ok)).catch(()=>setAuthenticated(false)).finally(()=>setChecking(false));},[]);
+  useEffect(()=>{fetch("/api/admin/generosity",{cache:"no-store"}).then(r=>setAuthenticated(r.status!==401)).catch(()=>setAuthenticated(false)).finally(()=>setChecking(false));},[]);
   async function login(event) {
     event.preventDefault();setAuthError("");
     try {
