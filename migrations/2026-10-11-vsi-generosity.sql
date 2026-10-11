@@ -84,3 +84,92 @@ GRANT SELECT, INSERT, DELETE ON public.vsi_generosity_rate_limits TO vsi_gen_pub
 GRANT USAGE, SELECT ON SEQUENCE public.vsi_generosity_rate_limits_id_seq TO vsi_gen_public;
 
 -- Administrative operations use the existing privileged server-side pool.
+
+
+-- Defense in depth: RLS is enforced even for table owners that do not have
+-- BYPASSRLS. The privileged server connection is explicitly allowed; the
+-- public submission role receives INSERT-only policies on offer tables.
+ALTER TABLE public.vsi_generosity_offers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vsi_generosity_offers FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.vsi_generosity_offer_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vsi_generosity_offer_items FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.vsi_generosity_rate_limits ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vsi_generosity_rate_limits FORCE ROW LEVEL SECURITY;
+ALTER TABLE public.vsi_generosity_audit_log ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vsi_generosity_audit_log FORCE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS vsi_generosity_offers_server_all ON public.vsi_generosity_offers;
+CREATE POLICY vsi_generosity_offers_server_all ON public.vsi_generosity_offers
+  FOR ALL TO PUBLIC
+  USING (current_user <> 'vsi_gen_public')
+  WITH CHECK (current_user <> 'vsi_gen_public');
+DROP POLICY IF EXISTS vsi_generosity_offers_public_insert ON public.vsi_generosity_offers;
+CREATE POLICY vsi_generosity_offers_public_insert ON public.vsi_generosity_offers
+  FOR INSERT TO vsi_gen_public
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS vsi_generosity_items_server_all ON public.vsi_generosity_offer_items;
+CREATE POLICY vsi_generosity_items_server_all ON public.vsi_generosity_offer_items
+  FOR ALL TO PUBLIC
+  USING (current_user <> 'vsi_gen_public')
+  WITH CHECK (current_user <> 'vsi_gen_public');
+DROP POLICY IF EXISTS vsi_generosity_items_public_insert ON public.vsi_generosity_offer_items;
+CREATE POLICY vsi_generosity_items_public_insert ON public.vsi_generosity_offer_items
+  FOR INSERT TO vsi_gen_public
+  WITH CHECK (true);
+
+-- Rate-limit rows are visible and deletable only for the HMAC key that the
+-- backend sets transaction-locally for the current request.
+DROP POLICY IF EXISTS vsi_generosity_rate_server_all ON public.vsi_generosity_rate_limits;
+CREATE POLICY vsi_generosity_rate_server_all ON public.vsi_generosity_rate_limits
+  FOR ALL TO PUBLIC
+  USING (current_user <> 'vsi_gen_public')
+  WITH CHECK (current_user <> 'vsi_gen_public');
+DROP POLICY IF EXISTS vsi_generosity_rate_public_select ON public.vsi_generosity_rate_limits;
+CREATE POLICY vsi_generosity_rate_public_select ON public.vsi_generosity_rate_limits
+  FOR SELECT TO vsi_gen_public
+  USING (key_hash = current_setting('app.vsi_generosity_rate_key', true));
+DROP POLICY IF EXISTS vsi_generosity_rate_public_insert ON public.vsi_generosity_rate_limits;
+CREATE POLICY vsi_generosity_rate_public_insert ON public.vsi_generosity_rate_limits
+  FOR INSERT TO vsi_gen_public
+  WITH CHECK (key_hash = current_setting('app.vsi_generosity_rate_key', true));
+DROP POLICY IF EXISTS vsi_generosity_rate_public_delete ON public.vsi_generosity_rate_limits;
+CREATE POLICY vsi_generosity_rate_public_delete ON public.vsi_generosity_rate_limits
+  FOR DELETE TO vsi_gen_public
+  USING (key_hash = current_setting('app.vsi_generosity_rate_key', true));
+
+DROP POLICY IF EXISTS vsi_generosity_audit_server_all ON public.vsi_generosity_audit_log;
+CREATE POLICY vsi_generosity_audit_server_all ON public.vsi_generosity_audit_log
+  FOR ALL TO PUBLIC
+  USING (current_user <> 'vsi_gen_public')
+  WITH CHECK (current_user <> 'vsi_gen_public');
+
+-- Remove broad/default table grants before granting the smallest required
+-- public-submission permissions. Public callers cannot SELECT offer/item data.
+REVOKE ALL ON public.vsi_generosity_offers FROM PUBLIC, vsi_gen_public;
+REVOKE ALL ON public.vsi_generosity_offer_items FROM PUBLIC, vsi_gen_public;
+REVOKE ALL ON public.vsi_generosity_audit_log FROM PUBLIC, vsi_gen_public;
+REVOKE ALL ON public.vsi_generosity_rate_limits FROM PUBLIC, vsi_gen_public;
+REVOKE ALL ON SEQUENCE public.vsi_generosity_rate_limits_id_seq FROM PUBLIC, vsi_gen_public;
+
+GRANT INSERT (id, reference, first_name, last_name, gender, age_range, email, phone, town_area, pickup_address, phone_consent, email_consent, consent_version)
+  ON public.vsi_generosity_offers TO vsi_gen_public;
+GRANT INSERT (id, offer_id, category, item_key, item_label, quantity_pledged, unit, size_details)
+  ON public.vsi_generosity_offer_items TO vsi_gen_public;
+GRANT SELECT, INSERT, DELETE ON public.vsi_generosity_rate_limits TO vsi_gen_public;
+GRANT USAGE, SELECT ON SEQUENCE public.vsi_generosity_rate_limits_id_seq TO vsi_gen_public;
+
+-- Production may use the existing restricted application login for the admin
+-- API. Grant access only if that role exists; never grant admin privileges to
+-- the anonymous/public submission role.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'vsi_app') THEN
+    GRANT SELECT, INSERT, UPDATE, DELETE ON public.vsi_generosity_offers TO vsi_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON public.vsi_generosity_offer_items TO vsi_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON public.vsi_generosity_audit_log TO vsi_app;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON public.vsi_generosity_rate_limits TO vsi_app;
+    GRANT USAGE, SELECT ON SEQUENCE public.vsi_generosity_rate_limits_id_seq TO vsi_app;
+    GRANT USAGE, SELECT ON SEQUENCE public.vsi_generosity_audit_log_id_seq TO vsi_app;
+  END IF;
+END $$;
