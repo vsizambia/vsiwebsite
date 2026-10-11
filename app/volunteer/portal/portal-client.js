@@ -159,7 +159,7 @@ export default function VolunteerPortalClient() {
         <a className={styles.brand} href="/volunteer"><img className={styles.brandLogo} src="/images/vsi logo blue text.png" alt="Visionary Students Initiative" /><span>VOLUNTEER PORTAL</span></a>
         <section className={styles.authCard}>
           <div className={styles.eyebrow}>VISIONARY STUDENTS INITIATIVE</div>
-          <h1>{phase === "verify" ? "Check your email" : "Welcome back, volunteer."}</h1>
+          <h1>{phase === "verify" ? "Check your email" : "Welcome to the VSI Volunteer Portal"}</h1>
           <p className={styles.lede}>{phase === "verify" ? "Enter the six-digit verification code sent to your registered email. The code expires after 10 minutes." : "Sign in securely to view your volunteer profile and membership contribution statement."}</p>
           {phase === "login" ? (
             <form className={styles.form} onSubmit={requestCode}>
