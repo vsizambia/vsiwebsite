@@ -179,7 +179,7 @@ export async function POST(request) {
   } catch (error) {
     if (client) await client.query("ROLLBACK").catch(() => {});
     console.error("VSI Generosity submission failed:", error);
-    return NextResponse.json({ error: "We could not save your offer. Please try again or contact VSI." }, { status: 500 });
+    return NextResponse.json({ error: "We could not save your pledge. Please try again or contact VSI." }, { status: 500 });
   } finally {
     client?.release();
   }
