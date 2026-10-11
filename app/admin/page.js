@@ -8,6 +8,7 @@ import summaryStyles from "./dashboard-summary.module.css";
 
 const modules=[
   {title:"Volunteer Management",text:"Review applications, manage the volunteer register, assignments and profiles.",href:"/admin/volunteers",featured:true,summaryKey:"volunteers",metrics:[["approved","APPROVED VOLUNTEERS"],["pending","PENDING REVIEW"],["verifiedHours","TOTAL VERIFIED VOLUNTEER HOURS"],["professionalDevelopmentHours","PROFESSIONAL DEVELOPMENT HOURS"]]},
+  {title:"Volunteer Portal",text:"Open the volunteer-facing portal to review profiles, verified service, professional development and membership contribution records.",href:"/volunteer/portal",cardStyle:{backgroundColor:"#030164"}},
   {title:"Volunteer Finance",text:"Track monthly membership payments, outstanding balances and volunteer donations.",href:"/admin/volunteer-finance",featured:true,summaryKey:"finance",metrics:[["membershipPaid","MEMBERSHIP RECEIVED"],["outstanding","OUTSTANDING"],["donations","VOLUNTEER DONATIONS"],["totalSpent","TOTAL SPENT"]]},
   {title:"News Publishing",text:"Create, edit, publish and manage VSI news stories and media.",href:"/admin/news",summaryKey:"news",metrics:[["published","PUBLISHED"],["drafts","DRAFTS"],["total","TOTAL STORIES"]]},
   {title:"Impact & Evidence",text:"Update programme descriptions and the figures displayed on the public Impact page.",href:"/admin/impact",summaryKey:"impact",metrics:[["activities","ACTIVITIES"],["people","PEOPLE REACHED"],["institutions","INSTITUTIONS / FACILITIES"]]},
