@@ -6,7 +6,7 @@ import { SiteFooter, SiteHeader } from "../../components/SiteChrome";
 import styles from "./generosity.module.css";
 
 const statusOptions = [
-  ["offer_received","Offer received"],
+  ["offer_received","Pledge received"],
   ["contact_in_progress","Contact in progress"],
   ["collection_arranged","Collection arranged"],
   ["partially_collected","Partially collected"],
@@ -20,6 +20,7 @@ const categoryLabels = {
   ovc_support:"OVC Support",
   maternity_mothers:"Maternity Ward — Mothers",
   maternity_newborns:"Maternity Ward — Newborns",
+  other:"Other",
 };
 const formatDate = value => value ? new Date(value).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Africa/Lusaka"}) : "—";
 const asNumber = value => Number(value||0).toLocaleString();
@@ -60,7 +61,7 @@ export default function GenerosityAdminDashboard() {
     try {
       const response=await fetch("/api/admin/generosity",{cache:"no-store"});
       const data=await response.json();
-      if(!response.ok)throw new Error(data.error||"Unable to load generosity records.");
+      if(!response.ok)throw new Error(data.error||"Unable to load pledge records.");
       const nextOffers=(data.offers||[]).map(offer=>({...offer,items:Array.isArray(offer.items)?offer.items:[]}));
       setSummary(data.summary||{});setOffers(nextOffers);
       setDrafts(Object.fromEntries(nextOffers.map(offer=>[offer.id,{status:offer.status,staffNotes:offer.staff_notes||"",closureReason:offer.closure_reason||"",items:offer.items.map(item=>({...item,quantityCollected:String(item.quantityCollected??0)}))}])));
@@ -88,26 +89,26 @@ export default function GenerosityAdminDashboard() {
         items:draft.items.map(item=>({id:item.id,quantityCollected:Number(item.quantityCollected)}))
       })});
       const data=await response.json();
-      if(!response.ok)throw new Error(data.error||"Unable to save changes.");
+      if(!response.ok)throw new Error(data.error||"Unable to save pledge updates.");
       setNotice("Saved "+data.offer.reference+" — "+(statusLabels[data.offer.status]||data.offer.status.replaceAll("_"," "))+".");
       await load();
     } catch(e) { setError(e.message); }
     finally { setSaving(null); }
   }
   if(checking)return <main className={styles.center}>Checking VSI administrator access…</main>;
-  if(!authenticated)return <main className={styles.loginPage}><form className={styles.loginCard} onSubmit={login}><span className={styles.logo}>VSI</span><p className={styles.kicker}>ADMIN ACCESS</p><h1>VSI Generosity Dashboard</h1><p>Sign in with your VSI administrator credentials to manage generosity offers and collections.</p><label>{authStep==="code"?"Authenticator code":"Admin password"}{authStep==="code"?<input autoFocus inputMode="numeric" maxLength={6} value={authCode} onChange={e=>setAuthCode(e.target.value.replace(/\D/g,"").slice(0,6))} required/>:<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/>}</label>{authError&&<div className={styles.error}>{authError}</div>}<button className={styles.primary} type="submit">{authStep==="code"?"Verify code":"Sign in"} →</button></form></main>;
+  if(!authenticated)return <main className={styles.loginPage}><form className={styles.loginCard} onSubmit={login}><span className={styles.logo}>VSI</span><p className={styles.kicker}>ADMIN ACCESS</p><h1>VSI Generosity Dashboard</h1><p>Sign in with your VSI administrator credentials to manage generosity pledges and collections.</p><label>{authStep==="code"?"Authenticator code":"Admin password"}{authStep==="code"?<input autoFocus inputMode="numeric" maxLength={6} value={authCode} onChange={e=>setAuthCode(e.target.value.replace(/\D/g,"").slice(0,6))} required/>:<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/>}</label>{authError&&<div className={styles.error}>{authError}</div>}<button className={styles.primary} type="submit">{authStep==="code"?"Verify code":"Sign in"} →</button></form></main>;
   return <><SiteHeader ctaLabel="VSI Administration" ctaHref="/admin"/><main className={styles.page}><div className={styles.shell}>
     <div className={styles.topline}><Link href="/admin">VSI Administration</Link><span>/</span><strong>Generosity Dashboard</strong><div className={styles.topActions}><span className={styles.connected}>● Connected</span><button onClick={load} disabled={loading}>{loading?"Refreshing…":"Refresh ↻"}</button></div></div>
-    <header className={styles.hero}><div><p className={styles.kicker}>COMMUNITY GIVING · GOODS ONLY</p><h1>VSI Generosity Dashboard</h1><p>Review offers, coordinate pickups and verify the goods received. Pledged quantities are tracked separately from collected quantities.</p></div><div className={styles.heroMark}>G</div></header>
+    <header className={styles.hero}><div><p className={styles.kicker}>COMMUNITY GIVING · GOODS ONLY</p><h1>VSI Generosity Dashboard</h1><p>Review pledges, coordinate pickups and verify the goods received. Pledged quantities are tracked separately from collected quantities.</p></div><div className={styles.heroMark}>G</div></header>
     <section className={styles.metrics}>
       {[
-        ["offers_total","OFFERS RECEIVED"],["contributors","CONTRIBUTORS"],["quantities_pledged","UNITS PLEDGED"],["quantities_collected","UNITS COLLECTED"],["awaiting_collection","AWAITING COLLECTION"],["fully_collected","FULLY COLLECTED"]
+        ["offers_total","PLEDGES RECEIVED"],["contributors","CONTRIBUTORS"],["quantities_pledged","UNITS PLEDGED"],["quantities_collected","UNITS COLLECTED"],["awaiting_collection","AWAITING COLLECTION"],["fully_collected","FULLY COLLECTED"]
       ].map(([key,label])=><div className={styles.metric} key={key}><span>{label}</span><strong>{asNumber(summary[key])}</strong></div>)}
     </section>
     <section className={styles.register}>
-      <div className={styles.registerHeader}><div><p className={styles.kicker}>OFFER REGISTER</p><h2>Generosity offers</h2><p>{filtered.length} of {offers.length} offers shown</p></div><div className={styles.filters}><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search reference, name, item, area…"/><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All statuses</option>{statusOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)}><option value="all">All categories</option>{Object.entries(categoryLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div></div>
+      <div className={styles.registerHeader}><div><p className={styles.kicker}>PLEDGE REGISTER</p><h2>Generosity pledges</h2><p>{filtered.length} of {offers.length} pledges shown</p></div><div className={styles.filters}><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search reference, name, item, area…"/><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All statuses</option>{statusOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)}><option value="all">All categories</option>{Object.entries(categoryLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div></div>
       {error&&<div role="alert" className={styles.error}>{error}</div>}{notice&&<div role="status" className={styles.notice}>{notice}</div>}
-      {loading&&!offers.length?<div className={styles.empty}>Loading generosity offers…</div>:!filtered.length?<div className={styles.empty}>{offers.length?"No offers match the selected filters.":"No generosity offers have been received yet."}</div>:<div className={styles.offerList}>{filtered.map(offer=>{
+      {loading&&!offers.length?<div className={styles.empty}>Loading generosity pledges…</div>:!filtered.length?<div className={styles.empty}>{offers.length?"No pledges match the selected filters.":"No generosity pledges have been received yet."}</div>:<div className={styles.offerList}>{filtered.map(offer=>{
         const draft=drafts[offer.id]||{items:[]};
         const pledged=offer.items.reduce((sum,item)=>sum+Number(item.quantityPledged??item.quantity_pledged??0),0);
         const collected=offer.items.reduce((sum,item)=>sum+Number(item.quantityCollected??item.quantity_collected??0),0);
@@ -120,7 +121,7 @@ export default function GenerosityAdminDashboard() {
             <div className={styles.itemsHeader}><h3>Items and collection quantities</h3><p>Enter the number physically received for each line. Collected cannot exceed pledged.</p></div>
             <div className={styles.itemsTableWrap}><table className={styles.itemsTable}><thead><tr><th>Category / item</th><th>Pledged</th><th>Collected</th><th>Sizes / age details</th></tr></thead><tbody>{(draft.items||[]).map(item=><tr key={item.id}><td><small>{categoryLabels[item.category]||item.category}</small><strong>{item.itemLabel||item.item_label}</strong></td><td>{asNumber(item.quantityPledged??item.quantity_pledged)} {item.unit}</td><td><input aria-label={"Collected quantity for "+(item.itemLabel||item.item_label)} type="number" min="0" max={item.quantityPledged??item.quantity_pledged} step="1" value={item.quantityCollected} onChange={e=>updateItem(offer.id,item.id,e.target.value)}/></td><td>{item.sizeDetails||"—"}</td></tr>)}</tbody></table></div>
             <div className={styles.editGrid}><label>Collection status<select value={draft.status} onChange={e=>updateDraft(offer.id,"status",e.target.value)}>{statusOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label><label>Closure / withdrawal reason{(draft.status==="closed"||draft.status==="withdrawn")&&<span> (required)</span>}<input value={draft.closureReason} onChange={e=>updateDraft(offer.id,"closureReason",e.target.value)} maxLength={1000} placeholder="Reason, if closing or withdrawing"/></label><label className={styles.full}>Internal staff notes<textarea rows="3" value={draft.staffNotes} onChange={e=>updateDraft(offer.id,"staffNotes",e.target.value)} maxLength={4000} placeholder="Contact attempts, agreed pickup details, follow-up…"/></label></div>
-            <div className={styles.detailFooter}><span>Last updated {formatDate(offer.updated_at)}{offer.collection_arranged_at?" · Collection arranged "+formatDate(offer.collection_arranged_at):""}</span><button className={styles.primary} onClick={()=>saveOffer(offer)} disabled={saving===offer.id}>{saving===offer.id?"Saving…":"Save offer updates →"}</button></div>
+            <div className={styles.detailFooter}><span>Last updated {formatDate(offer.updated_at)}{offer.collection_arranged_at?" · Collection arranged "+formatDate(offer.collection_arranged_at):""}</span><button className={styles.primary} onClick={()=>saveOffer(offer)} disabled={saving===offer.id}>{saving===offer.id?"Saving…":"Save pledge updates →"}</button></div>
           </div>}
         </article>;
       })}</div>}

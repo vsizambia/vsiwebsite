@@ -53,6 +53,10 @@ const CATEGORIES = {
       baby_socks: ["Baby socks", "Pairs", true],
     },
   },
+  other: {
+    label: "Other",
+    items: { other_item: ["Other (please specify)", "Items", true] },
+  },
 };
 
 const clean = (value, max = 240) => typeof value === "string" ? value.trim().slice(0, max) : "";
@@ -79,7 +83,9 @@ function normaliseItems(value) {
     const definition = CATEGORIES[category]?.items?.[itemKey];
     const quantity = Number(row?.quantity);
     const sizeDetails = clean(row?.sizeDetails, 160);
+    const otherItem = category === "other" && itemKey === "other_item";
     if (!definition || !Number.isSafeInteger(quantity) || quantity < 1 || quantity > 1000000) throw new Error("Please check each selected item and enter a whole-number quantity greater than zero.");
+    if (otherItem && !sizeDetails) throw new Error("Please describe the item you have selected under Other.");
     const composite = category + ":" + itemKey;
     if (seen.has(composite)) throw new Error("Each item can only be selected once.");
     seen.add(composite);
@@ -88,27 +94,27 @@ function normaliseItems(value) {
       id: crypto.randomUUID(),
       category,
       itemKey,
-      itemLabel: definition[0],
+      itemLabel: otherItem ? `Other: ${sizeDetails}` : definition[0],
       unit: definition[1],
       quantity,
-      sizeDetails: definition[2] ? sizeDetails || null : null,
+      sizeDetails: definition[2] && !otherItem ? sizeDetails || null : null,
     };
   });
 }
 
-async function sendConfirmation({ email, firstName, reference, items, townArea }) {
+async function sendConfirmation({ email, firstName, reference, items, townArea, totalUnits }) {
   if (!process.env.RESEND_API_KEY || !process.env.VOLUNTEER_PORTAL_FROM_EMAIL) {
     throw new Error("Email delivery is not configured.");
   }
   const lines = items.map(item => `<tr><td style="padding:9px;border-bottom:1px solid #e5eaf0">${escapeHtml(item.itemLabel)}</td><td style="padding:9px;text-align:right;border-bottom:1px solid #e5eaf0">${item.quantity.toLocaleString()} ${escapeHtml(item.unit)}</td></tr>`).join("");
-  const html = `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#18324b"><h1 style="color:#07365f">Thank you for your generosity</h1><p>Hello ${escapeHtml(firstName)},</p><p>VSI has received your offer of goods. Your reference number is <strong>${escapeHtml(reference)}</strong>.</p><table style="border-collapse:collapse;width:100%"><thead><tr><th align="left" style="padding:9px;background:#f2f6fa">Item</th><th align="right" style="padding:9px;background:#f2f6fa">Quantity pledged</th></tr></thead><tbody>${lines}</tbody></table><p><strong>Collection area:</strong> ${escapeHtml(townArea)}</p><p>Please purchase the items you have offered. VSI will contact you to coordinate pickup. This is a goods-only initiative; no money is requested or processed through this form.</p><p>With gratitude,<br/>Visionary Students Initiative (VSI)</p></div>`;
+  const html = `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#18324b"><h1 style="color:#07365f">Thank you for your generosity</h1><p>Hello ${escapeHtml(firstName)},</p><p>VSI has received your pledge of goods. Your reference number is <strong>${escapeHtml(reference)}</strong>.</p><table style="border-collapse:collapse;width:100%"><thead><tr><th align="left" style="padding:9px;background:#f2f6fa">Item</th><th align="right" style="padding:9px;background:#f2f6fa">Quantity pledged</th></tr></thead><tbody>${lines}<tr><td style="padding:12px 9px;background:#f2f6fa;font-weight:bold">Total units pledged</td><td style="padding:12px 9px;background:#f2f6fa;text-align:right;font-weight:bold">${totalUnits.toLocaleString()}</td></tr></tbody></table><p><strong>Collection area:</strong> ${escapeHtml(townArea)}</p><p>Please purchase the items you have pledged. VSI will contact you to coordinate pickup. This is a goods-only initiative; no money is requested or processed through this form.</p><p>With gratitude,<br/>Visionary Students Initiative (VSI)</p></div>`;
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       from: process.env.VOLUNTEER_PORTAL_FROM_EMAIL,
       to: [email],
-      subject: `VSI Generosity offer received — ${reference}`,
+      subject: `VSI Generosity pledge received — ${reference}`,
       html,
     }),
   });
@@ -145,6 +151,7 @@ export async function POST(request) {
     return NextResponse.json({ error: "The combined quantities are too large. Please check your entries." }, { status: 400 });
   }
 
+  const totalUnits = items.reduce((sum, item) => sum + item.quantity, 0);
   let client;
   let offer;
   try {
@@ -172,14 +179,14 @@ export async function POST(request) {
   } catch (error) {
     if (client) await client.query("ROLLBACK").catch(() => {});
     console.error("VSI Generosity submission failed:", error);
-    return NextResponse.json({ error: "We could not save your offer. Please try again or contact VSI." }, { status: 500 });
+    return NextResponse.json({ error: "We could not save your pledge. Please try again or contact VSI." }, { status: 500 });
   } finally {
     client?.release();
   }
 
   let emailSent = false;
   try {
-    await sendConfirmation({ email, firstName, reference: offer.reference, items, townArea });
+    await sendConfirmation({ email, firstName, reference: offer.reference, items, townArea, totalUnits });
     emailSent = true;
   } catch (error) {
     console.error("VSI Generosity confirmation email failed:", { reference: offer.reference, message: error.message });
@@ -188,9 +195,10 @@ export async function POST(request) {
     ok: true,
     reference: offer.reference,
     emailSent,
+    totalUnits,
     message: emailSent
-      ? "Your offer has been recorded. A confirmation email with your reference number has been sent."
-      : "Your offer has been recorded. Please keep your reference number; the confirmation email could not be sent just now.",
+      ? "Your pledge has been recorded. A confirmation email with your reference number has been sent."
+      : "Your pledge has been recorded. Please keep your reference number; the confirmation email could not be sent just now.",
   }, { status: 201 });
 }
 
