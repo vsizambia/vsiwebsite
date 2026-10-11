@@ -63,26 +63,11 @@ const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":
 
 async function allowSubmission(request) {
   const keyHash = hashRateKey(getClientIp(request));
-  const client = await publicPool.connect();
-  try {
-    await client.query("BEGIN");
-    await client.query("SELECT set_config('app.vsi_generosity_rate_key', $1, true)", [keyHash]);
-    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [keyHash]);
-    await client.query("DELETE FROM public.vsi_generosity_rate_limits WHERE created_at < NOW() - INTERVAL '1 hour'");
-    const count = await client.query("SELECT COUNT(*)::int AS count FROM public.vsi_generosity_rate_limits WHERE key_hash=$1 AND created_at >= NOW() - INTERVAL '1 hour'", [keyHash]);
-    if (count.rows[0].count >= RATE_LIMIT) {
-      await client.query("ROLLBACK");
-      return false;
-    }
-    await client.query("INSERT INTO public.vsi_generosity_rate_limits (key_hash) VALUES ($1)", [keyHash]);
-    await client.query("COMMIT");
-    return true;
-  } catch (error) {
-    await client.query("ROLLBACK").catch(() => {});
-    throw error;
-  } finally {
-    client.release();
-  }
+  const result = await publicPool.query(
+    "SELECT public.vsi_generosity_allow_submission($1,$2,$3) AS allowed",
+    [keyHash, RATE_LIMIT, 60 * 60]
+  );
+  return result.rows[0]?.allowed === true;
 }
 
 function normaliseItems(value) {
