@@ -49,16 +49,16 @@ export async function PATCH(request) {
     const staffNotes = body?.staffNotes === undefined ? undefined : clean(body.staffNotes, 4000);
     const closureReason = body?.closureReason === undefined ? undefined : clean(body.closureReason, 1000);
     const itemUpdates = body?.items;
-    if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "A valid offer ID is required." }, { status: 400 });
+    if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "A valid pledge ID is required." }, { status: 400 });
     if (status && !allowedStatuses.includes(status)) return NextResponse.json({ error: "Choose a valid collection status." }, { status: 400 });
     if (itemUpdates !== undefined && (!Array.isArray(itemUpdates) || itemUpdates.length > 30)) return NextResponse.json({ error: "Invalid item collection updates." }, { status: 400 });
-    if (status === "closed" && !closureReason) return NextResponse.json({ error: "Please record a reason before closing this offer." }, { status: 400 });
-    if (status === "withdrawn" && !closureReason) return NextResponse.json({ error: "Please record a reason before withdrawing this offer." }, { status: 400 });
+    if (status === "closed" && !closureReason) return NextResponse.json({ error: "Please record a reason before closing this pledge." }, { status: 400 });
+    if (status === "withdrawn" && !closureReason) return NextResponse.json({ error: "Please record a reason before withdrawing this pledge." }, { status: 400 });
 
     client = await pool.connect();
     await client.query("BEGIN");
     const current = await client.query("SELECT id,reference,status FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
-    if (!current.rowCount) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Generosity offer not found." }, { status: 404 }); }
+    if (!current.rowCount) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Generosity pledge not found." }, { status: 404 }); }
 
     const changedItems = [];
     if (itemUpdates) {
@@ -95,7 +95,7 @@ export async function PATCH(request) {
     }
     if (nextStatus === "fully_collected" && (Number(q.item_count) === 0 || Number(q.complete_count) !== Number(q.item_count))) {
       await client.query("ROLLBACK");
-      return NextResponse.json({ error: "Mark an offer fully collected only after every pledged item quantity has been received." }, { status: 400 });
+      return NextResponse.json({ error: "Mark a pledge fully collected only after every pledged item quantity has been received." }, { status: 400 });
     }
     if (nextStatus === "partially_collected" && (Number(q.collected) <= 0 || Number(q.complete_count) === Number(q.item_count))) {
       await client.query("ROLLBACK");
@@ -122,7 +122,7 @@ export async function PATCH(request) {
   } catch (error) {
     if (client) await client.query("ROLLBACK").catch(() => {});
     console.error("VSI Generosity admin PATCH failed:", error);
-    return NextResponse.json({ error: "Unable to save the generosity offer." }, { status: 500 });
+    return NextResponse.json({ error: "Unable to save the generosity pledge." }, { status: 500 });
   } finally {
     client?.release();
   }
