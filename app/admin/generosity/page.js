@@ -70,7 +70,7 @@ export default function GenerosityAdminDashboard() {
   }
   useEffect(()=>{if(authenticated)load();},[authenticated]);
   const filtered = useMemo(()=>offers.filter(offer=>{
-    const hay=[offer.reference,offer.first_name,offer.last_name,offer.email,offer.phone,offer.town_area,...offer.items.map(item=>item.itemLabel),...offer.items.map(item=>item.item_label)].join(" ").toLowerCase();
+    const hay=[offer.reference,offer.first_name,offer.last_name,offer.email,offer.phone,offer.town_area,...offer.items.map(item=>item.itemLabel),...offer.items.map(item=>item.item_label),offer.additional_information].join(" ").toLowerCase();
     const matchesQuery=!query||hay.includes(query.toLowerCase());
     const matchesStatus=statusFilter==="all"||offer.status===statusFilter;
     const matchesCategory=categoryFilter==="all"||offer.items.some(item=>item.category===categoryFilter);
@@ -118,6 +118,7 @@ export default function GenerosityAdminDashboard() {
           </button>
           <div className={styles.offerMeta}><span>Received {formatDate(offer.created_at)}</span><span>Items: {offer.items.length}</span><span>Phone updates: {offer.phone_consent?"Yes":"No"}</span><span>Email updates: {offer.email_consent?"Yes":"No"}</span></div>
           {expanded===offer.id&&<div className={styles.offerDetails}>
+            {offer.additional_information&&<div className={styles.additionalInformation}><h3>Additional information from pledger</h3><p>{offer.additional_information}</p></div>}
             <div className={styles.itemsHeader}><h3>Items and collection quantities</h3><p>Enter the number physically received for each line. Collected cannot exceed pledged.</p></div>
             <div className={styles.itemsTableWrap}><table className={styles.itemsTable}><thead><tr><th>Category / item</th><th>Pledged</th><th>Collected</th><th>Sizes / age details</th></tr></thead><tbody>{(draft.items||[]).map(item=><tr key={item.id}><td><small>{categoryLabels[item.category]||item.category}</small><strong>{item.itemLabel||item.item_label}</strong></td><td>{asNumber(item.quantityPledged??item.quantity_pledged)} {item.unit}</td><td><input aria-label={"Collected quantity for "+(item.itemLabel||item.item_label)} type="number" min="0" max={item.quantityPledged??item.quantity_pledged} step="1" value={item.quantityCollected} onChange={e=>updateItem(offer.id,item.id,e.target.value)}/></td><td>{item.sizeDetails||"—"}</td></tr>)}</tbody></table></div>
             <div className={styles.editGrid}><label>Collection status<select value={draft.status} onChange={e=>updateDraft(offer.id,"status",e.target.value)}>{statusOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label><label>Closure / withdrawal reason{(draft.status==="closed"||draft.status==="withdrawn")&&<span> (required)</span>}<input value={draft.closureReason} onChange={e=>updateDraft(offer.id,"closureReason",e.target.value)} maxLength={1000} placeholder="Reason, if closing or withdrawing"/></label><label className={styles.full}>Internal staff notes<textarea rows="3" value={draft.staffNotes} onChange={e=>updateDraft(offer.id,"staffNotes",e.target.value)} maxLength={4000} placeholder="Contact attempts, agreed pickup details, follow-up…"/></label></div>

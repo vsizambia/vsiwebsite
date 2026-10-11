@@ -102,12 +102,13 @@ function normaliseItems(value) {
   });
 }
 
-async function sendConfirmation({ email, firstName, reference, items, townArea, totalUnits }) {
+async function sendConfirmation({ email, firstName, reference, items, townArea, totalUnits, additionalInformation }) {
   if (!process.env.RESEND_API_KEY || !process.env.VOLUNTEER_PORTAL_FROM_EMAIL) {
     throw new Error("Email delivery is not configured.");
   }
   const lines = items.map(item => `<tr><td style="padding:9px;border-bottom:1px solid #e5eaf0">${escapeHtml(item.itemLabel)}</td><td style="padding:9px;text-align:right;border-bottom:1px solid #e5eaf0">${item.quantity.toLocaleString()} ${escapeHtml(item.unit)}</td></tr>`).join("");
-  const html = `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#18324b"><h1 style="color:#07365f">Thank you for your generosity</h1><p>Hello ${escapeHtml(firstName)},</p><p>VSI has received your pledge of goods. Your reference number is <strong>${escapeHtml(reference)}</strong>.</p><table style="border-collapse:collapse;width:100%"><thead><tr><th align="left" style="padding:9px;background:#f2f6fa">Item</th><th align="right" style="padding:9px;background:#f2f6fa">Quantity pledged</th></tr></thead><tbody>${lines}<tr><td style="padding:12px 9px;background:#f2f6fa;font-weight:bold">Total units pledged</td><td style="padding:12px 9px;background:#f2f6fa;text-align:right;font-weight:bold">${totalUnits.toLocaleString()}</td></tr></tbody></table><p><strong>Collection area:</strong> ${escapeHtml(townArea)}</p><p>Please purchase the items you have pledged. VSI will contact you to coordinate pickup. This is a goods-only initiative; no money is requested or processed through this form.</p><p>With gratitude,<br/>Visionary Students Initiative (VSI)</p></div>`;
+  const additionalInformationBlock = additionalInformation ? `<p><strong>Additional information:</strong><br/>${escapeHtml(additionalInformation).replace(/\n/g,"<br/>")}</p>` : "";
+  const html = `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#18324b"><h1 style="color:#07365f">Thank you for your generosity</h1><p>Hello ${escapeHtml(firstName)},</p><p>VSI has received your pledge of goods. Your reference number is <strong>${escapeHtml(reference)}</strong>.</p><table style="border-collapse:collapse;width:100%"><thead><tr><th align="left" style="padding:9px;background:#f2f6fa">Item</th><th align="right" style="padding:9px;background:#f2f6fa">Quantity pledged</th></tr></thead><tbody>${lines}<tr><td style="padding:12px 9px;background:#f2f6fa;font-weight:bold">Total units pledged</td><td style="padding:12px 9px;background:#f2f6fa;text-align:right;font-weight:bold">${totalUnits.toLocaleString()}</td></tr></tbody></table><p><strong>Collection area:</strong> ${escapeHtml(townArea)}</p>${additionalInformationBlock}<p>Please purchase the items you have pledged. VSI will contact you to coordinate pickup. This is a goods-only initiative; no money is requested or processed through this form.</p><p>With gratitude,<br/>Visionary Students Initiative (VSI)</p></div>`;
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
@@ -138,6 +139,7 @@ export async function POST(request) {
   const zambiaPhone = "+260" + phoneDigits;
   const townArea = clean(body?.townArea, 120);
   const pickupAddress = clean(body?.pickupAddress, 300) || null;
+  const additionalInformation = clean(body?.additionalInformation, 2000) || null;
   const phoneConsent = body?.phoneConsent === true;
   const emailConsent = body?.emailConsent === true;
   if (!firstName || !lastName || !email || phoneDigits.length !== 9 || !townArea || !validEmail(email)) {
@@ -162,9 +164,9 @@ export async function POST(request) {
     const reference = `VSI-GEN-${new Date().getFullYear()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
     await client.query(
       `INSERT INTO public.vsi_generosity_offers
-       (id,reference,first_name,last_name,gender,age_range,email,phone,town_area,pickup_address,phone_consent,email_consent,consent_version)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-      [id,reference,firstName,lastName,gender,ageRange,email,zambiaPhone,townArea,pickupAddress,phoneConsent,emailConsent,CONSENT_VERSION]
+       (id,reference,first_name,last_name,gender,age_range,email,phone,town_area,pickup_address,phone_consent,email_consent,consent_version,additional_information)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+      [id,reference,firstName,lastName,gender,ageRange,email,zambiaPhone,townArea,pickupAddress,phoneConsent,emailConsent,CONSENT_VERSION,additionalInformation]
     );
     for (const item of items) {
       await client.query(
@@ -186,7 +188,7 @@ export async function POST(request) {
 
   let emailSent = false;
   try {
-    await sendConfirmation({ email, firstName, reference: offer.reference, items, townArea, totalUnits });
+    await sendConfirmation({ email, firstName, reference: offer.reference, items, townArea, totalUnits, additionalInformation });
     emailSent = true;
   } catch (error) {
     console.error("VSI Generosity confirmation email failed:", { reference: offer.reference, message: error.message });
