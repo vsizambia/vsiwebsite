@@ -66,6 +66,7 @@ async function allowSubmission(request) {
   const client = await publicPool.connect();
   try {
     await client.query("BEGIN");
+    await client.query("SELECT set_config('app.vsi_generosity_rate_key', $1, true)", [keyHash]);
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [keyHash]);
     await client.query("DELETE FROM public.vsi_generosity_rate_limits WHERE created_at < NOW() - INTERVAL '1 hour'");
     const count = await client.query("SELECT COUNT(*)::int AS count FROM public.vsi_generosity_rate_limits WHERE key_hash=$1 AND created_at >= NOW() - INTERVAL '1 hour'", [keyHash]);
@@ -167,11 +168,10 @@ export async function POST(request) {
     await client.query("BEGIN");
     const id = crypto.randomUUID();
     const reference = `VSI-GEN-${new Date().getFullYear()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
-    const inserted = await client.query(
+    await client.query(
       `INSERT INTO public.vsi_generosity_offers
        (id,reference,first_name,last_name,gender,age_range,email,phone,town_area,pickup_address,phone_consent,email_consent,consent_version)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-       RETURNING id,reference,created_at`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
       [id,reference,firstName,lastName,gender,ageRange,email,zambiaPhone,townArea,pickupAddress,phoneConsent,emailConsent,CONSENT_VERSION]
     );
     for (const item of items) {
@@ -183,7 +183,7 @@ export async function POST(request) {
       );
     }
     await client.query("COMMIT");
-    offer = { ...inserted.rows[0], firstName, email, townArea };
+    offer = { reference, firstName, email, townArea };
   } catch (error) {
     if (client) await client.query("ROLLBACK").catch(() => {});
     console.error("VSI Generosity submission failed:", error);
