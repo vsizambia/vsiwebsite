@@ -75,12 +75,12 @@ CREATE INDEX IF NOT EXISTS vsi_generosity_audit_offer_idx
 -- The anonymous application role may create offers, add offer items and maintain
 -- its own hashed-IP rate-limit rows. It cannot read contributor records.
 GRANT INSERT (id, reference, first_name, last_name, gender, age_range, email, phone, town_area, pickup_address, phone_consent, email_consent, consent_version)
-  ON public.vsi_generosity_offers TO vsi_public;
-GRANT SELECT (id, reference, created_at) ON public.vsi_generosity_offers TO vsi_public;
+  ON public.vsi_generosity_offers TO vsi_gen_public;
+GRANT SELECT (id, reference, created_at) ON public.vsi_generosity_offers TO vsi_gen_public;
 GRANT INSERT (id, offer_id, category, item_key, item_label, quantity_pledged, unit, size_details)
-  ON public.vsi_generosity_offer_items TO vsi_public;
-GRANT SELECT (id) ON public.vsi_generosity_offer_items TO vsi_public;
-GRANT SELECT, INSERT, DELETE ON public.vsi_generosity_rate_limits TO vsi_public;
-GRANT USAGE, SELECT ON SEQUENCE public.vsi_generosity_rate_limits_id_seq TO vsi_public;
+  ON public.vsi_generosity_offer_items TO vsi_gen_public;
+GRANT SELECT (id) ON public.vsi_generosity_offer_items TO vsi_gen_public;
+GRANT SELECT, INSERT, DELETE ON public.vsi_generosity_rate_limits TO vsi_gen_public;
+GRANT USAGE, SELECT ON SEQUENCE public.vsi_generosity_rate_limits_id_seq TO vsi_gen_public;
 
 -- Administrative operations use the existing privileged server-side pool.
