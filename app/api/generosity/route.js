@@ -9,7 +9,7 @@ const CATEGORIES = {
   educational_materials: {
     label: "Educational Materials",
     items: {
-      exercise_books: ["Exercise books", "Books", true],
+      exercise_books: ["Exercise books", "Books", false],
       pens: ["Pens", "Pieces", false],
       pencils: ["Pencils", "Pieces", false],
       rulers: ["Rulers", "Pieces", false],
