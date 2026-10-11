@@ -20,7 +20,7 @@ export async function GET(request) {
         COUNT(*) FILTER (WHERE status='partially_collected')::int AS partially_collected,
         COUNT(*) FILTER (WHERE status='fully_collected')::int AS fully_collected
         FROM public.vsi_generosity_offers`),
-      pool.query(`SELECT o.id,o.reference,o.first_name,o.last_name,o.gender,o.age_range,o.email,o.phone,o.town_area,o.pickup_address,o.phone_consent,o.email_consent,o.status,o.staff_notes,o.closure_reason,o.created_at,o.updated_at,o.collection_arranged_at,o.closed_at,
+      pool.query(`SELECT o.id,o.reference,o.first_name,o.last_name,o.gender,o.age_range,o.email,o.phone,o.town_area,o.pickup_address,o.additional_information,o.phone_consent,o.email_consent,o.status,o.staff_notes,o.closure_reason,o.created_at,o.updated_at,o.collection_arranged_at,o.closed_at,
         COALESCE(json_agg(json_build_object(
           'id',i.id,'category',i.category,'itemKey',i.item_key,'itemLabel',i.item_label,
           'quantityPledged',i.quantity_pledged,'quantityCollected',i.quantity_collected,
