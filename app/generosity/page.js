@@ -6,7 +6,7 @@ import styles from "./generosity.module.css";
 
 const categories = [
   { key: "educational_materials", number: "01", title: "Educational Materials", goal: "Help 2,000+ learners from community schools receive essential stationery packs.", items: [
-    ["exercise_books","Exercise books","Books",false],["pens","Pens","Pieces",false],["pencils","Pencils","Pieces",false],["rulers","Rulers","Pieces",false],["crayon_packs","Crayon packs","Packs",false],["school_shoes","School shoes","Pairs",true],["school_bags_baby_nursery","School bags — baby class / nursery","Bags",true],["school_bags_primary","School bags — primary","Bags",true],
+    ["exercise_books","Exercise books","Books",false],["pens","Pens","Pieces",false],["pencils","Pencils","Pieces",false],["rulers","Rulers","Pieces",false],["crayon_packs","Crayon packs","Packs",false],["school_shoes","School shoes","Pairs",false],["school_bags_baby_nursery","School bags — baby class / nursery","Bags",false],["school_bags_primary","School bags — primary","Bags",false],
   ]},
   { key: "ovc_support", number: "02", title: "Orphan and Vulnerable Children (OVC) Support", goal: "Support 500+ children across 10 children's homes with pantry and hygiene supplies.", items: [
     ["sugar_2kg","Sugar — 2 kg packs","Packs",false],["cooking_oil_2l","Cooking oil — 2 L","Bottles",false],["washing_powder_500g","Washing powder — 500 g","Packs",false],["toothpaste","Toothpaste","Tubes / packs",false],["bathing_soap","Bathing soap","Bars / packs",false],["mealie_meal_20kg","Mealie meal — 20 kg bags","Bags",false],
