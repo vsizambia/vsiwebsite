@@ -50,3 +50,5 @@
 .educationMetric .categoryMetricFoot strong,.ovcMetric .categoryMetricFoot strong,.maternityMetric .categoryMetricFoot strong{color:#fff}
 .educationMetric .categoryMetricCollected,.ovcMetric .categoryMetricCollected,.maternityMetric .categoryMetricCollected{color:#fff}
 .educationMetric:hover,.ovcMetric:hover,.maternityMetric:hover{border-color:rgba(255,255,255,.65);box-shadow:0 13px 28px rgba(20,20,30,.18)}
+
+.archiveToggle{display:inline-flex;align-items:center;margin-top:10px;padding:8px 11px;border:1px solid #cbd9e5;border-radius:8px;background:#f6f9fc;color:#15517b;font:inherit;font-size:11px;font-weight:800;cursor:pointer}.archiveToggle:hover{background:#eaf3fa}
