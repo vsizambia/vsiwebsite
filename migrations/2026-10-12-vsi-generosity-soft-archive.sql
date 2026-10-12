@@ -32,3 +32,26 @@ CREATE INDEX IF NOT EXISTS vsi_generosity_audit_reference_idx
   ON public.vsi_generosity_audit_log (offer_reference, created_at DESC);
 
 -- Existing RLS and server-role policies remain in force.
+
+-- Keep references populated during a rolling deployment, including inserts
+-- from an older application instance that does not yet send offer_reference.
+CREATE OR REPLACE FUNCTION public.vsi_generosity_fill_audit_reference()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $function$
+BEGIN
+  IF NEW.offer_reference IS NULL AND NEW.offer_id IS NOT NULL THEN
+    SELECT reference INTO NEW.offer_reference
+    FROM public.vsi_generosity_offers
+    WHERE id = NEW.offer_id;
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+
+DROP TRIGGER IF EXISTS vsi_generosity_audit_reference_fill ON public.vsi_generosity_audit_log;
+CREATE TRIGGER vsi_generosity_audit_reference_fill
+  BEFORE INSERT OR UPDATE OF offer_id
+  ON public.vsi_generosity_audit_log
+  FOR EACH ROW
+  EXECUTE FUNCTION public.vsi_generosity_fill_audit_reference();
