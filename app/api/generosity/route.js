@@ -28,6 +28,7 @@ const CATEGORIES = {
       toothpaste: ["Toothpaste", "Tubes / packs", false],
       bathing_soap: ["Bathing soap", "Bars / packs", false],
       basin_buckets: ["Basin buckets — 5 L to 10 L", "Buckets", false],
+      basin_buckets: ["Basin buckets — 5 L to 10 L", "Buckets", false],
       mealie_meal_20kg: ["Mealie meal — 20 kg bags", "Bags", false],
     },
   },
@@ -35,6 +36,7 @@ const CATEGORIES = {
     label: "Maternity Ward Care — Mothers",
     items: {
       maternity_pads: ["Sanitary / maternity pads", "Packs", false],
+      mothers_bathing_soap: ["Bathing soap bars", "Bars", false],
       mothers_bathing_soap: ["Bathing soap bars", "Bars", false],
       mothers_hygiene_goods: ["Personal hygiene goods (soap, petroleum jelly / lotion, toothbrushes and toothpaste)", "Sets / items", false],
       laundry_detergent: ["Washing powder and laundry detergent", "Packs", false],
