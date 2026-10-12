@@ -119,12 +119,21 @@ export default function GenerosityCategoryPage() {
       setError("Collected quantity must be a whole number from zero to the pledged quantity (" + pledged + ").");
       return;
     }
+    const totalPledged = offer.items.reduce((sum, current) => sum + Number(current.quantityPledged ?? current.quantity_pledged ?? 0), 0);
+    const totalCollected = offer.items.reduce((sum, current) => sum + Number(current.id === item.id ? quantity : current.quantityCollected ?? current.quantity_collected ?? 0), 0);
+    let nextStatus = offer.status;
+    if (nextStatus === "fully_collected" && totalCollected < totalPledged) nextStatus = totalCollected > 0 ? "partially_collected" : "offer_received";
+    else if (nextStatus === "partially_collected" && totalCollected === 0) nextStatus = "offer_received";
+    else if (!["closed", "withdrawn"].includes(nextStatus)) {
+      if (totalPledged > 0 && totalCollected === totalPledged) nextStatus = "fully_collected";
+      else if (totalCollected > 0) nextStatus = "partially_collected";
+    }
     setSaving(item.id); setError(""); setNotice("");
     try {
       const response = await fetch("/api/admin/generosity", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: offer.id, items: [{ id: item.id, quantityCollected: quantity }] }),
+        body: JSON.stringify({ id: offer.id, status: nextStatus, items: [{ id: item.id, quantityCollected: quantity }] }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to save collection quantity.");
