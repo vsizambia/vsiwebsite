@@ -99,8 +99,8 @@ export default function GenerosityAdminDashboard() {
     return matchesQuery&&matchesStatus&&matchesCategory;
   }),[offers,query,statusFilter,categoryFilter]);
   function updateDraft(id,field,value) { setDrafts(current=>({...current,[id]:{...current[id],[field]:value}})); }
-  function updateItem(id,itemId,value) {
-    setDrafts(current=>({...current,[id]:{...current[id],items:current[id].items.map(item=>item.id===itemId?{...item,quantityCollected:value}:item)}}));
+  function updateItem(id,itemId,field,value) {
+    setDrafts(current=>({...current,[id]:{...current[id],items:current[id].items.map(item=>item.id===itemId?{...item,[field]:value}:item)}}));
   }
   async function saveOffer(offer) {
     const draft=drafts[offer.id];if(!draft)return;
@@ -108,7 +108,8 @@ export default function GenerosityAdminDashboard() {
     try {
       const response=await fetch("/api/admin/generosity",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({
         id:offer.id,status:draft.status,staffNotes:draft.staffNotes,closureReason:draft.closureReason,
-        items:draft.items.map(item=>({id:item.id,quantityCollected:Number(item.quantityCollected)}))
+        contact:{firstName:draft.firstName,lastName:draft.lastName,email:draft.email,phone:draft.phone,townArea:draft.townArea,pickupAddress:draft.pickupAddress},
+        items:draft.items.map(item=>({id:item.id,quantityPledged:Number(item.quantityPledged),quantityCollected:Number(item.quantityCollected)}))
       })});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Unable to save pledge updates.");
