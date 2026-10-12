@@ -149,7 +149,7 @@ export default function GenerosityAdminDashboard() {
           <span className={styles.categoryMetricTop}><span className={styles.categoryMetricIcon}>{category.key === "education" ? "E" : category.key === "ovc" ? "O" : "M"}</span><span className={styles.categoryMetricArrow}>↗</span></span>
           <span className={styles.categoryMetricTitle}>{category.title}</span>
           <span className={styles.categoryMetricDescription}>{category.description}</span>
-          <span className={styles.categoryMetricNumbers}><strong>{asNumber(pledged)}</strong><span> / {asNumber(category.target)} units pledged</span></span>
+          <span className={styles.categoryMetricNumbers}><strong>{asNumber(pledged)}</strong><span> / {asNumber(category.target)} target</span></span>
           <span className={styles.progressTrack}><span style={{width: progress + "%"}} /></span>
           <span className={styles.categoryMetricFoot}><strong>{asNumber(categoryOffers.length)} pledges received</strong><span>{progress}% of target</span></span>
           <span className={styles.categoryMetricCollected}>{asNumber(collected)} units collected</span>
