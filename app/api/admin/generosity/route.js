@@ -48,10 +48,21 @@ export async function PATCH(request) {
     const status = clean(body?.status, 40);
     const staffNotes = body?.staffNotes === undefined ? undefined : clean(body.staffNotes, 4000);
     const closureReason = body?.closureReason === undefined ? undefined : clean(body.closureReason, 1000);
+    const contact = body?.contact === undefined ? undefined : {
+      firstName: clean(body.contact?.firstName, 80),
+      lastName: clean(body.contact?.lastName, 80),
+      email: clean(body.contact?.email, 254).toLowerCase(),
+      phone: clean(body.contact?.phone, 40),
+      townArea: clean(body.contact?.townArea, 120),
+      pickupAddress: clean(body.contact?.pickupAddress, 300) || null,
+    };
     const itemUpdates = body?.items;
     if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "A valid pledge ID is required." }, { status: 400 });
     if (status && !allowedStatuses.includes(status)) return NextResponse.json({ error: "Choose a valid collection status." }, { status: 400 });
-    if (itemUpdates !== undefined && (!Array.isArray(itemUpdates) || itemUpdates.length > 30)) return NextResponse.json({ error: "Invalid item collection updates." }, { status: 400 });
+    if (itemUpdates !== undefined && (!Array.isArray(itemUpdates) || itemUpdates.length > 30)) return NextResponse.json({ error: "Invalid item updates." }, { status: 400 });
+    if (contact && (!contact.firstName || !contact.lastName || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact.email) || !/^[+0-9()\s-]{7,40}$/.test(contact.phone) || !contact.townArea)) {
+      return NextResponse.json({ error: "Please provide a valid name, email, phone number and collection town / area." }, { status: 400 });
+    }
     if (status === "closed" && !closureReason) return NextResponse.json({ error: "Please record a reason before closing this pledge." }, { status: 400 });
     if (status === "withdrawn" && !closureReason) return NextResponse.json({ error: "Please record a reason before withdrawing this pledge." }, { status: 400 });
 
@@ -60,26 +71,42 @@ export async function PATCH(request) {
     const current = await client.query("SELECT id,reference,status FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
     if (!current.rowCount) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Generosity pledge not found." }, { status: 404 }); }
 
+    if (contact) {
+      await client.query(
+        `UPDATE public.vsi_generosity_offers SET first_name=$2,last_name=$3,email=$4,phone=$5,town_area=$6,pickup_address=$7,updated_at=NOW() WHERE id=$1`,
+        [id,contact.firstName,contact.lastName,contact.email,contact.phone,contact.townArea,contact.pickupAddress]
+      );
+    }
+
     const changedItems = [];
     if (itemUpdates) {
       for (const update of itemUpdates) {
         const itemId = clean(update?.id, 80);
-        const quantity = Number(update?.quantityCollected);
-        if (!/^[0-9a-f-]{36}$/i.test(itemId) || !Number.isSafeInteger(quantity) || quantity < 0) {
+        if (!/^[0-9a-f-]{36}$/i.test(itemId)) {
           await client.query("ROLLBACK");
-          return NextResponse.json({ error: "Collected quantities must be whole numbers of zero or more." }, { status: 400 });
+          return NextResponse.json({ error: "A valid pledge item ID is required." }, { status: 400 });
+        }
+        const existingItem = await client.query(
+          "SELECT quantity_pledged,quantity_collected FROM public.vsi_generosity_offer_items WHERE id=$1 AND offer_id=$2 FOR UPDATE",
+          [itemId,id]
+        );
+        if (!existingItem.rowCount) {
+          await client.query("ROLLBACK");
+          return NextResponse.json({ error: "A pledge item does not belong to this offer." }, { status: 400 });
+        }
+        const pledged = update?.quantityPledged === undefined ? Number(existingItem.rows[0].quantity_pledged) : Number(update.quantityPledged);
+        const collected = update?.quantityCollected === undefined ? Number(existingItem.rows[0].quantity_collected) : Number(update.quantityCollected);
+        if (!Number.isSafeInteger(pledged) || pledged < 1 || pledged > 1000000 || !Number.isSafeInteger(collected) || collected < 0 || collected > pledged) {
+          await client.query("ROLLBACK");
+          return NextResponse.json({ error: "Pledged quantities must be whole numbers from 1 to 1,000,000, and collected quantities must be between zero and the pledge." }, { status: 400 });
         }
         const result = await client.query(
           `UPDATE public.vsi_generosity_offer_items
-           SET quantity_collected=$1,updated_at=NOW()
-           WHERE id=$2 AND offer_id=$3 AND $1 <= quantity_pledged
+           SET quantity_pledged=$1,quantity_collected=$2,updated_at=NOW()
+           WHERE id=$3 AND offer_id=$4
            RETURNING id,item_label,quantity_pledged,quantity_collected`,
-          [quantity,itemId,id]
+          [pledged,collected,itemId,id]
         );
-        if (!result.rowCount) {
-          await client.query("ROLLBACK");
-          return NextResponse.json({ error: "A collected quantity exceeds its pledge or the item does not belong to this offer." }, { status: 400 });
-        }
         changedItems.push(result.rows[0]);
       }
     }
@@ -115,7 +142,7 @@ export async function PATCH(request) {
     );
     await client.query(
       "INSERT INTO public.vsi_generosity_audit_log (offer_id,action,details,actor) VALUES ($1,$2,$3::jsonb,$4)",
-      [id,"offer_updated",JSON.stringify({status:nextStatus,items:changedItems,staffNotesChanged:staffNotes!==undefined,closureReasonChanged:closureReason!==undefined}),"admin"]
+      [id,"offer_updated",JSON.stringify({status:nextStatus,items:changedItems,contactChanged:contact!==undefined,staffNotesChanged:staffNotes!==undefined,closureReasonChanged:closureReason!==undefined}),"admin"]
     );
     await client.query("COMMIT");
     return NextResponse.json({ ok: true, offer: updated.rows[0] });
@@ -123,6 +150,33 @@ export async function PATCH(request) {
     if (client) await client.query("ROLLBACK").catch(() => {});
     console.error("VSI Generosity admin PATCH failed:", error);
     return NextResponse.json({ error: "Unable to save the generosity pledge." }, { status: 500 });
+  } finally {
+    client?.release();
+  }
+}
+
+
+export async function DELETE(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  const id = clean(new URL(request.url).searchParams.get("id"), 80);
+  if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "A valid pledge ID is required." }, { status: 400 });
+  let client;
+  try {
+    client = await pool.connect();
+    await client.query("BEGIN");
+    const found = await client.query("SELECT id,reference FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
+    if (!found.rowCount) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Generosity pledge not found." }, { status: 404 });
+    }
+    const reference = found.rows[0].reference;
+    await client.query("DELETE FROM public.vsi_generosity_offers WHERE id=$1", [id]);
+    await client.query("COMMIT");
+    return NextResponse.json({ ok: true, reference });
+  } catch (error) {
+    if (client) await client.query("ROLLBACK").catch(() => {});
+    console.error("VSI Generosity admin DELETE failed:", error);
+    return NextResponse.json({ error: "Unable to delete the generosity pledge." }, { status: 500 });
   } finally {
     client?.release();
   }
