@@ -43,7 +43,8 @@ const campaignCategories = [
     targets: { maternity_pads: 500, newborn_diapers: 500, baby_oil_jelly: 500, chitenge_2m: 500, mothers_bathing_soap: 500, covered_buckets: 250 },
   },
 ];
-\nconst formatDate = value => value ? new Date(value).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Africa/Lusaka"}) : "—";
+
+const formatDate = value => value ? new Date(value).toLocaleString("en-GB",{day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"Africa/Lusaka"}) : "—";
 const asNumber = value => Number(value||0).toLocaleString();
 
 export default function GenerosityAdminDashboard() {
@@ -131,7 +132,8 @@ export default function GenerosityAdminDashboard() {
     } catch (e) { setError(e.message); }
     finally { setSaving(null); }
   }
-\n  if(checking)return <main className={styles.center}>Checking VSI administrator access…</main>;
+
+  if(checking)return <main className={styles.center}>Checking VSI administrator access…</main>;
   if(!authenticated)return <main className={styles.loginPage}><form className={styles.loginCard} onSubmit={login}><span className={styles.logo}>VSI</span><p className={styles.kicker}>ADMIN ACCESS</p><h1>VSI Generosity Dashboard</h1><p>Sign in with your VSI administrator credentials to manage generosity pledges and collections.</p><label>{authStep==="code"?"Authenticator code":"Admin password"}{authStep==="code"?<input autoFocus inputMode="numeric" maxLength={6} value={authCode} onChange={e=>setAuthCode(e.target.value.replace(/\D/g,"").slice(0,6))} required/>:<input type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/>}</label>{authError&&<div className={styles.error}>{authError}</div>}<button className={styles.primary} type="submit">{authStep==="code"?"Verify code":"Sign in"} →</button></form></main>;
   return <><SiteHeader ctaLabel="VSI Administration" ctaHref="/admin"/><main className={styles.page}><div className={styles.shell}>
     <div className={styles.topline}><Link href="/admin">VSI Administration</Link><span>/</span><strong>Generosity Dashboard</strong><div className={styles.topActions}><span className={styles.connected}>● Connected</span><button onClick={load} disabled={loading}>{loading?"Refreshing…":"Refresh ↻"}</button></div></div>
