@@ -59,6 +59,7 @@ export async function PATCH(request) {
       pickupAddress: clean(body.contact?.pickupAddress, 300) || null,
     };
     const itemUpdates = body?.items;
+    const restore = body?.restore === true;
     if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "A valid pledge ID is required." }, { status: 400 });
     if (status && !allowedStatuses.includes(status)) return NextResponse.json({ error: "Choose a valid collection status." }, { status: 400 });
     if (itemUpdates !== undefined && (!Array.isArray(itemUpdates) || itemUpdates.length > 30)) return NextResponse.json({ error: "Invalid item updates." }, { status: 400 });
@@ -70,8 +71,25 @@ export async function PATCH(request) {
 
     client = await pool.connect();
     await client.query("BEGIN");
-    const current = await client.query("SELECT id,reference,status FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
+    const current = await client.query("SELECT id,reference,status,deleted_at FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
     if (!current.rowCount) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Generosity pledge not found." }, { status: 404 }); }
+    if (restore) {
+      if (!current.rows[0].deleted_at) {
+        await client.query("ROLLBACK");
+        return NextResponse.json({ error: "This pledge is not archived." }, { status: 409 });
+      }
+      await client.query("UPDATE public.vsi_generosity_offers SET deleted_at=NULL,deleted_by=NULL,updated_at=NOW() WHERE id=$1", [id]);
+      await client.query(
+        "INSERT INTO public.vsi_generosity_audit_log (offer_id,offer_reference,action,details,actor) VALUES ($1,$2,$3,$4::jsonb,$5)",
+        [id,current.rows[0].reference,"offer_restored",JSON.stringify({reference:current.rows[0].reference}),"admin"]
+      );
+      await client.query("COMMIT");
+      return NextResponse.json({ ok: true, reference: current.rows[0].reference, restored: true });
+    }
+    if (current.rows[0].deleted_at) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Restore this archived pledge before editing it." }, { status: 409 });
+    }
 
     if (contact) {
       await client.query(
@@ -143,8 +161,8 @@ export async function PATCH(request) {
       [nextStatus,staffNotes!==undefined,staffNotes??null,closureReason!==undefined,closureReason??null,id]
     );
     await client.query(
-      "INSERT INTO public.vsi_generosity_audit_log (offer_id,action,details,actor) VALUES ($1,$2,$3::jsonb,$4)",
-      [id,"offer_updated",JSON.stringify({status:nextStatus,items:changedItems,contactChanged:contact!==undefined,staffNotesChanged:staffNotes!==undefined,closureReasonChanged:closureReason!==undefined}),"admin"]
+      "INSERT INTO public.vsi_generosity_audit_log (offer_id,offer_reference,action,details,actor) VALUES ($1,$2,$3,$4::jsonb,$5)",
+      [id,current.rows[0].reference,"offer_updated",JSON.stringify({status:nextStatus,items:changedItems,contactChanged:contact!==undefined,staffNotesChanged:staffNotes!==undefined,closureReasonChanged:closureReason!==undefined}),"admin"]
     );
     await client.query("COMMIT");
     return NextResponse.json({ ok: true, offer: updated.rows[0] });
@@ -166,15 +184,19 @@ export async function DELETE(request) {
   try {
     client = await pool.connect();
     await client.query("BEGIN");
-    const found = await client.query("SELECT id,reference FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
-    if (!found.rowCount) {
+    const found = await client.query("SELECT id,reference,status,deleted_at FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
+    if (!found.rowCount || found.rows[0].deleted_at) {
       await client.query("ROLLBACK");
-      return NextResponse.json({ error: "Generosity pledge not found." }, { status: 404 });
+      return NextResponse.json({ error: "Active generosity pledge not found." }, { status: 404 });
     }
     const reference = found.rows[0].reference;
-    await client.query("DELETE FROM public.vsi_generosity_offers WHERE id=$1", [id]);
+    await client.query("UPDATE public.vsi_generosity_offers SET deleted_at=NOW(),deleted_by=$2,updated_at=NOW() WHERE id=$1", [id,"admin"]);
+    await client.query(
+      "INSERT INTO public.vsi_generosity_audit_log (offer_id,offer_reference,action,details,actor) VALUES ($1,$2,$3,$4::jsonb,$5)",
+      [id,reference,"offer_archived",JSON.stringify({reference,previousStatus:found.rows[0].status}),"admin"]
+    );
     await client.query("COMMIT");
-    return NextResponse.json({ ok: true, reference });
+    return NextResponse.json({ ok: true, reference, archived: true });
   } catch (error) {
     if (client) await client.query("ROLLBACK").catch(() => {});
     console.error("VSI Generosity admin DELETE failed:", error);
