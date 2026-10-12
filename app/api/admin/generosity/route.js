@@ -127,7 +127,8 @@ export async function PATCH(request) {
     client?.release();
   }
 }
-\n
+
+
 export async function DELETE(request) {
   if (!isAdminAuthenticated(request)) return unauthorized();
   const id = clean(new URL(request.url).searchParams.get("id"), 80);
