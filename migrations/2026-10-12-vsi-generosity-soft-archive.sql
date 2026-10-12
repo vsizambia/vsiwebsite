@@ -19,6 +19,9 @@ ALTER TABLE public.vsi_generosity_audit_log
   DROP CONSTRAINT IF EXISTS vsi_generosity_audit_log_offer_id_fkey;
 
 ALTER TABLE public.vsi_generosity_audit_log
+  DROP CONSTRAINT IF EXISTS vsi_generosity_audit_log_offer_id_not_null;
+
+ALTER TABLE public.vsi_generosity_audit_log
   ALTER COLUMN offer_id DROP NOT NULL;
 
 ALTER TABLE public.vsi_generosity_audit_log
