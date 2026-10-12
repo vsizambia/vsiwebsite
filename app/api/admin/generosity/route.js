@@ -8,18 +8,19 @@ const clean = (value, max = 2000) => typeof value === "string" ? value.trim().sl
 
 export async function GET(request) {
   if (!isAdminAuthenticated(request)) return unauthorized();
+  const showArchived = new URL(request.url).searchParams.get("archived") === "true";
   try {
     const [summary, offers] = await Promise.all([
       pool.query(`SELECT
         COUNT(*)::int AS offers_total,
         COUNT(DISTINCT lower(email))::int AS contributors,
-        COALESCE((SELECT SUM(quantity_pledged) FROM public.vsi_generosity_offer_items),0)::bigint AS quantities_pledged,
-        COALESCE((SELECT SUM(quantity_collected) FROM public.vsi_generosity_offer_items),0)::bigint AS quantities_collected,
+        COALESCE((SELECT SUM(i.quantity_pledged) FROM public.vsi_generosity_offer_items i JOIN public.vsi_generosity_offers active ON active.id=i.offer_id WHERE active.deleted_at IS NULL),0)::bigint AS quantities_pledged,
+        COALESCE((SELECT SUM(i.quantity_collected) FROM public.vsi_generosity_offer_items i JOIN public.vsi_generosity_offers active ON active.id=i.offer_id WHERE active.deleted_at IS NULL),0)::bigint AS quantities_collected,
         COUNT(*) FILTER (WHERE status IN ('offer_received','contact_in_progress'))::int AS awaiting_collection,
         COUNT(*) FILTER (WHERE status='collection_arranged')::int AS collection_arranged,
         COUNT(*) FILTER (WHERE status='partially_collected')::int AS partially_collected,
         COUNT(*) FILTER (WHERE status='fully_collected')::int AS fully_collected
-        FROM public.vsi_generosity_offers`),
+        FROM public.vsi_generosity_offers WHERE deleted_at IS NULL`),
       pool.query(`SELECT o.id,o.reference,o.first_name,o.last_name,o.gender,o.age_range,o.email,o.phone,o.town_area,o.pickup_address,o.additional_information,o.phone_consent,o.email_consent,o.status,o.staff_notes,o.closure_reason,o.created_at,o.updated_at,o.collection_arranged_at,o.closed_at,
         COALESCE(json_agg(json_build_object(
           'id',i.id,'category',i.category,'itemKey',i.item_key,'itemLabel',i.item_label,
@@ -28,6 +29,7 @@ export async function GET(request) {
         ) ORDER BY i.category,i.item_label) FILTER (WHERE i.id IS NOT NULL),'[]'::json) AS items
         FROM public.vsi_generosity_offers o
         LEFT JOIN public.vsi_generosity_offer_items i ON i.offer_id=o.id
+        WHERE ${showArchived ? "o.deleted_at IS NOT NULL" : "o.deleted_at IS NULL"}
         GROUP BY o.id
         ORDER BY o.created_at DESC
         LIMIT 500`)
