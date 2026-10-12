@@ -145,7 +145,7 @@ export default function GenerosityAdminDashboard() {
         const pledged = categoryOffers.reduce((sum, offer) => sum + offer.items.filter(item => category.categories.includes(item.category)).reduce((subtotal, item) => subtotal + (category.targets[item.itemKey || item.item_key] ? Number(item.quantityPledged ?? item.quantity_pledged ?? 0) : 0), 0), 0);
         const collected = categoryOffers.reduce((sum, offer) => sum + offer.items.filter(item => category.categories.includes(item.category)).reduce((subtotal, item) => subtotal + (category.targets[item.itemKey || item.item_key] ? Number(item.quantityCollected ?? item.quantity_collected ?? 0) : 0), 0), 0);
         const progress = Math.min(100, Math.round(pledged / category.target * 100));
-        return <Link className={styles.categoryMetric} href={"/admin/generosity/" + category.slug} key={category.key}>
+        return <Link className={`${styles.categoryMetric} ${category.key === "education" ? styles.educationMetric : category.key === "ovc" ? styles.ovcMetric : styles.maternityMetric}`} href={"/admin/generosity/" + category.slug} key={category.key}>
           <span className={styles.categoryMetricTop}><span className={styles.categoryMetricIcon}>{category.key === "education" ? "E" : category.key === "ovc" ? "O" : "M"}</span><span className={styles.categoryMetricArrow}>↗</span></span>
           <span className={styles.categoryMetricTitle}>{category.title}</span>
           <span className={styles.categoryMetricDescription}>{category.description}</span>
