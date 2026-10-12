@@ -25,7 +25,7 @@ function hashRateKey(ip){
 
 async function allowRate(request,prefix,limit){
  const keyHash=`${prefix}:${hashRateKey(getClientIp(request))}`;
- const client=await db.connect();
+ // Keep rate-limit bookkeeping on the server-side database role; the public role intentionally cannot mutate this table.\n const client=await pool.connect();
  try{
   await client.query("BEGIN");
   await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[keyHash]);
