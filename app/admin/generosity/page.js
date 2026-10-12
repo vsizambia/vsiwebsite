@@ -65,6 +65,7 @@ export default function GenerosityAdminDashboard() {
   const [categoryFilter,setCategoryFilter] = useState("all");
   const [expanded,setExpanded] = useState(null);
   const [saving,setSaving] = useState(null);
+  const [archivedMode,setArchivedMode] = useState(false);
 
   useEffect(()=>{fetch("/api/admin/generosity",{cache:"no-store"}).then(r=>setAuthenticated(r.status!==401)).catch(()=>setAuthenticated(false)).finally(()=>setChecking(false));},[]);
   async function login(event) {
@@ -81,7 +82,7 @@ export default function GenerosityAdminDashboard() {
   async function load() {
     setLoading(true);setError("");setNotice("");
     try {
-      const response=await fetch("/api/admin/generosity",{cache:"no-store"});
+      const response=await fetch("/api/admin/generosity"+(archivedMode?"?archived=true":""),{cache:"no-store"});
       const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Unable to load pledge records.");
       const nextOffers=(data.offers||[]).map(offer=>({...offer,items:Array.isArray(offer.items)?offer.items:[]}));
@@ -90,7 +91,7 @@ export default function GenerosityAdminDashboard() {
     } catch(e) { setError(e.message); }
     finally { setLoading(false); }
   }
-  useEffect(()=>{if(authenticated)load();},[authenticated]);
+  useEffect(()=>{if(authenticated)load();},[authenticated,archivedMode]);
   const filtered = useMemo(()=>offers.filter(offer=>{
     const hay=[offer.reference,offer.first_name,offer.last_name,offer.email,offer.phone,offer.town_area,...offer.items.map(item=>item.itemLabel),...offer.items.map(item=>item.item_label),offer.additional_information].join(" ").toLowerCase();
     const matchesQuery=!query||hay.includes(query.toLowerCase());
@@ -120,7 +121,7 @@ export default function GenerosityAdminDashboard() {
   }
 
   async function deleteOffer(offer) {
-    const confirmed = window.confirm("Delete pledge " + offer.reference + " for " + offer.first_name + " " + offer.last_name + "? This permanently removes its items and collection history. This cannot be undone.");
+    const confirmed = window.confirm("Archive pledge " + offer.reference + " for " + offer.first_name + " " + offer.last_name + "? It will leave the active register but can be restored later.");
     if (!confirmed) return;
     setSaving(offer.id); setError(""); setNotice("");
     try {
@@ -128,8 +129,20 @@ export default function GenerosityAdminDashboard() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Unable to delete pledge.");
       setExpanded(current => current === offer.id ? null : current);
-      setNotice("Deleted pledge " + data.reference + ".");
+      setNotice("Archived pledge " + data.reference + ". Its history has been retained.");
       await load();
+    } catch (e) { setError(e.message); }
+    finally { setSaving(null); }
+  }
+
+  async function restoreOffer(offer) {
+    setSaving(offer.id); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/generosity", {method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:offer.id,restore:true})});
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to restore pledge.");
+      setArchivedMode(false);
+      setNotice("Restored pledge " + data.reference + ".");
     } catch (e) { setError(e.message); }
     finally { setSaving(null); }
   }
@@ -139,7 +152,7 @@ export default function GenerosityAdminDashboard() {
   return <><SiteHeader ctaLabel="VSI Administration" ctaHref="/admin"/><main className={styles.page}><div className={styles.shell}>
     <div className={styles.topline}><Link href="/admin">VSI Administration</Link><span>/</span><strong>Generosity Dashboard</strong><div className={styles.topActions}><span className={styles.connected}>● Connected</span><button onClick={load} disabled={loading}>{loading?"Refreshing…":"Refresh ↻"}</button></div></div>
     <header className={styles.hero}><div><p className={styles.kicker}>COMMUNITY GIVING · GOODS ONLY</p><h1>VSI Generosity Dashboard</h1><p>Review pledges, coordinate pickups and verify the goods received. Pledged quantities are tracked separately from collected quantities.</p></div><div className={styles.heroMark}>G</div></header>
-    <section className={styles.categoryMetrics} aria-label="Campaign category progress">
+    {!archivedMode&&<section className={styles.categoryMetrics} aria-label="Campaign category progress">
       {campaignCategories.map(category => {
         const categoryOffers = offers.filter(offer => offer.items.some(item => category.categories.includes(item.category) && Object.prototype.hasOwnProperty.call(category.targets, item.itemKey || item.item_key)));
         const pledged = categoryOffers.reduce((sum, offer) => sum + offer.items.filter(item => category.categories.includes(item.category)).reduce((subtotal, item) => subtotal + (category.targets[item.itemKey || item.item_key] ? Number(item.quantityPledged ?? item.quantity_pledged ?? 0) : 0), 0), 0);
@@ -155,9 +168,9 @@ export default function GenerosityAdminDashboard() {
           <span className={styles.categoryMetricCollected}>{asNumber(collected)} units collected</span>
         </Link>;
       })}
-    </section>
+    </section>}
     <section className={styles.register}>
-      <div className={styles.registerHeader}><div><p className={styles.kicker}>PLEDGE REGISTER</p><h2>Generosity pledges</h2><p>{filtered.length} of {offers.length} pledges shown</p></div><div className={styles.filters}><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search reference, name, item, area…"/><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All statuses</option>{statusOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)}><option value="all">All categories</option>{Object.entries(categoryLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div></div>
+      <div className={styles.registerHeader}><div><p className={styles.kicker}>PLEDGE REGISTER</p><h2>Generosity pledges</h2><p>{filtered.length} of {offers.length} {archivedMode?"archived ":""}pledges shown</p><button type="button" className={styles.archiveToggle} onClick={()=>setArchivedMode(value=>!value)}>{archivedMode?"View active pledges":"View archived pledges"}</button></div><div className={styles.filters}><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search reference, name, item, area…"/><select value={statusFilter} onChange={e=>setStatusFilter(e.target.value)}><option value="all">All statuses</option>{statusOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select><select value={categoryFilter} onChange={e=>setCategoryFilter(e.target.value)}><option value="all">All categories</option>{Object.entries(categoryLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></div></div>
       {error&&<div role="alert" className={styles.error}>{error}</div>}{notice&&<div role="status" className={styles.notice}>{notice}</div>}
       {loading&&!offers.length?<div className={styles.empty}>Loading generosity pledges…</div>:!filtered.length?<div className={styles.empty}>{offers.length?"No pledges match the selected filters.":"No generosity pledges have been received yet."}</div>:<div className={styles.offerList}>{filtered.map(offer=>{
         const draft=drafts[offer.id]||{items:[]};
@@ -167,13 +180,13 @@ export default function GenerosityAdminDashboard() {
           <button className={styles.offerSummary} onClick={()=>setExpanded(expanded===offer.id?null:offer.id)} aria-expanded={expanded===offer.id}>
             <span className={styles.offerBadge}>{offer.reference}</span><span className={styles.offerPerson}><strong>{offer.first_name} {offer.last_name}</strong><small>{offer.email} · {offer.phone}</small><small>{offer.town_area}{offer.pickup_address?" · "+offer.pickup_address:""}</small></span><span className={styles.offerQuantities}><strong>{asNumber(collected)} / {asNumber(pledged)}</strong><small>units collected / pledged</small></span><span className={styles.status} data-status={offer.status}>{statusLabels[offer.status]||offer.status.replaceAll("_"," ")}</span><span className={styles.chevron}>{expanded===offer.id?"−":"+"}</span>
           </button>
-          <div className={styles.offerMeta}><span>Received {formatDate(offer.created_at)}</span><span>Items: {offer.items.length}</span><span>Phone updates: {offer.phone_consent?"Yes":"No"}</span><span>Email updates: {offer.email_consent?"Yes":"No"}</span><span className={styles.offerActions}><button type="button" onClick={()=>setExpanded(expanded===offer.id?null:offer.id)}>{expanded===offer.id?"Close edit":"Edit"}</button><button type="button" className={styles.deleteButton} onClick={()=>deleteOffer(offer)} disabled={saving===offer.id}>Delete</button></span></div>
+          <div className={styles.offerMeta}><span>Received {formatDate(offer.created_at)}</span><span>Items: {offer.items.length}</span><span>Phone updates: {offer.phone_consent?"Yes":"No"}</span><span>Email updates: {offer.email_consent?"Yes":"No"}</span><span className={styles.offerActions}>{archivedMode?<button type="button" onClick={()=>restoreOffer(offer)} disabled={saving===offer.id}>Restore</button>:<><button type="button" onClick={()=>setExpanded(expanded===offer.id?null:offer.id)}>{expanded===offer.id?"Close edit":"Edit"}</button><button type="button" className={styles.deleteButton} onClick={()=>deleteOffer(offer)} disabled={saving===offer.id}>Archive</button></>}</span></div>
           {expanded===offer.id&&<div className={styles.offerDetails}>
             {offer.additional_information&&<div className={styles.additionalInformation}><h3>Additional information from pledger</h3><p>{offer.additional_information}</p></div>}
             <div className={styles.itemsHeader}><h3>Items and collection quantities</h3><p>Enter the number physically received for each line. Collected cannot exceed pledged.</p></div>
             <div className={styles.itemsTableWrap}><table className={styles.itemsTable}><thead><tr><th>Category / item</th><th>Pledged</th><th>Collected</th><th>Sizes / age details</th></tr></thead><tbody>{(draft.items||[]).map(item=><tr key={item.id}><td><small>{categoryLabels[item.category]||item.category}</small><strong>{item.itemLabel||item.item_label}</strong></td><td><div className={styles.quantityEdit}><input aria-label={"Pledged quantity for "+(item.itemLabel||item.item_label)} type="number" min={item.quantityCollected??item.quantity_collected??0} max="1000000" step="1" value={item.quantityPledged} onChange={e=>updateItem(offer.id,item.id,"quantityPledged",e.target.value)}/><span>{item.unit}</span></div></td><td><input aria-label={"Collected quantity for "+(item.itemLabel||item.item_label)} type="number" min="0" max={item.quantityPledged} step="1" value={item.quantityCollected} onChange={e=>updateItem(offer.id,item.id,"quantityCollected",e.target.value)}/></td><td>{item.sizeDetails||"—"}</td></tr>)}</tbody></table></div>
             <div className={styles.contactGrid}><label>First name<input value={draft.firstName} onChange={e=>updateDraft(offer.id,"firstName",e.target.value)} maxLength={80} required/></label><label>Last name<input value={draft.lastName} onChange={e=>updateDraft(offer.id,"lastName",e.target.value)} maxLength={80} required/></label><label>Email address<input type="email" value={draft.email} onChange={e=>updateDraft(offer.id,"email",e.target.value)} maxLength={254} required/></label><label>Phone number<input value={draft.phone} onChange={e=>updateDraft(offer.id,"phone",e.target.value)} maxLength={40} required/></label><label>Collection town / area<input value={draft.townArea} onChange={e=>updateDraft(offer.id,"townArea",e.target.value)} maxLength={120} required/></label><label>Pickup address (optional)<input value={draft.pickupAddress} onChange={e=>updateDraft(offer.id,"pickupAddress",e.target.value)} maxLength={300}/></label></div><div className={styles.editGrid}><label>Collection status<select value={draft.status} onChange={e=>updateDraft(offer.id,"status",e.target.value)}>{statusOptions.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label><label>Closure / withdrawal reason{(draft.status==="closed"||draft.status==="withdrawn")&&<span> (required)</span>}<input value={draft.closureReason} onChange={e=>updateDraft(offer.id,"closureReason",e.target.value)} maxLength={1000} placeholder="Reason, if closing or withdrawing"/></label><label className={styles.full}>Internal staff notes<textarea rows="3" value={draft.staffNotes} onChange={e=>updateDraft(offer.id,"staffNotes",e.target.value)} maxLength={4000} placeholder="Contact attempts, agreed pickup details, follow-up…"/></label></div>
-            <div className={styles.detailFooter}><span>Last updated {formatDate(offer.updated_at)}{offer.collection_arranged_at?" · Collection arranged "+formatDate(offer.collection_arranged_at):""}</span><button className={styles.primary} onClick={()=>saveOffer(offer)} disabled={saving===offer.id}>{saving===offer.id?"Saving…":"Save pledge updates →"}</button></div>
+            <div className={styles.detailFooter}><span>Last updated {formatDate(offer.updated_at)}{offer.collection_arranged_at?" · Collection arranged "+formatDate(offer.collection_arranged_at):""}</span>{archivedMode?<span>Archived pledge — restore it before editing.</span>:<button className={styles.primary} onClick={()=>saveOffer(offer)} disabled={saving===offer.id}>{saving===offer.id?"Saving…":"Save pledge updates →"}</button>}</div>
           </div>}
         </article>;
       })}</div>}
