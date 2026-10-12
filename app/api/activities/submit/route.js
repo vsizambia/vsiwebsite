@@ -2,7 +2,7 @@ import {NextResponse} from "next/server";
 import crypto from "node:crypto";
 import {ensureVolunteerTable,pool,publicPool} from "../../../../lib/db";
 
-const db=publicPool||pool;
+const db=pool;
 import {ACTIVITY_CATALOGUE} from "../../../../app/admin/activities/add/activity-catalogue";
 
 const hours=(s,e)=>{const[a,b]=String(s).split(":").map(Number),[c,d]=String(e).split(":").map(Number);let m=c*60+d-(a*60+b);if(m<0)m+=1440;return +(m/60).toFixed(2)};
@@ -25,7 +25,8 @@ function hashRateKey(ip){
 
 async function allowRate(request,prefix,limit){
  const keyHash=`${prefix}:${hashRateKey(getClientIp(request))}`;
- // Keep rate-limit bookkeeping on the server-side database role; the public role intentionally cannot mutate this table.\n const client=await pool.connect();
+ // Keep rate-limit bookkeeping on the server-side database role; the public role intentionally cannot mutate this table.
+ const client=await pool.connect();
  try{
   await client.query("BEGIN");
   await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[keyHash]);
