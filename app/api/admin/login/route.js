@@ -32,7 +32,8 @@ export async function POST(request) {
         await pool.query("INSERT INTO admin_login_attempts (ip_hash) VALUES ($1)", [ipHash]);
         return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
       }
-      await pool.query("DELETE FROM admin_login_attempts WHERE ip_hash=$1", [ipHash]);
+      // Do not clear failed attempts after password-only success. The counter is
+      // cleared only after the authenticator code has also been verified.
       const response = NextResponse.json({ ok: true, requiresAuthenticator: true });
       response.cookies.set(ADMIN_PENDING_COOKIE, makeSignedToken(PENDING_AGE), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: PENDING_AGE });
       return response;
