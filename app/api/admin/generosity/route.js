@@ -127,3 +127,29 @@ export async function PATCH(request) {
     client?.release();
   }
 }
+\n
+export async function DELETE(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  const id = clean(new URL(request.url).searchParams.get("id"), 80);
+  if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "A valid pledge ID is required." }, { status: 400 });
+  let client;
+  try {
+    client = await pool.connect();
+    await client.query("BEGIN");
+    const found = await client.query("SELECT id,reference FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
+    if (!found.rowCount) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Generosity pledge not found." }, { status: 404 });
+    }
+    const reference = found.rows[0].reference;
+    await client.query("DELETE FROM public.vsi_generosity_offers WHERE id=$1", [id]);
+    await client.query("COMMIT");
+    return NextResponse.json({ ok: true, reference });
+  } catch (error) {
+    if (client) await client.query("ROLLBACK").catch(() => {});
+    console.error("VSI Generosity admin DELETE failed:", error);
+    return NextResponse.json({ error: "Unable to delete the generosity pledge." }, { status: 500 });
+  } finally {
+    client?.release();
+  }
+}
