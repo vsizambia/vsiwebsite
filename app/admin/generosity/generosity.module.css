@@ -33,3 +33,20 @@
 .quantityEdit span{font-size:10px;color:#71859a;white-space:nowrap}
 @media(max-width:800px){.contactGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.contactGrid{grid-template-columns:1fr;padding:12px}}
+
+/* Campaign KPI cards: distinct VSI campaign colors */
+.educationMetric{background:#800020;border-color:#800020;color:#fff}
+.ovcMetric{background:#3E0F8D;border-color:#3E0F8D;color:#fff}
+.maternityMetric{background:#12544F;border-color:#12544F;color:#fff}
+.educationMetric .categoryMetricTitle,.ovcMetric .categoryMetricTitle,.maternityMetric .categoryMetricTitle{color:#fff}
+.educationMetric .categoryMetricDescription,.ovcMetric .categoryMetricDescription,.maternityMetric .categoryMetricDescription{color:rgba(255,255,255,.78)}
+.educationMetric .categoryMetricNumbers strong,.ovcMetric .categoryMetricNumbers strong,.maternityMetric .categoryMetricNumbers strong{color:#fff}
+.educationMetric .categoryMetricNumbers>span,.ovcMetric .categoryMetricNumbers>span,.maternityMetric .categoryMetricNumbers>span{color:rgba(255,255,255,.78)}
+.educationMetric .categoryMetricIcon,.ovcMetric .categoryMetricIcon,.maternityMetric .categoryMetricIcon{background:rgba(255,255,255,.14);color:#fff}
+.educationMetric .categoryMetricArrow,.ovcMetric .categoryMetricArrow,.maternityMetric .categoryMetricArrow{color:rgba(255,255,255,.8)}
+.educationMetric .progressTrack,.ovcMetric .progressTrack,.maternityMetric .progressTrack{background:rgba(255,255,255,.2)}
+.educationMetric .progressTrack>span,.ovcMetric .progressTrack>span,.maternityMetric .progressTrack>span{background:#fff}
+.educationMetric .categoryMetricFoot,.ovcMetric .categoryMetricFoot,.maternityMetric .categoryMetricFoot{color:rgba(255,255,255,.78)}
+.educationMetric .categoryMetricFoot strong,.ovcMetric .categoryMetricFoot strong,.maternityMetric .categoryMetricFoot strong{color:#fff}
+.educationMetric .categoryMetricCollected,.ovcMetric .categoryMetricCollected,.maternityMetric .categoryMetricCollected{color:#fff}
+.educationMetric:hover,.ovcMetric:hover,.maternityMetric:hover{border-color:rgba(255,255,255,.65);box-shadow:0 13px 28px rgba(20,20,30,.18)}
