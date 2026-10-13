@@ -63,7 +63,8 @@ const CATEGORIES = {
 
 const clean = (value, max = 240) => typeof value === "string" ? value.trim().slice(0, max) : "";
 const validEmail = value => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-const getClientIp = request => (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
+// Vercel overwrites x-real-ip with the client IP; do not trust client-supplied forwarding chains.
+const getClientIp = request => request.headers.get("x-real-ip")?.trim() || "unknown";
 const hashRateKey = ip => crypto.createHmac("sha256", process.env.ADMIN_SESSION_SECRET || "vsi-generosity-rate-limit").update(ip).digest("hex");
 const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
 
@@ -92,13 +93,8 @@ async function verifyTurnstile(token) {
     });
     if (!response.ok) return { configured: true, valid: false };
     const result = await response.json();
-    const allowedHostnames = new Set([
-      "vsizambia.org",
-      "www.vsizambia.org",
-      "vsiwebsite-2odhwokah-vsi-zm.vercel.app",
-      "vsiwebsite-git-feat-turnstile-protection-vsi-zm.vercel.app",
-      "vsiwebsite-git-feat-generosity-turnstile-protection-vsi-zm.vercel.app",
-    ]);
+    // Production submissions must use the canonical public site, not preview deployments.
+    const allowedHostnames = new Set(["vsizambia.org", "www.vsizambia.org"]);
     return {
       configured: true,
       valid: result?.success === true
