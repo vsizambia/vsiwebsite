@@ -135,6 +135,21 @@ export default function GenerosityAdminDashboard() {
     finally { setSaving(null); }
   }
 
+  async function permanentlyDeleteOffer(offer) {
+    const confirmed = window.confirm("PERMANENTLY DELETE pledge " + offer.reference + " for " + offer.first_name + " " + offer.last_name + "? This cannot be undone. The pledge and its item records will be deleted; the audit history will be retained.");
+    if (!confirmed) return;
+    setSaving(offer.id); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/admin/generosity?id=" + encodeURIComponent(offer.id) + "&permanent=true", {method:"DELETE"});
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to permanently delete pledge.");
+      setExpanded(current => current === offer.id ? null : current);
+      setNotice("Permanently deleted pledge " + data.reference + ". Audit history retained.");
+      await load();
+    } catch (e) { setError(e.message); }
+    finally { setSaving(null); }
+  }
+
   async function restoreOffer(offer) {
     setSaving(offer.id); setError(""); setNotice("");
     try {
@@ -181,7 +196,7 @@ export default function GenerosityAdminDashboard() {
           <button className={styles.offerSummary} onClick={()=>setExpanded(expanded===offer.id?null:offer.id)} aria-expanded={expanded===offer.id}>
             <span className={styles.offerBadge}>{offer.reference}</span><span className={styles.offerPerson}><strong>{offer.first_name} {offer.last_name}</strong><small>{offer.email} · {offer.phone}</small><small>{offer.town_area}{offer.pickup_address?" · "+offer.pickup_address:""}</small></span><span className={styles.offerQuantities}><strong>{asNumber(collected)} / {asNumber(pledged)}</strong><small>units collected / pledged</small></span><span className={styles.status} data-status={offer.email_verified_at?offer.status:"email_unverified"}>{offer.email_verified_at?(statusLabels[offer.status]||offer.status.replaceAll("_"," ")):"Email unverified"}</span><span className={styles.chevron}>{expanded===offer.id?"−":"+"}</span>
           </button>
-          <div className={styles.offerMeta}><span>Received {formatDate(offer.created_at)}</span><span>{offer.email_verified_at?"Email verified "+formatDate(offer.email_verified_at):"Email verification pending"}</span><span>Items: {offer.items.length}</span><span>Phone updates: {offer.phone_consent?"Yes":"No"}</span><span>Email updates: {offer.email_consent?"Yes":"No"}</span><span className={styles.offerActions}>{archivedMode?<button type="button" onClick={()=>restoreOffer(offer)} disabled={saving===offer.id}>Restore</button>:<><button type="button" onClick={()=>setExpanded(expanded===offer.id?null:offer.id)}>{expanded===offer.id?"Close edit":"Edit"}</button><button type="button" className={styles.deleteButton} onClick={()=>deleteOffer(offer)} disabled={saving===offer.id}>Archive</button></>}</span></div>
+          <div className={styles.offerMeta}><span>Received {formatDate(offer.created_at)}</span><span>{offer.email_verified_at?"Email verified "+formatDate(offer.email_verified_at):"Email verification pending"}</span><span>Items: {offer.items.length}</span><span>Phone updates: {offer.phone_consent?"Yes":"No"}</span><span>Email updates: {offer.email_consent?"Yes":"No"}</span><span className={styles.offerActions}>{archivedMode?<><button type="button" onClick={()=>restoreOffer(offer)} disabled={saving===offer.id}>Restore</button><button type="button" className={styles.deleteButton} onClick={()=>permanentlyDeleteOffer(offer)} disabled={saving===offer.id}>{saving===offer.id?"Deleting…":"Delete"}</button></>:<><button type="button" onClick={()=>setExpanded(expanded===offer.id?null:offer.id)}>{expanded===offer.id?"Close edit":"Edit"}</button><button type="button" className={styles.deleteButton} onClick={()=>deleteOffer(offer)} disabled={saving===offer.id}>Archive</button></>}</span></div>
           {expanded===offer.id&&<div className={styles.offerDetails}>
             {!offer.email_verified_at&&<div role="status" style={{marginBottom:16,padding:12,border:"1px solid #e4c77d",borderRadius:8,background:"#fff8e5",color:"#6d4c00"}}>This pledge cannot be edited or processed until the pledger verifies ownership of the email address.</div>}
             {offer.additional_information&&<div className={styles.additionalInformation}><h3>Additional information from pledger</h3><p>{offer.additional_information}</p></div>}
