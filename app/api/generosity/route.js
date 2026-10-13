@@ -76,6 +76,40 @@ async function allowSubmission(request) {
   return result.rows[0]?.allowed === true;
 }
 
+
+async function verifyTurnstile(token) {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) return { configured: false, valid: false };
+  if (typeof token !== "string" || !token || token.length > 2048) {
+    return { configured: true, valid: false };
+  }
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret, response: token }),
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) return { configured: true, valid: false };
+    const result = await response.json();
+    const allowedHostnames = new Set([
+      "vsizambia.org",
+      "www.vsizambia.org",
+      "vsiwebsite-2odhwokah-vsi-zm.vercel.app",
+      "vsiwebsite-git-feat-turnstile-protection-vsi-zm.vercel.app",
+      "vsiwebsite-git-feat-generosity-turnstile-protection-vsi-zm.vercel.app",
+    ]);
+    return {
+      configured: true,
+      valid: result?.success === true
+        && result?.action === "generosity-pledge"
+        && allowedHostnames.has(result?.hostname),
+    };
+  } catch {
+    return { configured: true, valid: false };
+  }
+}
+
 function normaliseItems(value) {
   if (!Array.isArray(value) || value.length === 0 || value.length > 30) throw new Error("Please select at least one item and check your quantities.");
   const seen = new Set();
@@ -130,6 +164,14 @@ export async function POST(request) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Please submit a valid form." }, { status: 400 }); }
   // Honeypot field: silently accept bot submissions without storing them.
   if (clean(body?.website, 200)) return NextResponse.json({ ok: true, reference: null }, { status: 201 });
+
+  const turnstile = await verifyTurnstile(body?.turnstileToken);
+  if (!turnstile.configured) {
+    return NextResponse.json({ error: "The security check is temporarily unavailable. Please try again later." }, { status: 503 });
+  }
+  if (!turnstile.valid) {
+    return NextResponse.json({ error: "Please complete the security check and try again." }, { status: 400 });
+  }
 
   const firstName = clean(body?.firstName, 80);
   const lastName = clean(body?.lastName, 80);

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import styles from "./generosity.module.css";
 
@@ -32,6 +32,56 @@ export default function GenerosityPage() {
   const [submitFailure,setSubmitFailure] = useState(false);
   const [saving,setSaving] = useState(false);
   const [confirmation,setConfirmation] = useState(null);
+  const [turnstileToken,setTurnstileToken] = useState("");
+  const [turnstileError,setTurnstileError] = useState("");
+  const turnstileRef = useRef(null);
+
+  useEffect(() => {
+    if (step !== 3 || confirmation || !turnstileRef.current) return;
+    const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    if (!sitekey) {
+      setTurnstileError("The security check is not configured. Please contact VSI.");
+      return;
+    }
+    let cancelled = false;
+    let widgetId = null;
+    let script = document.querySelector("script[data-vsi-turnstile]");
+    const renderWidget = () => {
+      if (cancelled || !window.turnstile || !turnstileRef.current || widgetId !== null) return;
+      widgetId = window.turnstile.render(turnstileRef.current, {
+        sitekey,
+        action: "generosity-pledge",
+        callback: token => { setTurnstileToken(token); setTurnstileError(""); },
+        "expired-callback": () => setTurnstileToken(""),
+        "error-callback": () => {
+          setTurnstileToken("");
+          setTurnstileError("The security check could not load. Please refresh and try again.");
+        },
+      });
+    };
+    if (window.turnstile) {
+      renderWidget();
+    } else if (script) {
+      script.addEventListener("load", renderWidget);
+      script.addEventListener("error", () => setTurnstileError("The security check could not load. Please refresh and try again."), { once: true });
+    } else {
+      script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      script.dataset.vsiTurnstile = "true";
+      script.onload = renderWidget;
+      script.onerror = () => setTurnstileError("The security check could not load. Please refresh and try again.");
+      document.head.appendChild(script);
+    }
+    return () => {
+      cancelled = true;
+      if (script) script.removeEventListener("load", renderWidget);
+      if (widgetId !== null && window.turnstile) window.turnstile.remove(widgetId);
+      setTurnstileToken("");
+    };
+  }, [step, confirmation]);
+
   const items = useMemo(() => categories.flatMap(category => category.items.flatMap(([key,label,unit,needsSize]) => {
     const value = selected[itemId(category.key,key)];
     return value?.checked ? [{category:category.key,itemKey:key,label:category.key==="other"&&key==="other_item"&&value.sizeDetails.trim()?"Other: "+value.sizeDetails.trim():label,unit,needsSize,quantity:value.quantity,sizeDetails:value.sizeDetails||""}] : [];
@@ -70,10 +120,11 @@ export default function GenerosityPage() {
     window.scrollTo({top:0,behavior:"smooth"});
   }
   async function submitOffer() {
+    if (!turnstileToken) { setError("Please complete the security check before submitting your pledge."); return; }
     setSaving(true);setError("");setSubmitFailure(false);
     try {
       const phoneDigits = form.phone.replace(/[^\d]/g,"").replace(/^260/,"").replace(/^0/,"");
-      const payload = {...form,phone:"+260"+phoneDigits,additionalInformation:otherNotes.trim(),items:items.map(item=>({category:item.category,itemKey:item.itemKey,quantity:Number(item.quantity),sizeDetails:item.sizeDetails}))};
+      const payload = {...form,phone:"+260"+phoneDigits,additionalInformation:otherNotes.trim(),turnstileToken,items:items.map(item=>({category:item.category,itemKey:item.itemKey,quantity:Number(item.quantity),sizeDetails:item.sizeDetails}))};
       const response = await fetch("/api/generosity",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
       const data = await response.json();
       if(!response.ok) throw new Error(data.error||"We could not submit your pledge. Please try again.");
@@ -108,7 +159,7 @@ export default function GenerosityPage() {
         <label className={styles.honeypot} aria-hidden="true">Leave this field empty<input tabIndex="-1" autoComplete="off" value={form.website} onChange={e=>updateContact("website",e.target.value)}/></label>
         <div className={styles.actionRow}><button type="button" className={styles.secondaryButton} onClick={()=>{setStep(1);setError("");window.scrollTo({top:0,behavior:"smooth"})}}>← Back to items</button><button type="submit" className={styles.primaryButton}>Review my pledge →</button></div>
       </form></section>}
-      {step===3&&<section className={styles.panel}><div className={styles.panelIntro}><p className="kicker">SECTION 03</p><h2>Review your generosity pledge</h2><p>Check your selections and contact details before submitting.</p></div><div className={styles.summaryCard}><div className={styles.summaryHead}><div><h3>Your selected items</h3><p>{items.length} item types</p><div className={styles.totalPledge}><span>Total units pledged</span><strong>{totalUnits.toLocaleString()}</strong></div></div><button type="button" className={styles.textButton} onClick={()=>{setStep(1);setError("")}}>Edit items</button></div>{categories.map(category=>{const rows=items.filter(item=>item.category===category.key);return rows.length?<div className={styles.summaryCategory} key={category.key}><h4>{category.title}</h4>{rows.map(item=><div className={styles.summaryItem} key={itemId(item.category,item.itemKey)}><span>{item.label}{item.sizeDetails&&item.category!=="other"&&<small>{item.sizeDetails}</small>}</span><strong>{Number(item.quantity).toLocaleString()} {item.unit}</strong></div>)}</div>:null})}</div>{otherNotes.trim()&&<div className={styles.summaryCard}><div className={styles.summaryHead}><h3>Additional information</h3></div><p className={styles.additionalInfoSummary}>{otherNotes.trim()}</p></div>}<div className={styles.summaryCard}><div className={styles.summaryHead}><h3>Your details</h3><button type="button" className={styles.textButton} onClick={()=>{setStep(2);setError("")}}>Edit details</button></div><div className={styles.detailsGrid}><div><small>Name</small><strong>{form.firstName} {form.lastName}</strong></div><div><small>Email</small><strong>{form.email}</strong></div><div><small>Phone</small><strong>+260 {form.phone}</strong></div><div><small>Pickup area</small><strong>{form.townArea}</strong></div>{form.pickupAddress&&<div><small>Pickup address</small><strong>{form.pickupAddress}</strong></div>}</div></div><div className={styles.notice}><strong>No money is requested or processed.</strong><span>You purchase the goods you have pledged. VSI will contact you to arrange collection. Your pledge is recorded until items are actually received.</span></div><div className={styles.actionRow}><button type="button" className={styles.secondaryButton} onClick={()=>{setStep(2);setError("")}}>← Back to details</button><button type="button" className={styles.primaryButton} onClick={submitOffer} disabled={saving}>{saving?"Submitting pledge…":"Submit pledge →"}</button></div></section>}
+      {step===3&&<section className={styles.panel}><div className={styles.panelIntro}><p className="kicker">SECTION 03</p><h2>Review your generosity pledge</h2><p>Check your selections and contact details before submitting.</p></div><div className={styles.summaryCard}><div className={styles.summaryHead}><div><h3>Your selected items</h3><p>{items.length} item types</p><div className={styles.totalPledge}><span>Total units pledged</span><strong>{totalUnits.toLocaleString()}</strong></div></div><button type="button" className={styles.textButton} onClick={()=>{setStep(1);setError("")}}>Edit items</button></div>{categories.map(category=>{const rows=items.filter(item=>item.category===category.key);return rows.length?<div className={styles.summaryCategory} key={category.key}><h4>{category.title}</h4>{rows.map(item=><div className={styles.summaryItem} key={itemId(item.category,item.itemKey)}><span>{item.label}{item.sizeDetails&&item.category!=="other"&&<small>{item.sizeDetails}</small>}</span><strong>{Number(item.quantity).toLocaleString()} {item.unit}</strong></div>)}</div>:null})}</div>{otherNotes.trim()&&<div className={styles.summaryCard}><div className={styles.summaryHead}><h3>Additional information</h3></div><p className={styles.additionalInfoSummary}>{otherNotes.trim()}</p></div>}<div className={styles.summaryCard}><div className={styles.summaryHead}><h3>Your details</h3><button type="button" className={styles.textButton} onClick={()=>{setStep(2);setError("")}}>Edit details</button></div><div className={styles.detailsGrid}><div><small>Name</small><strong>{form.firstName} {form.lastName}</strong></div><div><small>Email</small><strong>{form.email}</strong></div><div><small>Phone</small><strong>+260 {form.phone}</strong></div><div><small>Pickup area</small><strong>{form.townArea}</strong></div>{form.pickupAddress&&<div><small>Pickup address</small><strong>{form.pickupAddress}</strong></div>}</div></div><div className={styles.notice}><strong>No money is requested or processed.</strong><span>You purchase the goods you have pledged. VSI will contact you to arrange collection. Your pledge is recorded until items are actually received.</span></div><div className={styles.turnstileBlock}><p>Security check</p><div ref={turnstileRef} />{turnstileError&&<small role="alert">{turnstileError}</small>}</div><div className={styles.actionRow}><button type="button" className={styles.secondaryButton} onClick={()=>{setStep(2);setError("")}}>← Back to details</button><button type="button" className={styles.primaryButton} onClick={submitOffer} disabled={saving||!turnstileToken}>{saving?"Submitting pledge…":"Submit pledge →"}</button></div></section>}
       {error&&<div role="alert" className={styles.error}>{error}</div>}
       {submitFailure&&<div className={styles.failureOverlay}><section className={styles.failureDialog} role="alertdialog" aria-modal="true" aria-labelledby="pledge-failure-title" aria-describedby="pledge-failure-description"><div className={styles.failureIcon} aria-hidden="true">!</div><h2 id="pledge-failure-title">We could not save your pledge</h2><p id="pledge-failure-description">Please try again. If the problem continues, contact VSI using the button below. Your details and selected items are still here.</p><a className={styles.primaryButton} href="mailto:vszambia@gmail.com?subject=Help%20with%20VSI%20Pledge&body=Hello%20VSI%2C%0A%0AI%20need%20help%20submitting%20my%20pledge%20through%20the%20VSI%20Generosity%20Form.">Email VSI · vszambia@gmail.com</a><button type="button" className={styles.secondaryButton} onClick={()=>setSubmitFailure(false)}>Close and try again</button></section></div>}
     </>}
