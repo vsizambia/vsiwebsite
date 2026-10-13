@@ -94,7 +94,7 @@ export default function GenerosityCategoryPage() {
   const itemRows = useMemo(() => {
     if (!category) return [];
     return category.items.map(([itemCategory, itemKey, label, unit, target]) => {
-      const pledges = offers.flatMap(offer => offer.items.filter(item => item.category === itemCategory && (item.itemKey || item.item_key) === itemKey).map(item => ({ offer, item })));
+      const pledges = offers.filter(offer => Boolean(offer.email_verified_at)).flatMap(offer => offer.items.filter(item => item.category === itemCategory && (item.itemKey || item.item_key) === itemKey).map(item => ({ offer, item })));
       const pledged = pledges.reduce((sum, row) => sum + Number(row.item.quantityPledged ?? row.item.quantity_pledged ?? 0), 0);
       const collected = pledges.reduce((sum, row) => sum + Number(row.item.quantityCollected ?? row.item.quantity_collected ?? 0), 0);
       return { itemCategory, itemKey, label, unit, target, pledges, pledged, collected };

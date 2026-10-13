@@ -12,16 +12,17 @@ export async function GET(request) {
   try {
     const [summary, offers] = await Promise.all([
       pool.query(`SELECT
-        COUNT(*)::int AS offers_total,
-        COUNT(DISTINCT lower(email))::int AS contributors,
-        COALESCE((SELECT SUM(i.quantity_pledged) FROM public.vsi_generosity_offer_items i JOIN public.vsi_generosity_offers active ON active.id=i.offer_id WHERE active.deleted_at IS NULL),0)::bigint AS quantities_pledged,
-        COALESCE((SELECT SUM(i.quantity_collected) FROM public.vsi_generosity_offer_items i JOIN public.vsi_generosity_offers active ON active.id=i.offer_id WHERE active.deleted_at IS NULL),0)::bigint AS quantities_collected,
-        COUNT(*) FILTER (WHERE status IN ('offer_received','contact_in_progress'))::int AS awaiting_collection,
-        COUNT(*) FILTER (WHERE status='collection_arranged')::int AS collection_arranged,
-        COUNT(*) FILTER (WHERE status='partially_collected')::int AS partially_collected,
-        COUNT(*) FILTER (WHERE status='fully_collected')::int AS fully_collected
+        COUNT(*) FILTER (WHERE email_verified_at IS NOT NULL)::int AS offers_total,
+        COUNT(*) FILTER (WHERE email_verified_at IS NULL)::int AS email_verification_pending,
+        COUNT(DISTINCT lower(email)) FILTER (WHERE email_verified_at IS NOT NULL)::int AS contributors,
+        COALESCE((SELECT SUM(i.quantity_pledged) FROM public.vsi_generosity_offer_items i JOIN public.vsi_generosity_offers active ON active.id=i.offer_id WHERE active.deleted_at IS NULL AND active.email_verified_at IS NOT NULL),0)::bigint AS quantities_pledged,
+        COALESCE((SELECT SUM(i.quantity_collected) FROM public.vsi_generosity_offer_items i JOIN public.vsi_generosity_offers active ON active.id=i.offer_id WHERE active.deleted_at IS NULL AND active.email_verified_at IS NOT NULL),0)::bigint AS quantities_collected,
+        COUNT(*) FILTER (WHERE email_verified_at IS NOT NULL AND status IN ('offer_received','contact_in_progress'))::int AS awaiting_collection,
+        COUNT(*) FILTER (WHERE email_verified_at IS NOT NULL AND status='collection_arranged')::int AS collection_arranged,
+        COUNT(*) FILTER (WHERE email_verified_at IS NOT NULL AND status='partially_collected')::int AS partially_collected,
+        COUNT(*) FILTER (WHERE email_verified_at IS NOT NULL AND status='fully_collected')::int AS fully_collected
         FROM public.vsi_generosity_offers WHERE deleted_at IS NULL`),
-      pool.query(`SELECT o.id,o.reference,o.first_name,o.last_name,o.gender,o.age_range,o.email,o.phone,o.town_area,o.pickup_address,o.additional_information,o.phone_consent,o.email_consent,o.status,o.staff_notes,o.closure_reason,o.created_at,o.updated_at,o.collection_arranged_at,o.closed_at,
+      pool.query(`SELECT o.id,o.reference,o.first_name,o.last_name,o.gender,o.age_range,o.email,o.phone,o.town_area,o.pickup_address,o.additional_information,o.phone_consent,o.email_consent,o.email_verified_at,o.status,o.staff_notes,o.closure_reason,o.created_at,o.updated_at,o.collection_arranged_at,o.closed_at,
         COALESCE(json_agg(json_build_object(
           'id',i.id,'category',i.category,'itemKey',i.item_key,'itemLabel',i.item_label,
           'quantityPledged',i.quantity_pledged,'quantityCollected',i.quantity_collected,
@@ -71,7 +72,7 @@ export async function PATCH(request) {
 
     client = await pool.connect();
     await client.query("BEGIN");
-    const current = await client.query("SELECT id,reference,status,deleted_at FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
+    const current = await client.query("SELECT id,reference,status,deleted_at,email_verified_at,email FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
     if (!current.rowCount) { await client.query("ROLLBACK"); return NextResponse.json({ error: "Generosity pledge not found." }, { status: 404 }); }
     if (restore) {
       if (!current.rows[0].deleted_at) {
@@ -89,6 +90,14 @@ export async function PATCH(request) {
     if (current.rows[0].deleted_at) {
       await client.query("ROLLBACK");
       return NextResponse.json({ error: "Restore this archived pledge before editing it." }, { status: 409 });
+    }
+    if (!current.rows[0].email_verified_at) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "This pledge is awaiting email verification. It cannot be edited or processed until the email address is verified." }, { status: 409 });
+    }
+    if (contact && contact.email.toLowerCase() !== String(current.rows[0].email).toLowerCase()) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "Changing a pledge email requires verifying the new address. Please ask the pledger to submit a new pledge using that address." }, { status: 409 });
     }
 
     if (contact) {
