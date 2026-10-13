@@ -208,9 +208,9 @@ export async function POST(request) {
     const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await client.query(
       `INSERT INTO public.vsi_generosity_offers
-       (id,reference,first_name,last_name,gender,age_range,email,phone,town_area,pickup_address,phone_consent,email_consent,consent_version,additional_information,email_verified_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
-      [id,reference,firstName,lastName,gender,ageRange,email,zambiaPhone,townArea,pickupAddress,phoneConsent,emailConsent,CONSENT_VERSION,additionalInformation,null]
+       (id,reference,first_name,last_name,gender,age_range,email,phone,town_area,pickup_address,phone_consent,email_consent,consent_version,additional_information)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+      [id,reference,firstName,lastName,gender,ageRange,email,zambiaPhone,townArea,pickupAddress,phoneConsent,emailConsent,CONSENT_VERSION,additionalInformation]
     );
     for (const item of items) {
       await client.query(
