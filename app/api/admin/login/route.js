@@ -20,6 +20,10 @@ export async function POST(request) {
   try {
     const totpSecret = getAdminTotpSecret();
     if (!process.env.ADMIN_PASSWORD || !process.env.ADMIN_SESSION_SECRET || !totpSecret) return NextResponse.json({ error: "Admin authenticator is not configured yet." }, { status: 503 });
+    const normalizedTotpSecret = String(totpSecret).replace(/\\s+/g, "").replace(/=+$/g, "").toUpperCase();
+    if (!/^[A-Z2-7]+$/.test(normalizedTotpSecret) || normalizedTotpSecret.length < 16) {
+      return NextResponse.json({ error: "The server's ADMIN_TOTP_SECRET is not a valid Base32 setup key. Correct the Production value in Vercel and redeploy before trying again." }, { status: 503 });
+    }
     const ipHash = hashIp(requestIp(request));
     await pool.query("DELETE FROM admin_login_attempts WHERE created_at < NOW() - INTERVAL '1 hour'");
     const recent = await pool.query("SELECT COUNT(*)::int AS count FROM admin_login_attempts WHERE ip_hash=$1 AND created_at >= NOW() - ($2 * INTERVAL '1 second')", [ipHash, LOGIN_WINDOW_SECONDS]);
