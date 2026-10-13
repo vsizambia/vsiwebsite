@@ -37,9 +37,15 @@ export async function POST(request) {
       response.cookies.set(ADMIN_PENDING_COOKIE, makeSignedToken(PENDING_AGE), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: PENDING_AGE });
       return response;
     }
-    if (!isAdminTwoFactorPending(request) || !verifyTotp(totpSecret, code)) {
+    // Distinguish a missing/expired password-verification session from a bad TOTP.
+    // Never log or return the authenticator secret or submitted code.
+    if (!isAdminTwoFactorPending(request)) {
       await pool.query("INSERT INTO admin_login_attempts (ip_hash) VALUES ($1)", [ipHash]);
-      return NextResponse.json({ error: "Invalid authenticator code." }, { status: 401 });
+      return NextResponse.json({ error: "Your sign-in session has expired. Please return to the password step and sign in again." }, { status: 401 });
+    }
+    if (!verifyTotp(totpSecret, code)) {
+      await pool.query("INSERT INTO admin_login_attempts (ip_hash) VALUES ($1)", [ipHash]);
+      return NextResponse.json({ error: "The authenticator code does not match the current VSI Admin setup key. Check that your app entry was added from the latest setup key, then try the current 6-digit code." }, { status: 401 });
     }
     const response = NextResponse.json({ ok: true, authenticated: true });
     response.cookies.set(ADMIN_COOKIE, makeSignedToken(MAX_AGE), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: MAX_AGE });
