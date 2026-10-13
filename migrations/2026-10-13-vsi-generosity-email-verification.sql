@@ -2,6 +2,10 @@
 -- Additive migration: existing pledge records remain treated as verified.
 ALTER TABLE public.vsi_generosity_offers
   ADD COLUMN IF NOT EXISTS email_verified_at timestamptz DEFAULT now();
+-- Preserve existing pledges as verified, but require every future insert to
+-- explicitly set email_verified_at; omitted values must default to NULL.
+ALTER TABLE public.vsi_generosity_offers
+  ALTER COLUMN email_verified_at DROP DEFAULT;
 
 CREATE INDEX IF NOT EXISTS vsi_generosity_email_verification_idx
   ON public.vsi_generosity_offers (email_verified_at, created_at DESC);
