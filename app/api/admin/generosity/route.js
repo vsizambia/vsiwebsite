@@ -187,22 +187,42 @@ export async function PATCH(request) {
 
 export async function DELETE(request) {
   if (!isAdminAuthenticated(request)) return unauthorized();
-  const id = clean(new URL(request.url).searchParams.get("id"), 80);
+  const url = new URL(request.url);
+  const id = clean(url.searchParams.get("id"), 80);
+  const permanent = url.searchParams.get("permanent") === "true";
   if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "A valid pledge ID is required." }, { status: 400 });
   let client;
   try {
     client = await pool.connect();
     await client.query("BEGIN");
     const found = await client.query("SELECT id,reference,status,deleted_at FROM public.vsi_generosity_offers WHERE id=$1 FOR UPDATE", [id]);
-    if (!found.rowCount || found.rows[0].deleted_at) {
+    if (!found.rowCount) {
       await client.query("ROLLBACK");
-      return NextResponse.json({ error: "Active generosity pledge not found." }, { status: 404 });
+      return NextResponse.json({ error: "Generosity pledge not found." }, { status: 404 });
     }
-    const reference = found.rows[0].reference;
+    const pledge = found.rows[0];
+    const reference = pledge.reference;
+    if (permanent) {
+      if (!pledge.deleted_at) {
+        await client.query("ROLLBACK");
+        return NextResponse.json({ error: "Only archived pledges can be permanently deleted. Archive the pledge first." }, { status: 409 });
+      }
+      await client.query(
+        "INSERT INTO public.vsi_generosity_audit_log (offer_id,offer_reference,action,details,actor) VALUES ($1,$2,$3,$4::jsonb,$5)",
+        [id,reference,"offer_permanently_deleted",JSON.stringify({reference,previousStatus:pledge.status,permanent:true}),"admin"]
+      );
+      await client.query("DELETE FROM public.vsi_generosity_offers WHERE id=$1", [id]);
+      await client.query("COMMIT");
+      return NextResponse.json({ ok: true, reference, permanentlyDeleted: true, auditRetained: true });
+    }
+    if (pledge.deleted_at) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "This pledge is already archived." }, { status: 409 });
+    }
     await client.query("UPDATE public.vsi_generosity_offers SET deleted_at=NOW(),deleted_by=$2,updated_at=NOW() WHERE id=$1", [id,"admin"]);
     await client.query(
       "INSERT INTO public.vsi_generosity_audit_log (offer_id,offer_reference,action,details,actor) VALUES ($1,$2,$3,$4::jsonb,$5)",
-      [id,reference,"offer_archived",JSON.stringify({reference,previousStatus:found.rows[0].status}),"admin"]
+      [id,reference,"offer_archived",JSON.stringify({reference,previousStatus:pledge.status}),"admin"]
     );
     await client.query("COMMIT");
     return NextResponse.json({ ok: true, reference, archived: true });
