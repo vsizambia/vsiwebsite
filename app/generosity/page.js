@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteFooter, SiteHeader } from "../components/SiteChrome";
 import styles from "./generosity.module.css";
 
@@ -32,6 +32,56 @@ export default function GenerosityPage() {
   const [submitFailure,setSubmitFailure] = useState(false);
   const [saving,setSaving] = useState(false);
   const [confirmation,setConfirmation] = useState(null);
+  const [turnstileToken,setTurnstileToken] = useState("");
+  const [turnstileError,setTurnstileError] = useState("");
+  const turnstileRef = useRef(null);
+
+  useEffect(() => {
+    if (step !== 3 || confirmation || !turnstileRef.current) return;
+    const sitekey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+    if (!sitekey) {
+      setTurnstileError("The security check is not configured. Please contact VSI.");
+      return;
+    }
+    let cancelled = false;
+    let widgetId = null;
+    let script = document.querySelector("script[data-vsi-turnstile]");
+    const renderWidget = () => {
+      if (cancelled || !window.turnstile || !turnstileRef.current || widgetId !== null) return;
+      widgetId = window.turnstile.render(turnstileRef.current, {
+        sitekey,
+        action: "generosity-pledge",
+        callback: token => { setTurnstileToken(token); setTurnstileError(""); },
+        "expired-callback": () => setTurnstileToken(""),
+        "error-callback": () => {
+          setTurnstileToken("");
+          setTurnstileError("The security check could not load. Please refresh and try again.");
+        },
+      });
+    };
+    if (window.turnstile) {
+      renderWidget();
+    } else if (script) {
+      script.addEventListener("load", renderWidget);
+      script.addEventListener("error", () => setTurnstileError("The security check could not load. Please refresh and try again."), { once: true });
+    } else {
+      script = document.createElement("script");
+      script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+      script.async = true;
+      script.defer = true;
+      script.dataset.vsiTurnstile = "true";
+      script.onload = renderWidget;
+      script.onerror = () => setTurnstileError("The security check could not load. Please refresh and try again.");
+      document.head.appendChild(script);
+    }
+    return () => {
+      cancelled = true;
+      if (script) script.removeEventListener("load", renderWidget);
+      if (widgetId !== null && window.turnstile) window.turnstile.remove(widgetId);
+      setTurnstileToken("");
+    };
+  }, [step, confirmation]);
+
   const items = useMemo(() => categories.flatMap(category => category.items.flatMap(([key,label,unit,needsSize]) => {
     const value = selected[itemId(category.key,key)];
     return value?.checked ? [{category:category.key,itemKey:key,label:category.key==="other"&&key==="other_item"&&value.sizeDetails.trim()?"Other: "+value.sizeDetails.trim():label,unit,needsSize,quantity:value.quantity,sizeDetails:value.sizeDetails||""}] : [];
@@ -70,10 +120,11 @@ export default function GenerosityPage() {
     window.scrollTo({top:0,behavior:"smooth"});
   }
   async function submitOffer() {
+    if (!turnstileToken) { setError("Please complete the security check before submitting your pledge."); return; }
     setSaving(true);setError("");setSubmitFailure(false);
     try {
       const phoneDigits = form.phone.replace(/[^\d]/g,"").replace(/^260/,"").replace(/^0/,"");
-      const payload = {...form,phone:"+260"+phoneDigits,additionalInformation:otherNotes.trim(),items:items.map(item=>({category:item.category,itemKey:item.itemKey,quantity:Number(item.quantity),sizeDetails:item.sizeDetails}))};
+      const payload = {...form,phone:"+260"+phoneDigits,additionalInformation:otherNotes.trim(),turnstileToken,items:items.map(item=>({category:item.category,itemKey:item.itemKey,quantity:Number(item.quantity),sizeDetails:item.sizeDetails}))};
       const response = await fetch("/api/generosity",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
       const data = await response.json();
       if(!response.ok) throw new Error(data.error||"We could not submit your pledge. Please try again.");
