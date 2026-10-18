@@ -10,10 +10,11 @@
   },
   "dependencies": {
     "@vercel/blob": "latest",
-    "next": "14.2.35",
+    "next": "15.5.28",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "pg": "8.16.3",
-    "@vercel/analytics": "latest"
+    "@vercel/analytics": "latest",
+    "sharp": "^0.35.5"
   }
 }
