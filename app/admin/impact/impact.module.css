@@ -2,6 +2,7 @@
 .actionButtons,.registerHeaderActions,.rowActions{display:flex;align-items:center;gap:8px}.actionButtons{justify-content:flex-end}.cancelButton{border:1px solid #d5dee5;border-radius:11px;padding:13px 18px;background:#fff;color:#526b7d;font-weight:800;cursor:pointer}.registerHeaderActions{justify-content:flex-end}.printButton,.editButton{border:1px solid #cbd9e3;border-radius:8px;padding:8px 11px;background:#fff;color:#174767;font-size:10px;font-weight:900;cursor:pointer}.printButton{background:#003566;color:#fff;border-color:#003566;padding:9px 13px}.editButton{background:#f3f7fa}.deleteButton{white-space:nowrap}
 @media(max-width:760px){.registerHeaderActions{align-items:flex-start;flex-direction:column}.actionButtons{width:100%;flex-direction:column}.actionButtons button{width:100%}.rowActions{flex-direction:column;align-items:stretch}}
 @media print{
+ .registerFilters{display:none!important;visibility:hidden!important}
  @page{size:A4 landscape;margin:14mm}
  .page{min-height:0;padding:0;background:#fff;color:#17212b}
  .breadcrumb,.hero,.formCard,.notice,.error,.registerHeaderActions,.registerPanel> .registerHeader>strong,.rowActions,.deleteButton,.editButton{display:none!important}
