@@ -22,3 +22,5 @@
  .figureList b{padding:3px 5px;font-size:7px!important;border:1px solid #d9e2e8;background:#f7f9fa}
  .empty{font-size:10px}
 }
+
+.registerFilters{display:grid;grid-template-columns:minmax(220px,2fr) repeat(2,minmax(150px,1fr)) repeat(2,minmax(140px,1fr));gap:12px;align-items:end;margin:0 0 18px;padding:16px;border:1px solid #e3eaf0;border-radius:14px;background:#f8fafc}.filterField{display:flex;flex-direction:column;gap:7px;min-width:0;color:#536b7d;font-size:11px;font-weight:800}.filterField input,.filterField select{width:100%;min-width:0;box-sizing:border-box;border:1px solid #cbd5dc;border-radius:9px;background:#fff;padding:10px 11px;color:#17344f;font:inherit;font-weight:400;outline:none}.filterField input:focus,.filterField select:focus{border-color:#0b456f;box-shadow:0 0 0 3px rgba(11,69,111,.08)}.clearFilters{justify-self:start;border:1px solid #d5dee5;border-radius:9px;padding:10px 13px;background:#fff;color:#31556f;font-size:11px;font-weight:800;cursor:pointer}@media(max-width:900px){.registerFilters{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.registerFilters{grid-template-columns:1fr}}
