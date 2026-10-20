@@ -42,7 +42,7 @@ export default function ImpactAdminPage(){
    &&(!registerFilters.province||a.province===registerFilters.province)
    &&(!registerFilters.fromDate||(date&&date>=registerFilters.fromDate))
    &&(!registerFilters.toDate||(date&&date<=registerFilters.toDate));
- }),[activities,registerFilters]);
+ }).sort((a,b)=>{const dateA=String(a.activity_date||"").slice(0,10),dateB=String(b.activity_date||"").slice(0,10);return dateA.localeCompare(dateB)||String(a.created_at||"").localeCompare(String(b.created_at||""))||Number(a.id)-Number(b.id)}),[activities,registerFilters]);
  const hasRegisterFilters=Object.values(registerFilters).some(Boolean);
  const selected=PROGRAMME_META[form.programme_key];
  const catalogueOptions=useMemo(()=>catalogue.filter(CATALOGUE_FILTERS[form.programme_key]||(()=>true)),[catalogue,form.programme_key]);
