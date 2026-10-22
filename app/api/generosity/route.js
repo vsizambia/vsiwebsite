@@ -12,8 +12,8 @@ const CATEGORIES = {
       exercise_books: ["Exercise books", "Books", false],
       pens: ["Pens", "Pieces", false],
       pencils: ["Pencils", "Pieces", false],
-      rulers: ["Rulers", "Pieces", false],
-      crayon_packs: ["Crayon packs", "Packs", false],
+      rulers: ["Ruler", "Pieces", false],
+      crayon_packs: ["Crayon pack", "Packs", false],
       school_shoes: ["School shoes", "Pairs", true],
       school_bags_baby_nursery: ["School bags — baby class / nursery", "Bags", true],
       school_bags_primary: ["School bags — primary", "Bags", true],
@@ -34,25 +34,33 @@ const CATEGORIES = {
   maternity_mothers: {
     label: "Maternity Ward Care — Mothers",
     items: {
-      maternity_pads: ["Sanitary / maternity pads", "Packs", false],
-      mothers_bathing_soap: ["Bathing soap bars", "Bars", false],
+      maternity_pads: ["Maternity pad pack", "Packs", false],
+      mothers_bathing_soap: ["Bathing soap", "Bars", false],
       mothers_hygiene_goods: ["Personal hygiene goods (soap, petroleum jelly / lotion, toothbrushes and toothpaste)", "Sets / items", false],
-      laundry_detergent: ["Washing powder and laundry detergent", "Packs", false],
-      chitenge_2m: ["Chitenge material — 2 metres", "Pieces", false],
-      covered_buckets: ["Covered buckets — 10 L / 15 L", "Buckets", false],
-      basins: ["Basins", "Pieces", false],
+      bathing_sponge: ["Bathing sponge or washcloth", "Pieces", false],
+      toothbrush: ["Toothbrush", "Pieces", false],
+      toothpaste: ["Toothpaste", "Tubes", false],
+      body_lotion: ["Body lotion or moisturiser", "Bottles", false],
+      deodorant: ["Deodorant", "Units", false],
+      personal_towel: ["Small personal towel", "Pieces", false],
+      toiletry_bag: ["Reusable toiletry bag", "Bags", false],
+      laundry_detergent: ["Washing powder", "Packs", false],
+      chitenge_2m: ["Two-metre chitenge piece", "Pieces", false],
+      covered_buckets: ["Covered bucket", "Buckets", false],
+      basins: ["Basin", "Pieces", false],
     },
   },
   maternity_newborns: {
     label: "Maternity Ward Care — Newborns",
     items: {
-      newborn_diapers: ["Newborn diapers / reusable cloth nappies", "Packs / pieces", true],
+      newborn_diapers: ["Nappies (pieces)", "Pieces", true],
       baby_soap: ["Baby soap", "Bars", false],
       baby_oil_jelly: ["Baby oil / petroleum jelly", "Bottles / tubs", false],
-      receiving_blankets: ["Baby receiving blankets", "Pieces", true],
+      receiving_blankets: ["Receiving blanket", "Pieces", true],
       receiving_wraps: ["Baby receiving wraps", "Pieces", true],
-      baby_caps: ["Baby caps", "Pieces", true],
-      baby_socks: ["Baby socks", "Pairs", true],
+      baby_caps: ["Baby cap", "Pieces", true],
+      baby_socks: ["Pair of socks", "Pairs", true],
+      rompers: ["Rompers", "Pieces", false],
     },
   },
   other: {
@@ -107,7 +115,7 @@ async function verifyTurnstile(token) {
 }
 
 function normaliseItems(value) {
-  if (!Array.isArray(value) || value.length === 0 || value.length > 30) throw new Error("Please select at least one item and check your quantities.");
+  if (!Array.isArray(value) || value.length === 0 || value.length > 40) throw new Error("Please select at least one item and check your quantities.");
   const seen = new Set();
   return value.map(row => {
     const category = clean(row?.category, 60);
