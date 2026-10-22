@@ -85,6 +85,7 @@ export default function HomeExperience() {
             <a className="button button-yellow" href={active.learnMore}>Learn More <span aria-hidden="true">↗</span></a>
             <a className="button button-primary" href="/volunteer">Volunteer with VSI <span aria-hidden="true">↗</span></a>
             <a className="button button-news" href="/news">VSI News <span aria-hidden="true">↗</span></a>
+            <a className="button button-yellow" href="/generosity">Donate <span aria-hidden="true">↗</span></a>
           </div>
         </div>
       </section>
