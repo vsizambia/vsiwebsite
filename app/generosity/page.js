@@ -149,7 +149,7 @@ export default function GenerosityPage() {
     const value = selected[id];
     return <div className={styles.itemRow} key={id}>
       <label className={styles.itemCheck}><input type="checkbox" checked={!!value} onChange={e=>toggleItem(category.key,key,e.target.checked)}/><span>{label}<small>{packContents?packContents.reduce((sum,part)=>sum+Number(part[3]||0),0)+" units per pack":unit}</small></span></label>
-      {packContents&&<ul className={styles.packContents}>{packContents.map(([partKey,partLabel,partUnit,partQty])=><li key={partKey}><span>{partLabel}</span><strong>{partQty} {partUnit}</strong></li>)}</ul>}
+      {packContents&&<ul className={styles.packContents}>{packContents.map(([partKey,partLabel,partUnit,partQty])=><li key={partKey}><span>{partLabel}</span><strong>{partQty} {formatQuantityUnit(partQty,partUnit)}</strong></li>)}</ul>}
       {value&&<div className={styles.itemFields}>
         <label>{packContents?"Number of packs":"Quantity"} <span>({packContents?"packs":unit})</span><input type="number" min="1" max="1000000" step="1" value={value.quantity} onChange={e=>updateItem(category.key,key,"quantity",e.target.value)} required/></label>
         {needsSize&&<label>Sizes / age details <span>(optional)</span><input value={value.sizeDetails||""} onChange={e=>updateItem(category.key,key,"sizeDetails",e.target.value)} maxLength={160} placeholder={key==="school_shoes"?"e.g. 10 pairs size 1, 8 pairs size 2":key==="newborn_diapers"?"e.g. newborn size, reusable cloth": "e.g. newborn / 0–3 months"} /></label>}
