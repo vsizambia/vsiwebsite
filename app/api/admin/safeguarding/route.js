@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pool } from "../../../../lib/db";
 import { isAdminAuthenticated } from "../../../../lib/admin-auth";
+import { safeguardingPermission, readSafeguardingSession } from "../../../../lib/safeguarding-auth";
 
 const unauthorized = () => NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
 const statuses = new Set(["received","triage","action_required","referred","monitoring","closed"]);
@@ -9,7 +10,12 @@ const noteTypes = new Set(["triage","risk_assessment","protective_action","refer
 const clean = (v,max=5000) => typeof v === "string" ? v.trim().slice(0,max) : "";
 
 export async function GET(request) {
-  if (!isAdminAuthenticated(request)) return unauthorized();
+  const access = safeguardingPermission(request, "read");
+  const legacyAdmin = isAdminAuthenticated(request);
+  if (!legacyAdmin && !access.allowed) return unauthorized();
+  const session = readSafeguardingSession(request);
+  const actor = session ? session.name + " (" + session.username + ")" : "Authenticated VSI Admin";
+  const user = session ? { username: session.username, displayName: session.name, role: session.role } : { username: "vsi-admin", displayName: "VSI Admin", role: "safeguarding_lead" };
   try {
     const { searchParams } = new URL(request.url);
     const id = Number(searchParams.get("id"));
@@ -20,10 +26,10 @@ export async function GET(request) {
         pool.query("SELECT id,action,actor,details,created_at FROM safeguarding_audit_log WHERE report_id=$1 ORDER BY created_at DESC LIMIT 100",[id])
       ]);
       if (!report.rows[0]) return NextResponse.json({error:"Case not found."},{status:404});
-      return NextResponse.json({report:report.rows[0],notes:notes.rows,audit:audit.rows});
+      return NextResponse.json({report:report.rows[0],notes:notes.rows,audit:audit.rows,user});
     }
     const result = await pool.query("SELECT id,case_reference,received_at,reporter_type,anonymous,reporter_name,reporter_contact,safe_contact_method,affected_person_type,affected_person_age_band,concern_category,concern_details,incident_date,immediate_danger,safe_to_contact,status,urgency,assigned_to,updated_at,closed_at FROM safeguarding_reports ORDER BY CASE WHEN immediate_danger THEN 0 WHEN urgency='urgent' THEN 1 WHEN urgency='high' THEN 2 ELSE 3 END, received_at DESC LIMIT 250");
-    return NextResponse.json({reports:result.rows});
+    return NextResponse.json({reports:result.rows,user});
   } catch (error) {
     console.error("Safeguarding admin GET failed:",error?.message||"unknown error");
     return NextResponse.json({error:"Unable to load safeguarding records."},{status:500});
@@ -31,7 +37,14 @@ export async function GET(request) {
 }
 
 export async function PATCH(request) {
-  if (!isAdminAuthenticated(request)) return unauthorized();
+  const access = safeguardingPermission(request, "write_cases");
+  const legacyAdmin = isAdminAuthenticated(request);
+  if (!legacyAdmin && !access.allowed) {
+    if (readSafeguardingSession(request)) return NextResponse.json({ error: "This account is read-only and cannot change case records." }, { status: 403 });
+    return unauthorized();
+  }
+  const session = readSafeguardingSession(request);
+  const actor = session ? session.name + " (" + session.username + ")" : "Authenticated VSI Admin";
   let client;
   try {
     const body = await request.json();
@@ -76,7 +89,7 @@ export async function PATCH(request) {
     if(fields.status==="closed") sets.push("closed_at=COALESCE(closed_at,NOW())");
     else if(fields.status && fields.status!=="closed") sets.push("closed_at=NULL");
     const updated=await client.query("UPDATE safeguarding_reports SET "+sets.join(",")+" WHERE id=$"+values.length+" RETURNING id,case_reference,status,urgency,assigned_to,updated_at,closed_at",values);
-    await client.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES($1,$2,$3,$4::jsonb)",[id,"case_updated","Authenticated VSI Admin",JSON.stringify({changed:Object.keys(fields),previousStatus:existing.status,newStatus:nextStatus,previousUrgency:existing.urgency,newUrgency:nextUrgency})]);
+    await client.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES($1,$2,$3,$4::jsonb)",[id,"case_updated",actor,JSON.stringify({changed:Object.keys(fields),previousStatus:existing.status,newStatus:nextStatus,previousUrgency:existing.urgency,newUrgency:nextUrgency})]);
     await client.query("COMMIT");
     return NextResponse.json({ok:true,report:updated.rows[0]});
   } catch(error) {
@@ -87,7 +100,14 @@ export async function PATCH(request) {
 }
 
 export async function POST(request) {
-  if (!isAdminAuthenticated(request)) return unauthorized();
+  const access = safeguardingPermission(request, "write_cases");
+  const legacyAdmin = isAdminAuthenticated(request);
+  if (!legacyAdmin && !access.allowed) {
+    if (readSafeguardingSession(request)) return NextResponse.json({ error: "This account is read-only and cannot add case notes." }, { status: 403 });
+    return unauthorized();
+  }
+  const session = readSafeguardingSession(request);
+  const actor = session ? session.name + " (" + session.username + ")" : "Authenticated VSI Admin";
   let client;
   try {
     const body=await request.json();
@@ -97,9 +117,9 @@ export async function POST(request) {
     await client.query("BEGIN");
     const exists=await client.query("SELECT id FROM safeguarding_reports WHERE id=$1 FOR UPDATE",[id]);
     if(!exists.rows[0]){await client.query("ROLLBACK");return NextResponse.json({error:"Case not found."},{status:404});}
-    const note=await client.query("INSERT INTO safeguarding_case_notes(report_id,note_type,note_text,created_by) VALUES($1,$2,$3,$4) RETURNING id,report_id,note_type,note_text,created_by,created_at",[id,noteType,noteText,"Authenticated VSI Admin"]);
+    const note=await client.query("INSERT INTO safeguarding_case_notes(report_id,note_type,note_text,created_by) VALUES($1,$2,$3,$4) RETURNING id,report_id,note_type,note_text,created_by,created_at",[id,noteType,noteText,actor]);
     await client.query("UPDATE safeguarding_reports SET updated_at=NOW() WHERE id=$1",[id]);
-    await client.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES($1,$2,$3,$4::jsonb)",[id,"note_added","Authenticated VSI Admin",JSON.stringify({noteType})]);
+    await client.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES($1,$2,$3,$4::jsonb)",[id,"note_added",actor,JSON.stringify({noteType})]);
     await client.query("COMMIT");
     return NextResponse.json({ok:true,note:note.rows[0]},{status:201});
   }catch(error){
