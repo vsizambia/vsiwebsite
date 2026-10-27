@@ -1,19 +1,30 @@
 import { NextResponse } from "next/server";
 import { pool } from "../../../../lib/db";
 import { isAdminAuthenticated } from "../../../../lib/admin-auth";
-import { safeguardingPermission, readSafeguardingSession } from "../../../../lib/safeguarding-auth";
+import { readSafeguardingSession } from "../../../../lib/safeguarding-auth";
 
 const unauthorized = () => NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
 const statuses = new Set(["received","triage","action_required","referred","monitoring","closed"]);
 const urgencies = new Set(["unassessed","urgent","high","standard"]);
 const noteTypes = new Set(["triage","risk_assessment","protective_action","referral","follow_up","decision","general"]);
 const clean = (v,max=5000) => typeof v === "string" ? v.trim().slice(0,max) : "";
+async function resolveSafeguardingAccess(request, permission) {
+  const tokenSession = readSafeguardingSession(request);
+  if (!tokenSession) return { allowed: false, session: null };
+  const result = await pool.query("SELECT username,display_name,role,active FROM safeguarding_users WHERE id=$1 LIMIT 1", [Number(tokenSession.sub)]);
+  const user = result.rows[0];
+  if (!user || !user.active) return { allowed: false, session: null };
+  const allowed = user.role === "safeguarding_lead" ||
+    (user.role === "case_officer" && ["read", "write_cases"].includes(permission)) ||
+    (user.role === "read_only" && permission === "read");
+  return { allowed, session: { ...tokenSession, username: user.username, name: user.display_name, role: user.role } };
+}
 
 export async function GET(request) {
-  const access = safeguardingPermission(request, "read");
+  const access = await resolveSafeguardingAccess(request, "read");
   const legacyAdmin = isAdminAuthenticated(request);
   if (!legacyAdmin && !access.allowed) return unauthorized();
-  const session = readSafeguardingSession(request);
+  const session = access.session;
   const actor = session ? session.name + " (" + session.username + ")" : "Authenticated VSI Admin";
   const user = session ? { username: session.username, displayName: session.name, role: session.role } : { username: "vsi-admin", displayName: "VSI Admin", role: "safeguarding_lead" };
   try {
@@ -37,10 +48,10 @@ export async function GET(request) {
 }
 
 export async function PATCH(request) {
-  const access = safeguardingPermission(request, "write_cases");
+  const access = await resolveSafeguardingAccess(request, "write_cases");
   const legacyAdmin = isAdminAuthenticated(request);
   if (!legacyAdmin && !access.allowed) {
-    if (readSafeguardingSession(request)) return NextResponse.json({ error: "This account is read-only and cannot change case records." }, { status: 403 });
+    if (access.session) return NextResponse.json({ error: "This account is read-only and cannot change case records." }, { status: 403 });
     return unauthorized();
   }
   const session = readSafeguardingSession(request);
@@ -103,7 +114,7 @@ export async function POST(request) {
   const access = safeguardingPermission(request, "write_cases");
   const legacyAdmin = isAdminAuthenticated(request);
   if (!legacyAdmin && !access.allowed) {
-    if (readSafeguardingSession(request)) return NextResponse.json({ error: "This account is read-only and cannot add case notes." }, { status: 403 });
+    if (access.session) return NextResponse.json({ error: "This account is read-only and cannot add case notes." }, { status: 403 });
     return unauthorized();
   }
   const session = readSafeguardingSession(request);
