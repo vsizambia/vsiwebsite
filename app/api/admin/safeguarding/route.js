@@ -58,6 +58,11 @@ export async function PATCH(request) {
       await client.query("ROLLBACK");
       return NextResponse.json({error:"Before closing this case, record a meaningful outcome and closure summary (at least 20 characters)."}, {status:400});
     }
+    if(nextStatus==="closed" && existing.immediate_danger &&
+       (clean(nextRiskAssessment,5000).length<20 || clean(nextProtectiveActions,5000).length<20)) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({error:"An immediate-danger case cannot be closed until its risk reassessment and protective actions are documented (at least 20 characters each)."}, {status:400});
+    }
     if(existing.immediate_danger && ["standard","unassessed"].includes(nextUrgency) &&
        (clean(nextRiskAssessment,5000).length<20 || clean(nextProtectiveActions,5000).length<20)) {
       await client.query("ROLLBACK");
