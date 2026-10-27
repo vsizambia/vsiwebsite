@@ -46,8 +46,23 @@ export async function PATCH(request) {
     if (!Object.keys(fields).length) return NextResponse.json({error:"No valid changes supplied."},{status:400});
     client=await pool.connect();
     await client.query("BEGIN");
-    const current=await client.query("SELECT id,status FROM safeguarding_reports WHERE id=$1 FOR UPDATE",[id]);
+    const current=await client.query("SELECT id,status,urgency,immediate_danger,risk_assessment,protective_actions,outcome_summary FROM safeguarding_reports WHERE id=$1 FOR UPDATE",[id]);
     if (!current.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({error:"Case not found."},{status:404}); }
+    const existing=current.rows[0];
+    const nextStatus=fields.status ?? existing.status;
+    const nextUrgency=fields.urgency ?? existing.urgency;
+    const nextRiskAssessment=fields.riskAssessment !== undefined ? fields.riskAssessment : existing.risk_assessment;
+    const nextProtectiveActions=fields.protectiveActions !== undefined ? fields.protectiveActions : existing.protective_actions;
+    const nextOutcomeSummary=fields.outcomeSummary !== undefined ? fields.outcomeSummary : existing.outcome_summary;
+    if(nextStatus==="closed" && clean(nextOutcomeSummary,5000).length<20) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({error:"Before closing this case, record a meaningful outcome and closure summary (at least 20 characters)."}, {status:400});
+    }
+    if(existing.immediate_danger && ["standard","unassessed"].includes(nextUrgency) &&
+       (clean(nextRiskAssessment,5000).length<20 || clean(nextProtectiveActions,5000).length<20)) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({error:"This report was flagged as immediate danger. Before reducing its urgency, document a risk reassessment and protective actions (at least 20 characters each)."}, {status:400});
+    }
     const sets=[],values=[];
     const mapping={status:"status",urgency:"urgency",assignedTo:"assigned_to",riskAssessment:"risk_assessment",protectiveActions:"protective_actions",referralDetails:"referral_details",outcomeSummary:"outcome_summary"};
     for(const [key,value] of Object.entries(fields)){values.push(value);sets.push(mapping[key]+"=$"+values.length);}
@@ -56,7 +71,7 @@ export async function PATCH(request) {
     if(fields.status==="closed") sets.push("closed_at=COALESCE(closed_at,NOW())");
     else if(fields.status && fields.status!=="closed") sets.push("closed_at=NULL");
     const updated=await client.query("UPDATE safeguarding_reports SET "+sets.join(",")+" WHERE id=$"+values.length+" RETURNING id,case_reference,status,urgency,assigned_to,updated_at,closed_at",values);
-    await client.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES($1,$2,$3,$4::jsonb)",[id,"case_updated","Authenticated VSI Admin",JSON.stringify({changed:Object.keys(fields),previousStatus:current.rows[0].status,newStatus:fields.status||current.rows[0].status})]);
+    await client.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES($1,$2,$3,$4::jsonb)",[id,"case_updated","Authenticated VSI Admin",JSON.stringify({changed:Object.keys(fields),previousStatus:existing.status,newStatus:nextStatus,previousUrgency:existing.urgency,newUrgency:nextUrgency})]);
     await client.query("COMMIT");
     return NextResponse.json({ok:true,report:updated.rows[0]});
   } catch(error) {
