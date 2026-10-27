@@ -40,8 +40,8 @@ export async function POST(request) {
     return NextResponse.json({
       ok: true,
       user: { ...user, roleLabel: safeguardingRoleLabels(user.role) },
-      credentials: { temporaryPassword: password, authenticatorSecret: secret, authenticatorUri: "otpauth://totp/" + encodeURIComponent("VSI Safeguarding:" + username) + "?secret=" + secret + "&issuer=VSI%20Safeguarding&algorithm=SHA1&digits=6&period=30" },
-      warning: "Save these setup details securely and share them with the named staff member through a trusted channel. They are shown only in this response."
+      credentials: { initialPassword: password, authenticatorSecret: secret, authenticatorUri: "otpauth://totp/" + encodeURIComponent("VSI Safeguarding:" + username) + "?secret=" + secret + "&issuer=VSI%20Safeguarding&algorithm=SHA1&digits=6&period=30" },
+      warning: "Save these setup details securely and share them with the named staff member through a trusted channel. They are returned only when this account is created; save them securely."
     }, { status: 201 });
   } catch (error) {
     if (error?.code === "23505") return NextResponse.json({ error: "That username already exists." }, { status: 409 });
