@@ -82,6 +82,19 @@ export async function PATCH(request) {
       await client.query("ROLLBACK");
       return NextResponse.json({error:"Before closing this case, record a meaningful outcome and closure summary (at least 20 characters)."}, {status:400});
     }
+    if(nextStatus==="action_required" &&
+       (clean(nextRiskAssessment,5000).length<20 || clean(nextProtectiveActions,5000).length<20)) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({error:"Before marking action required, document the risk assessment and protective actions (at least 20 characters each)."}, {status:400});
+    }
+    if(nextStatus==="referred") {
+      const referralText = fields.referralDetails !== undefined ? fields.referralDetails :
+        (await client.query("SELECT referral_details FROM safeguarding_reports WHERE id=$1",[id])).rows[0]?.referral_details;
+      if(clean(referralText,5000).length<20) {
+        await client.query("ROLLBACK");
+        return NextResponse.json({error:"Before marking this case referred, document the referral destination, date and action taken (at least 20 characters)."}, {status:400});
+      }
+    }
     if(nextStatus==="closed" && existing.immediate_danger &&
        (clean(nextRiskAssessment,5000).length<20 || clean(nextProtectiveActions,5000).length<20)) {
       await client.query("ROLLBACK");
@@ -111,7 +124,7 @@ export async function PATCH(request) {
 }
 
 export async function POST(request) {
-  const access = safeguardingPermission(request, "write_cases");
+  const access = await resolveSafeguardingAccess(request, "write_cases");
   const legacyAdmin = isAdminAuthenticated(request);
   if (!legacyAdmin && !access.allowed) {
     if (access.session) return NextResponse.json({ error: "This account is read-only and cannot add case notes." }, { status: 403 });
