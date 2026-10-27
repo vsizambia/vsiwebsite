@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { publicPool } from "../../../../lib/db";
+import { safeguardingPublicPool } from "../../../../lib/db";
 
 const categories = new Set(["abuse","neglect","exploitation","sexual_exploitation_abuse","harassment","bullying","unsafe_practice","retaliation","other"]);
 const reporterTypes = new Set(["affected_person","witness","parent_guardian","staff_volunteer","partner","other"]);
@@ -15,7 +15,7 @@ const hashIp = (request) => {
 };
 
 export async function POST(request) {
-  if (!publicPool) return NextResponse.json({ error: "The confidential reporting service is temporarily unavailable. Please use another trusted VSI safeguarding contact channel." }, { status: 503 });
+  if (!process.env.SAFEGUARDING_PUBLIC_DATABASE_URL) return NextResponse.json({ error: "The confidential reporting service is temporarily unavailable. Please use another trusted VSI safeguarding contact channel." }, { status: 503 });
   const length = Number(request.headers.get("content-length") || 0);
   if (length > 20000) return NextResponse.json({ error: "The report is too large. Please shorten it and try again." }, { status: 413 });
   let body;
@@ -38,7 +38,7 @@ export async function POST(request) {
   let client;
   try {
     const keyHash = hashIp(request);
-    client = await publicPool.connect();
+    client = await safeguardingPublicPool.connect();
     await client.query("BEGIN");
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [keyHash]);
     await client.query("DELETE FROM safeguarding_public_rate_limits WHERE created_at < NOW() - INTERVAL '24 hours'");
