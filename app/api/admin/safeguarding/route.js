@@ -1,0 +1,90 @@
+import { NextResponse } from "next/server";
+import { pool } from "../../../../lib/db";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
+
+const unauthorized = () => NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
+const statuses = new Set(["received","triage","action_required","referred","monitoring","closed"]);
+const urgencies = new Set(["unassessed","urgent","high","standard"]);
+const noteTypes = new Set(["triage","risk_assessment","protective_action","referral","follow_up","decision","general"]);
+const clean = (v,max=5000) => typeof v === "string" ? v.trim().slice(0,max) : "";
+
+export async function GET(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = Number(searchParams.get("id"));
+    if (id > 0) {
+      const [report,notes,audit] = await Promise.all([
+        pool.query("SELECT * FROM safeguarding_reports WHERE id=$1",[id]),
+        pool.query("SELECT id,report_id,note_type,note_text,created_by,created_at FROM safeguarding_case_notes WHERE report_id=$1 ORDER BY created_at DESC LIMIT 100",[id]),
+        pool.query("SELECT id,action,actor,details,created_at FROM safeguarding_audit_log WHERE report_id=$1 ORDER BY created_at DESC LIMIT 100",[id])
+      ]);
+      if (!report.rows[0]) return NextResponse.json({error:"Case not found."},{status:404});
+      return NextResponse.json({report:report.rows[0],notes:notes.rows,audit:audit.rows});
+    }
+    const result = await pool.query("SELECT id,case_reference,received_at,reporter_type,anonymous,reporter_name,reporter_contact,safe_contact_method,affected_person_type,affected_person_age_band,concern_category,concern_details,incident_date,immediate_danger,safe_to_contact,status,urgency,assigned_to,updated_at,closed_at FROM safeguarding_reports ORDER BY CASE WHEN immediate_danger THEN 0 WHEN urgency='urgent' THEN 1 WHEN urgency='high' THEN 2 ELSE 3 END, received_at DESC LIMIT 250");
+    return NextResponse.json({reports:result.rows});
+  } catch (error) {
+    console.error("Safeguarding admin GET failed:",error?.message||"unknown error");
+    return NextResponse.json({error:"Unable to load safeguarding records."},{status:500});
+  }
+}
+
+export async function PATCH(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  let client;
+  try {
+    const body = await request.json();
+    const id = Number(body.id);
+    if (!Number.isInteger(id) || id < 1) return NextResponse.json({error:"Invalid case."},{status:400});
+    const fields = {};
+    if (body.status !== undefined) { if (!statuses.has(body.status)) return NextResponse.json({error:"Invalid case status."},{status:400}); fields.status=body.status; }
+    if (body.urgency !== undefined) { if (!urgencies.has(body.urgency)) return NextResponse.json({error:"Invalid urgency."},{status:400}); fields.urgency=body.urgency; }
+    for (const [key,limit] of [["assignedTo",160],["riskAssessment",5000],["protectiveActions",5000],["referralDetails",5000],["outcomeSummary",5000]]) {
+      if (body[key] !== undefined) fields[key]=clean(body[key],limit)||null;
+    }
+    if (!Object.keys(fields).length) return NextResponse.json({error:"No valid changes supplied."},{status:400});
+    client=await pool.connect();
+    await client.query("BEGIN");
+    const current=await client.query("SELECT id,status FROM safeguarding_reports WHERE id=$1 FOR UPDATE",[id]);
+    if (!current.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({error:"Case not found."},{status:404}); }
+    const sets=[],values=[];
+    const mapping={status:"status",urgency:"urgency",assignedTo:"assigned_to",riskAssessment:"risk_assessment",protectiveActions:"protective_actions",referralDetails:"referral_details",outcomeSummary:"outcome_summary"};
+    for(const [key,value] of Object.entries(fields)){values.push(value);sets.push(mapping[key]+"=$"+values.length);}
+    values.push(id);
+    sets.push("updated_at=NOW()");
+    if(fields.status==="closed") sets.push("closed_at=COALESCE(closed_at,NOW())");
+    else if(fields.status && fields.status!=="closed") sets.push("closed_at=NULL");
+    const updated=await client.query("UPDATE safeguarding_reports SET "+sets.join(",")+" WHERE id=$"+values.length+" RETURNING id,case_reference,status,urgency,assigned_to,updated_at,closed_at",values);
+    await client.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES($1,$2,$3,$4::jsonb)",[id,"case_updated","Authenticated VSI Admin",JSON.stringify({changed:Object.keys(fields),previousStatus:current.rows[0].status,newStatus:fields.status||current.rows[0].status})]);
+    await client.query("COMMIT");
+    return NextResponse.json({ok:true,report:updated.rows[0]});
+  } catch(error) {
+    if(client) await client.query("ROLLBACK").catch(()=>{});
+    console.error("Safeguarding admin PATCH failed:",error?.message||"unknown error");
+    return NextResponse.json({error:"Unable to update this safeguarding case."},{status:500});
+  } finally { client?.release(); }
+}
+
+export async function POST(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  let client;
+  try {
+    const body=await request.json();
+    const id=Number(body.id), noteType=clean(body.noteType,40), noteText=clean(body.noteText,5000);
+    if(!Number.isInteger(id)||id<1||!noteTypes.has(noteType)||noteText.length<2) return NextResponse.json({error:"Provide a valid case, note category and note."},{status:400});
+    client=await pool.connect();
+    await client.query("BEGIN");
+    const exists=await client.query("SELECT id FROM safeguarding_reports WHERE id=$1 FOR UPDATE",[id]);
+    if(!exists.rows[0]){await client.query("ROLLBACK");return NextResponse.json({error:"Case not found."},{status:404});}
+    const note=await client.query("INSERT INTO safeguarding_case_notes(report_id,note_type,note_text,created_by) VALUES($1,$2,$3,$4) RETURNING id,report_id,note_type,note_text,created_by,created_at",[id,noteType,noteText,"Authenticated VSI Admin"]);
+    await client.query("UPDATE safeguarding_reports SET updated_at=NOW() WHERE id=$1",[id]);
+    await client.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES($1,$2,$3,$4::jsonb)",[id,"note_added","Authenticated VSI Admin",JSON.stringify({noteType})]);
+    await client.query("COMMIT");
+    return NextResponse.json({ok:true,note:note.rows[0]},{status:201});
+  }catch(error){
+    if(client) await client.query("ROLLBACK").catch(()=>{});
+    console.error("Safeguarding admin POST failed:",error?.message||"unknown error");
+    return NextResponse.json({error:"Unable to save the case note."},{status:500});
+  }finally{client?.release();}
+}
