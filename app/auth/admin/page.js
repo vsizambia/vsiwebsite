@@ -52,5 +52,6 @@ export default function AdminAuthPage(){
       <button style={styles.button} type="submit" disabled={loading}>{loading?"Please wait...":authStep==="code"?"Verify code":"Continue"}</button>
       {authStep==="code"&&<button style={styles.back} type="button" onClick={()=>{setAuthStep("password");setAuthCode("");setError("")}}>← Back to password</button>}
     </form>
+    <p style={{marginTop:"22px",textAlign:"center",fontSize:".9rem"}}><a href="/auth/safeguarding" style={{color:"#003566",fontWeight:700}}>Safeguarding staff sign-in →</a></p>
   </section></main>;
 }
