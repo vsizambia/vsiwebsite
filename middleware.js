@@ -36,6 +36,7 @@ export async function middleware(request){
     return NextResponse.redirect(url,308);
   }
   const pathname=request.nextUrl.pathname;
+  if(pathname === "/admin/safeguarding" && request.cookies.get("vsi_safeguarding_session")?.value)return NextResponse.next();
   if(pathname.startsWith("/admin")){
     if(await isValidAdminSession(request))return NextResponse.next();
     const loginUrl=request.nextUrl.clone();
