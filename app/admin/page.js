@@ -17,6 +17,7 @@ const modules=[
   {title:"Data Protection Compliance",text:"Manage privacy requests, consent records and data-protection incidents.",href:"/admin/data-protection",cardStyle:{backgroundColor:"#1D4533"},summaryKey:"compliance",metrics:[["requests","DATA REQUESTS"],["incidents","OPEN INCIDENTS"],["retentionDue","RETENTION REVIEW DUE"],["retentionOverdue","OVERDUE RETENTION RECORDS"]]},
   {title:"Master Activity Catalogue",text:"Manage the approved Directorate → Project → Activity library.",href:"/admin/activity-catalogue",cardStyle:{backgroundColor:"#3368A0"},summaryKey:"catalogue",metrics:[["activities","ACTIVITIES"],["projects","PROJECTS"],["directorates","DIRECTORATES"]]},
   {title:"E-Learning",text:"View the VSI Youth Civic Engagement Programme and its five learning modules.",href:"/elearning",cardStyle:{backgroundColor:"#123F36"},stats:[["5","MODULES"],["10","LEARNING HOURS"]]},
+  {title:"Safeguarding Staff Accounts",text:"Create, review and disable individual safeguarding accounts and assign access roles.",href:"/admin/safeguarding-accounts",cardStyle:{backgroundColor:"#27515E"}},
   {title:"Safeguarding Case Management",text:"Receive and manage safeguarding reports, assess risks, record protective actions and monitor follow-up.",href:"/admin/safeguarding",cardStyle:{backgroundColor:"#174D4B"}}
 ];
 
