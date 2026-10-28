@@ -82,10 +82,10 @@ export default function HomeExperience() {
           <h1>{active.title}</h1>
           <p className="home-hero-description">{active.description}</p>
           <div className="hero-actions home-hero-actions">
-            <a className="button button-yellow" href={active.learnMore}>Learn More <span aria-hidden="true">↗</span></a>
-            <a className="button button-primary" href="/volunteer">Volunteer with VSI <span aria-hidden="true">↗</span></a>
-            <a className="button button-news" href="/news">VSI News <span aria-hidden="true">↗</span></a>
-            <a className="button button-yellow" href="/generosity">Donate <span aria-hidden="true">↗</span></a>
+            <a className="button button-yellow" href={active.learnMore}>Learn More</a>
+            <a className="button button-primary" href="/volunteer">Volunteer with VSI</a>
+            <a className="button button-news" href="/news">VSI News</a>
+            <a className="button button-yellow" href="/generosity">Donate</a>
           </div>
         </div>
       </section>
