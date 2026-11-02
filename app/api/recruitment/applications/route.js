@@ -79,7 +79,9 @@ export async function POST(request) {
     if(recent.rows[0].count>=5){await client.query("ROLLBACK");return NextResponse.json({error:"Too many applications from this email address. Please try again later."},{status:429});}
     const opportunity=await client.query("SELECT id FROM vsi_recruitment_opportunities WHERE id=$1 AND status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE)",[opportunityId]);
     if(!opportunity.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"This opportunity is no longer accepting applications."},{status:404});}
-    const reference="VSI-"+new Date().getFullYear()+"-"+crypto.randomBytes(4).toString("hex").toUpperCase();
+    const referenceResult=await client.query("SELECT public.vsi_recruitment_next_reference() AS reference");
+    const reference=referenceResult.rows[0]?.reference;
+    if(!reference) throw new Error("Unable to generate the recruitment reference number.");
     const verificationToken=crypto.randomBytes(32).toString("hex");
     const verificationTokenHash=crypto.createHash("sha256").update(verificationToken).digest("hex");
     const verificationExpiresAt=new Date(Date.now()+24*60*60*1000);
