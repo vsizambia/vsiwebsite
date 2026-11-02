@@ -11,8 +11,8 @@ export async function GET(request) {
   try {
     const [opportunities,applications,totals] = await Promise.all([
       pool.query("SELECT * FROM vsi_recruitment_opportunities ORDER BY created_at DESC"),
-      pool.query(`SELECT a.*,o.title AS opportunity_title,o.opportunity_type FROM vsi_recruitment_applications a JOIN vsi_recruitment_opportunities o ON o.id=a.opportunity_id ORDER BY a.created_at DESC`),
-      pool.query(`SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE status='received')::int received,COUNT(*) FILTER (WHERE status='shortlisted')::int shortlisted,COUNT(*) FILTER (WHERE status='interview')::int interviews FROM vsi_recruitment_applications`)
+      pool.query(`SELECT a.*,o.title AS opportunity_title,o.opportunity_type FROM vsi_recruitment_applications a JOIN vsi_recruitment_opportunities o ON o.id=a.opportunity_id WHERE a.email_verified_at IS NOT NULL ORDER BY a.created_at DESC`),
+      pool.query(`SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE status='received')::int received,COUNT(*) FILTER (WHERE status='shortlisted')::int shortlisted,COUNT(*) FILTER (WHERE status='interview')::int interviews FROM vsi_recruitment_applications WHERE email_verified_at IS NOT NULL`)
     ]);
     return NextResponse.json({opportunities:opportunities.rows,applications:applications.rows,totals:totals.rows[0]}, {headers:{"Cache-Control":"no-store"}});
   } catch(error) { console.error("Admin recruitment:",error); return NextResponse.json({error:"Unable to load recruitment records. Confirm the recruitment database setup."},{status:500}); }
@@ -39,9 +39,9 @@ export async function PATCH(request) {
     if(!body||typeof body!=="object"||Array.isArray(body)) return NextResponse.json({error:"Invalid update."},{status:400});
     if(body.kind==="application"){
       if(!validId(body.id)||!statuses.includes(body.status)) return NextResponse.json({error:"Invalid application update."},{status:400});
-      const result=await pool.query("UPDATE vsi_recruitment_applications SET status=$1,reviewer_notes=$2,reviewed_at=NOW(),updated_at=NOW() WHERE id=$3 RETURNING id,status",
+      const result=await pool.query("UPDATE vsi_recruitment_applications SET status=$1,reviewer_notes=$2,reviewed_at=NOW(),updated_at=NOW() WHERE id=$3 AND email_verified_at IS NOT NULL RETURNING id,status",
         [body.status,typeof body.notes==="string"?body.notes.trim().slice(0,5000):null,Number(body.id)]);
-      if(!result.rowCount)return NextResponse.json({error:"Application not found."},{status:404});
+      if(!result.rowCount)return NextResponse.json({error:"Verified application not found."},{status:404});
       return NextResponse.json({ok:true,application:result.rows[0]});
     }
     if(body.kind==="opportunity"){
