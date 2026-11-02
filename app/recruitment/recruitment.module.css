@@ -89,3 +89,5 @@
 .form .consent input{flex:0 0 16px;margin-top:3px;accent-color:#003566}
 .form .consent a{color:#174f7d;text-decoration:underline}
 @media(max-width:600px){.modal{padding:25px 16px}.formSection{padding:15px}.formSectionIntro h3{font-size:16px}.repeatCard{padding:12px}.inlineAdd{align-items:stretch}.inlineAdd button{height:auto;min-height:40px}}
+
+.featureImage{display:block;width:calc(100% + 52px);height:205px;margin:-25px -26px 22px;object-fit:cover;background:#e8eef3}.card:has(.featureImage){padding-top:25px}@media(max-width:600px){.featureImage{width:calc(100% + 40px);height:165px;margin:-21px -20px 18px}}
