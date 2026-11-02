@@ -36,16 +36,17 @@ export async function POST(request) {
     await client.query("BEGIN");
     const key = requestKey(request);
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [key]);
+    const emailHash = crypto.createHash("sha256").update(email).digest("hex");
     const recent = await client.query(
-      "SELECT COUNT(*)::int AS count FROM vsi_recruitment_applications WHERE created_at > NOW() - INTERVAL '1 hour' AND md5(COALESCE(email,'')) = md5($1)",
-      [email]
+      "SELECT COUNT(*)::int AS count FROM vsi_recruitment_submission_limits WHERE email_hash=$1 AND created_at > NOW() - INTERVAL '1 hour'",
+      [emailHash]
     );
     if (recent.rows[0].count >= 5) {
       await client.query("ROLLBACK");
       return NextResponse.json({ error: "Too many applications from this email address. Please try again later." }, { status: 429 });
     }
     const opportunity = await client.query(
-      "SELECT id FROM vsi_recruitment_opportunities WHERE id=$1 AND status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE) FOR SHARE",
+      "SELECT id FROM vsi_recruitment_opportunities WHERE id=$1 AND status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE)",
       [opportunityId]
     );
     if (!opportunity.rowCount) {
@@ -53,15 +54,17 @@ export async function POST(request) {
       return NextResponse.json({ error: "This opportunity is no longer accepting applications." }, { status: 404 });
     }
     const reference = `VSI-${new Date().getFullYear()}-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
-    const result = await client.query(
+    await client.query(
+      "INSERT INTO vsi_recruitment_submission_limits (email_hash) VALUES ($1)", [emailHash]
+    );
+    await client.query(
       `INSERT INTO vsi_recruitment_applications
        (opportunity_id,reference_number,full_name,email,phone,location,education,current_occupation,experience,motivation,portfolio_url,consent_policy_version)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
-       RETURNING reference_number`,
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
       [opportunityId,reference,fullName,email,phone,clean(body.location),clean(body.education),clean(body.currentOccupation),clean(body.experience),motivation,clean(body.portfolioUrl),policyVersion]
     );
     await client.query("COMMIT");
-    return NextResponse.json({ ok: true, referenceNumber: result.rows[0].reference_number }, { status: 201 });
+    return NextResponse.json({ ok: true, referenceNumber: reference }, { status: 201 });
   } catch (error) {
     if (client) await client.query("ROLLBACK").catch(() => {});
     console.error("Recruitment application:", error);
