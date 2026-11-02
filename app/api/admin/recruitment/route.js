@@ -11,8 +11,8 @@ export async function GET(request) {
   try {
     const [opportunities,applications,totals] = await Promise.all([
       pool.query("SELECT * FROM vsi_recruitment_opportunities ORDER BY created_at DESC"),
-      pool.query(`SELECT a.*,o.title AS opportunity_title,o.opportunity_type FROM vsi_recruitment_applications a JOIN vsi_recruitment_opportunities o ON o.id=a.opportunity_id WHERE a.email_verified_at IS NOT NULL ORDER BY a.created_at DESC`),
-      pool.query(`SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE status='received')::int received,COUNT(*) FILTER (WHERE status='shortlisted')::int shortlisted,COUNT(*) FILTER (WHERE status='interview')::int interviews FROM vsi_recruitment_applications WHERE email_verified_at IS NOT NULL`)
+      pool.query(`SELECT DISTINCT ON (a.opportunity_id, lower(trim(a.email))) a.*,o.title AS opportunity_title,o.opportunity_type FROM vsi_recruitment_applications a JOIN vsi_recruitment_opportunities o ON o.id=a.opportunity_id WHERE a.email_verified_at IS NOT NULL ORDER BY a.opportunity_id, lower(trim(a.email)), a.created_at DESC, a.id DESC`),
+      pool.query(`SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE status='received')::int received,COUNT(*) FILTER (WHERE status='shortlisted')::int shortlisted,COUNT(*) FILTER (WHERE status='interview')::int interviews FROM (SELECT DISTINCT ON (opportunity_id, lower(trim(email))) status FROM vsi_recruitment_applications WHERE email_verified_at IS NOT NULL ORDER BY opportunity_id, lower(trim(email)), created_at DESC, id DESC) applicants`)
     ]);
     return NextResponse.json({opportunities:opportunities.rows,applications:applications.rows,totals:totals.rows[0]}, {headers:{"Cache-Control":"no-store"}});
   } catch(error) { console.error("Admin recruitment:",error); return NextResponse.json({error:"Unable to load recruitment records. Confirm the recruitment database setup."},{status:500}); }
