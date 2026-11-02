@@ -31,6 +31,7 @@ export async function POST(request) {
     await client.query("BEGIN");
     const emailHash = crypto.createHash("sha256").update(email).digest("hex");
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [emailHash]);
+    await client.query("DELETE FROM vsi_recruitment_submission_limits WHERE created_at < NOW() - INTERVAL '1 day'");
     const recent = await client.query(
       "SELECT COUNT(*)::int AS count FROM vsi_recruitment_submission_limits WHERE email_hash=$1 AND created_at > NOW() - INTERVAL '1 hour'",
       [emailHash]
