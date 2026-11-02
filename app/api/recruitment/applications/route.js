@@ -79,6 +79,8 @@ export async function POST(request) {
     if(recent.rows[0].count>=5){await client.query("ROLLBACK");return NextResponse.json({error:"Too many applications from this email address. Please try again later."},{status:429});}
     const opportunity=await client.query("SELECT id FROM vsi_recruitment_opportunities WHERE id=$1 AND status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE)",[opportunityId]);
     if(!opportunity.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"This opportunity is no longer accepting applications."},{status:404});}
+    const existingApplication=await client.query("SELECT id, email_verified_at FROM vsi_recruitment_applications WHERE opportunity_id=$1 AND lower(trim(email))=$2 LIMIT 1",[opportunityId,email]);
+    if(existingApplication.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"An application has already been submitted using this email address for this opportunity. Each applicant may submit only one application per opportunity. If you believe this is an error, please contact VSI."},{status:409,headers:{"Cache-Control":"no-store"}});}
     const referenceResult=await client.query("SELECT public.vsi_recruitment_next_reference() AS reference");
     const reference=referenceResult.rows[0]?.reference;
     if(!reference) throw new Error("Unable to generate the recruitment reference number.");
