@@ -45,9 +45,17 @@ CREATE INDEX IF NOT EXISTS vsi_recruitment_applications_opportunity_idx
 CREATE INDEX IF NOT EXISTS vsi_recruitment_applications_status_idx
   ON vsi_recruitment_applications(status, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS vsi_recruitment_submission_limits (
+  email_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS vsi_recruitment_submission_limits_lookup_idx
+  ON vsi_recruitment_submission_limits(email_hash, created_at DESC);
+
 -- Anonymous recruitment submissions use the restricted public database role.
 ALTER TABLE vsi_recruitment_opportunities ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vsi_recruitment_applications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vsi_recruitment_submission_limits ENABLE ROW LEVEL SECURITY;
 CREATE POLICY vsi_recruitment_public_read_opportunities ON vsi_recruitment_opportunities
   FOR SELECT TO vsi_gen_public USING (status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE));
 CREATE POLICY vsi_recruitment_public_submit_applications ON vsi_recruitment_applications
@@ -56,3 +64,6 @@ GRANT SELECT ON vsi_recruitment_opportunities TO vsi_gen_public;
 GRANT INSERT (opportunity_id,reference_number,full_name,email,phone,location,education,current_occupation,experience,motivation,portfolio_url,consent_policy_version)
   ON vsi_recruitment_applications TO vsi_gen_public;
 GRANT USAGE, SELECT ON SEQUENCE vsi_recruitment_applications_id_seq TO vsi_gen_public;
+CREATE POLICY vsi_recruitment_public_rate_limit ON vsi_recruitment_submission_limits
+  FOR ALL TO vsi_gen_public USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, DELETE ON vsi_recruitment_submission_limits TO vsi_gen_public;
