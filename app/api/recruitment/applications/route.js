@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { pool } from "../../../../lib/db";
+import { publicPool } from "../../../../lib/db";
 
 export const dynamic = "force-dynamic";
 const clean = value => typeof value === "string" ? value.trim() : "";
@@ -31,7 +31,8 @@ export async function POST(request) {
         return NextResponse.json({ error: "One or more fields are too long." }, { status: 400 });
       }
     }
-    client = await pool.connect();
+    if (!publicPool) return NextResponse.json({ error: "Public recruitment submission is not configured." }, { status: 503 });
+    client = await publicPool.connect();
     await client.query("BEGIN");
     const key = requestKey(request);
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [key]);
