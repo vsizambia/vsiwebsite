@@ -25,7 +25,7 @@ export async function POST(request) {
     const title=typeof body.title==="string"?body.title.trim():"",type=body.opportunityType,description=typeof body.description==="string"?body.description.trim():"";
     if(!title||title.length>180||!types.includes(type)||!description||description.length>12000) return NextResponse.json({error:"Provide a title, valid opportunity category and description."},{status:400});
     const closingDate=body.closingDate||null;
-    if(closingDate&&(!/^\\d{4}-\\d{2}-\\d{2}$/.test(closingDate)||Number.isNaN(Date.parse(closingDate)))) return NextResponse.json({error:"Enter a valid closing date."},{status:400});
+    if(closingDate){const match=/^(\d{4})-(\d{2})-(\d{2})$/.exec(closingDate);const date=match?new Date(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]))):null;if(!date||date.getUTCFullYear()!==Number(match[1])||date.getUTCMonth()!==Number(match[2])-1||date.getUTCDate()!==Number(match[3])) return NextResponse.json({error:"Enter a valid closing date."},{status:400});}
     const result=await pool.query(`INSERT INTO vsi_recruitment_opportunities (title,opportunity_type,department,duty_station,description,requirements,closing_date,status)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
       [title,type,String(body.department||"").trim().slice(0,180),String(body.dutyStation||"").trim().slice(0,180),description,String(body.requirements||"").trim().slice(0,12000),closingDate,body.publish===true?"published":"draft"]);
