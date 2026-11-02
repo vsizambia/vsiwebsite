@@ -5,6 +5,10 @@
 ALTER TABLE public.vsi_recruitment_applications
   ADD COLUMN IF NOT EXISTS email_verified_at timestamptz;
 
+-- Needed only for INSERT ... RETURNING id. RLS still has no public SELECT policy,
+-- and the public role has no table-wide SELECT privilege.
+GRANT SELECT (id) ON public.vsi_recruitment_applications TO vsi_gen_public;
+
 CREATE INDEX IF NOT EXISTS vsi_recruitment_applications_verified_idx
   ON public.vsi_recruitment_applications (email_verified_at, created_at DESC);
 
