@@ -89,4 +89,4 @@ $function$;
 REVOKE ALL ON FUNCTION public.vsi_recruitment_create_email_verification(bigint, text, timestamptz)
   FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.vsi_recruitment_create_email_verification(bigint, text, timestamptz)
-  TO vsi_gen_public;
+  TO vsi_gen_public, vsi_public;
