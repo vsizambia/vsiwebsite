@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { pool } from "../../../../lib/db";
+import { publicPool } from "../../../../lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const result = await pool.query(
+    if (!publicPool) return NextResponse.json({ error: "Public recruitment access is not configured." }, { status: 503 });
+    const result = await publicPool.query(
       `SELECT id,title,opportunity_type,department,duty_station,description,requirements,closing_date
        FROM vsi_recruitment_opportunities
        WHERE status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE)
