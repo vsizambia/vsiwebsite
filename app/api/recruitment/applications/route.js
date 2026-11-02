@@ -7,6 +7,23 @@ const clean = value => typeof value === "string" ? value.trim() : "";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const policyVersion = "2026-11";
 const validRows = (rows,max) => Array.isArray(rows) && rows.length > 0 && rows.length <= max;
+
+const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+async function sendVerificationEmail({email,fullName,reference,token,siteOrigin}) {
+  if (!process.env.RESEND_API_KEY || !process.env.VOLUNTEER_PORTAL_FROM_EMAIL) throw new Error("Email delivery is not configured.");
+  const verifyUrl = new URL("/api/recruitment/verify", siteOrigin);
+  verifyUrl.searchParams.set("token", token);
+  const safeName = escapeHtml(fullName);
+  const safeReference = escapeHtml(reference);
+  const html = `<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#18324b"><h1 style="color:#07365f">Confirm your VSI recruitment application</h1><p>Hello ${safeName},</p><p>Thank you for applying to Visionary Students Initiative. We received an application using this email address. To confirm that you control this address and complete your submission, please select the button below.</p><p>Your application reference is <strong>${safeReference}</strong>.</p><p style="margin:28px 0"><a href="${escapeHtml(verifyUrl.toString())}" style="background:#07365f;color:#fff;padding:13px 20px;text-decoration:none;border-radius:5px;display:inline-block">Verify my email address</a></p><p>This link expires in 24 hours and can only be used once. Your application will not appear in VSI's recruitment dashboard until your email address is verified.</p><p>If you did not submit this application, you can ignore this email.</p><p>Kind regards,<br>Visionary Students Initiative (VSI)</p></div>`;
+  const response = await fetch("https://api.resend.com/emails", {
+    method:"POST",
+    headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,"Content-Type":"application/json"},
+    body:JSON.stringify({from:process.env.VOLUNTEER_PORTAL_FROM_EMAIL,to:[email],subject:`Verify your VSI recruitment application — ${reference}`,html}),
+    signal:AbortSignal.timeout(10000)
+  });
+  if (!response.ok) throw new Error(`Resend returned HTTP ${response.status}`);
+}
 export async function POST(request) {
   let client;
   try {
@@ -63,11 +80,22 @@ export async function POST(request) {
     const opportunity=await client.query("SELECT id FROM vsi_recruitment_opportunities WHERE id=$1 AND status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE)",[opportunityId]);
     if(!opportunity.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"This opportunity is no longer accepting applications."},{status:404});}
     const reference="VSI-"+new Date().getFullYear()+"-"+crypto.randomBytes(4).toString("hex").toUpperCase();
+    const verificationToken=crypto.randomBytes(32).toString("hex");
+    const verificationTokenHash=crypto.createHash("sha256").update(verificationToken).digest("hex");
+    const verificationExpiresAt=new Date(Date.now()+24*60*60*1000);
     await client.query("INSERT INTO vsi_recruitment_submission_limits (email_hash) VALUES ($1)",[emailHash]);
-    await client.query("INSERT INTO vsi_recruitment_applications (opportunity_id,reference_number,full_name,email,phone,location,education,current_occupation,experience,motivation,portfolio_url,consent_policy_version,application_details) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb)",
+    const inserted=await client.query("INSERT INTO vsi_recruitment_applications (opportunity_id,reference_number,full_name,email,phone,location,education,current_occupation,experience,motivation,portfolio_url,consent_policy_version,application_details,email_verified_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,NULL) RETURNING id",
       [opportunityId,reference,fullName,email,phone,locationText,educationText,clean(body.currentOccupation),experienceText,motivation,portfolioUrl,policyVersion,JSON.stringify(details)]);
+    const applicationId=inserted.rows[0]?.id;
+    const verification=await client.query("SELECT public.vsi_recruitment_create_email_verification($1,$2,$3) AS created",[applicationId,verificationTokenHash,verificationExpiresAt]);
+    if(verification.rows[0]?.created!==true) throw new Error("Unable to create the email verification request.");
     await client.query("COMMIT");
-    return NextResponse.json({ok:true,referenceNumber:reference},{status:201});
+    const requestHost=(request.headers.get("host")||"").split(":")[0].toLowerCase();
+    const siteOrigin=["www.vsizambia.org","vsizambia.org"].includes(requestHost)?`https://${requestHost}`:"https://www.vsizambia.org";
+    let emailSent=false;
+    try { await sendVerificationEmail({email,fullName,reference,token:verificationToken,siteOrigin}); emailSent=true; }
+    catch(error) { console.error("VSI Recruitment verification email failed:",{reference,message:error.message}); }
+    return NextResponse.json({ok:true,referenceNumber:reference,email,emailSent,emailVerified:false,message:emailSent?"Your application is saved but will only be received by VSI after you verify your email address. Please open the verification link sent to your inbox.":"Your application is saved but is not yet verified because the verification email could not be sent. Please contact VSI and quote your reference number."},{status:201});
   } catch(error) {
     if(client) await client.query("ROLLBACK").catch(()=>{});
     console.error("Recruitment application:",error);
