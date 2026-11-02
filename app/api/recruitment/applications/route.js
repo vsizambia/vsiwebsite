@@ -58,7 +58,10 @@ export async function POST(request) {
     if (experience.length>20 || experience.some(x=>[x.organisation,x.position,x.responsibilities].some(v=>typeof v==="string"&&v.length>2500))) return NextResponse.json({ error: "One or more experience entries are too long." }, { status: 400 });
     const portfolioUrl=clean(body.portfolioUrl);
     if (portfolioUrl) { try { const parsed=new URL(portfolioUrl); if(parsed.protocol!=="https:"&&parsed.protocol!=="http:") throw new Error(); } catch { return NextResponse.json({error:"Enter a valid professional profile or portfolio link."},{status:400}); } }
+    const socialProfiles={linkedin:clean(body.linkedinUrl),tiktok:clean(body.tiktokUrl),facebook:clean(body.facebookUrl),instagram:clean(body.instagramUrl)};
+    for (const [platform,url] of Object.entries(socialProfiles)) { if (url) { try { const parsed=new URL(url); if ((parsed.protocol!=="https:"&&parsed.protocol!=="http:") || url.length>2048) throw new Error(); } catch { return NextResponse.json({error:`Enter a valid ${platform} profile link or leave it blank.`},{status:400}); } } }
     const details={
+      socialProfiles,
       location:{province:province.name,district:district.name,constituency:constituency.name,ward:ward.name,residentialAddress:clean(body.residentialAddress)},
       educationEntries:education.map(x=>({institution:clean(x.institution),qualification:clean(x.qualification),fieldOfStudy:clean(x.fieldOfStudy),yearStarted:clean(x.yearStarted),yearCompleted:clean(x.yearCompleted),grade:clean(x.grade)})),
       experienceEntries:experience.filter(x=>[x.organisation,x.position,x.yearStarted,x.yearEnded,x.responsibilities].some(v=>clean(v))).map(x=>({organisation:clean(x.organisation),position:clean(x.position),yearStarted:clean(x.yearStarted),yearEnded:clean(x.yearEnded),responsibilities:clean(x.responsibilities)})),
