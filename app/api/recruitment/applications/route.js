@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { publicPool } from "../../../../lib/db";
+import { recruitmentPublicPool } from "../../../../lib/db";
 import { ECZ_2026_LOCATION_HIERARCHY } from "../../../data/ecz-2026-location-hierarchy";
 export const dynamic = "force-dynamic";
 const clean = value => typeof value === "string" ? value.trim() : "";
@@ -72,15 +72,15 @@ export async function POST(request) {
     const locationText=[province.name,district.name,constituency.name,ward.name,clean(body.residentialAddress)].filter(Boolean).join(" · ");
     const educationText=details.educationEntries.map(x=>[x.qualification,x.fieldOfStudy,x.institution,x.yearStarted+"–"+x.yearCompleted].filter(Boolean).join(", ")).join("; ").slice(0,500);
     const experienceText=details.experienceEntries.map(x=>[x.position,x.organisation,x.yearStarted&&(x.yearStarted+"–"+(x.yearEnded||"Present")),x.responsibilities].filter(Boolean).join(" — ")).join("\n").slice(0,5000);
-    if (!publicPool) return NextResponse.json({error:"Public recruitment submission is not configured."},{status:503});
-    client=await publicPool.connect();
+    if (!recruitmentPublicPool) return NextResponse.json({error:"Public recruitment submission is not configured."},{status:503});
+    client=await recruitmentPublicPool.connect();
     await client.query("BEGIN");
     const emailHash=crypto.createHash("sha256").update(email).digest("hex");
     await client.query("SELECT public.vsi_recruitment_lock_submission_email($1)",[emailHash]);
     const opportunity=await client.query("SELECT id FROM vsi_recruitment_opportunities WHERE id=$1 AND status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE)",[opportunityId]);
     if(!opportunity.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"This opportunity is no longer accepting applications."},{status:404});}
-    const existingApplication=await client.query("SELECT id, email_verified_at FROM vsi_recruitment_applications WHERE opportunity_id=$1 AND lower(trim(email))=$2 LIMIT 1",[opportunityId,email]);
-    if(existingApplication.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"An application has already been submitted using this email address for this opportunity. Each applicant may submit only one application per opportunity. If you believe this is an error, please contact VSI."},{status:409,headers:{"Cache-Control":"no-store"}});}
+    const existingApplication=await client.query("SELECT public.vsi_recruitment_application_exists($1,$2) AS already_exists",[opportunityId,email]);
+    if(existingApplication.rows[0]?.already_exists){await client.query("ROLLBACK");return NextResponse.json({error:"An application has already been submitted using this email address for this opportunity. Each applicant may submit only one application per opportunity. If you believe this is an error, please contact VSI."},{status:409,headers:{"Cache-Control":"no-store"}});}
     const referenceResult=await client.query("SELECT public.vsi_recruitment_next_reference() AS reference");
     const reference=referenceResult.rows[0]?.reference;
     if(!reference) throw new Error("Unable to generate the recruitment reference number.");
