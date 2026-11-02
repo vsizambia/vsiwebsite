@@ -71,10 +71,13 @@ export async function DELETE(request) {
     if(!validId(body?.id))return NextResponse.json({error:"Invalid application."},{status:400});
     client=await pool.connect();
     await client.query("BEGIN");
-    const found=await client.query("SELECT id FROM vsi_recruitment_applications WHERE id=$1 AND email_verified_at IS NOT NULL FOR UPDATE",[Number(body.id)]);
+    const found=await client.query("SELECT opportunity_id, lower(trim(email)) AS email_key FROM vsi_recruitment_applications WHERE id=$1 AND email_verified_at IS NOT NULL FOR UPDATE",[Number(body.id)]);
     if(!found.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"Verified application not found."},{status:404});}
-    await client.query("DELETE FROM vsi_recruitment_email_verifications WHERE application_id=$1",[Number(body.id)]);
-    await client.query("DELETE FROM vsi_recruitment_applications WHERE id=$1",[Number(body.id)]);
+    const {opportunity_id,email_key}=found.rows[0];
+    const grouped=await client.query("SELECT id FROM vsi_recruitment_applications WHERE opportunity_id=$1 AND lower(trim(email))=$2",[opportunity_id,email_key]);
+    const ids=grouped.rows.map(row=>row.id);
+    await client.query("DELETE FROM vsi_recruitment_email_verifications WHERE application_id=ANY($1::bigint[])",[ids]);
+    await client.query("DELETE FROM vsi_recruitment_applications WHERE id=ANY($1::bigint[])",[ids]);
     await client.query("COMMIT");
     return NextResponse.json({ok:true});
   } catch(error) { if(client)await client.query("ROLLBACK").catch(()=>{}); console.error("Delete recruitment application:",error); return NextResponse.json({error:"Unable to delete this application."},{status:500}); }
