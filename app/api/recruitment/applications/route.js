@@ -84,7 +84,7 @@ export async function POST(request) {
     const verificationTokenHash=crypto.createHash("sha256").update(verificationToken).digest("hex");
     const verificationExpiresAt=new Date(Date.now()+24*60*60*1000);
     await client.query("INSERT INTO vsi_recruitment_submission_limits (email_hash) VALUES ($1)",[emailHash]);
-    const inserted=await client.query("INSERT INTO vsi_recruitment_applications (opportunity_id,reference_number,full_name,email,phone,location,education,current_occupation,experience,motivation,portfolio_url,consent_policy_version,application_details,email_verified_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb,NULL) RETURNING id",
+    const inserted=await client.query("INSERT INTO vsi_recruitment_applications (opportunity_id,reference_number,full_name,email,phone,location,education,current_occupation,experience,motivation,portfolio_url,consent_policy_version,application_details) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb) RETURNING id",
       [opportunityId,reference,fullName,email,phone,locationText,educationText,clean(body.currentOccupation),experienceText,motivation,portfolioUrl,policyVersion,JSON.stringify(details)]);
     const applicationId=inserted.rows[0]?.id;
     const verification=await client.query("SELECT public.vsi_recruitment_create_email_verification($1,$2,$3) AS created",[applicationId,verificationTokenHash,verificationExpiresAt]);
