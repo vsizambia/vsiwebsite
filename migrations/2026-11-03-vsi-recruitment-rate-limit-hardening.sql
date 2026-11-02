@@ -54,8 +54,8 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.vsi_recruitment_lock_submission_email(text) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.vsi_recruitment_register_submission(text) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.vsi_recruitment_lock_submission_email(text) TO vsi_public, vsi_gen_public;
-GRANT EXECUTE ON FUNCTION public.vsi_recruitment_register_submission(text) TO vsi_public, vsi_gen_public;
+GRANT EXECUTE ON FUNCTION public.vsi_recruitment_lock_submission_email(text) TO vsi_gen_public;
+GRANT EXECUTE ON FUNCTION public.vsi_recruitment_register_submission(text) TO vsi_gen_public;
 
 DROP POLICY IF EXISTS vsi_recruitment_public_rate_limit
   ON public.vsi_recruitment_submission_limits;
