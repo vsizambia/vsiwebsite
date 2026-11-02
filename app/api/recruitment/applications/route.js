@@ -76,10 +76,7 @@ export async function POST(request) {
     client=await publicPool.connect();
     await client.query("BEGIN");
     const emailHash=crypto.createHash("sha256").update(email).digest("hex");
-    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[emailHash]);
-    await client.query("DELETE FROM vsi_recruitment_submission_limits WHERE created_at < NOW() - INTERVAL '1 day'");
-    const recent=await client.query("SELECT COUNT(*)::int AS count FROM vsi_recruitment_submission_limits WHERE email_hash=$1 AND created_at > NOW() - INTERVAL '1 hour'",[emailHash]);
-    if(recent.rows[0].count>=5){await client.query("ROLLBACK");return NextResponse.json({error:"Too many applications from this email address. Please try again later."},{status:429});}
+    await client.query("SELECT public.vsi_recruitment_lock_submission_email($1)",[emailHash]);
     const opportunity=await client.query("SELECT id FROM vsi_recruitment_opportunities WHERE id=$1 AND status='published' AND (closing_date IS NULL OR closing_date >= CURRENT_DATE)",[opportunityId]);
     if(!opportunity.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"This opportunity is no longer accepting applications."},{status:404});}
     const existingApplication=await client.query("SELECT id, email_verified_at FROM vsi_recruitment_applications WHERE opportunity_id=$1 AND lower(trim(email))=$2 LIMIT 1",[opportunityId,email]);
@@ -90,7 +87,8 @@ export async function POST(request) {
     const verificationToken=crypto.randomBytes(32).toString("hex");
     const verificationTokenHash=crypto.createHash("sha256").update(verificationToken).digest("hex");
     const verificationExpiresAt=new Date(Date.now()+24*60*60*1000);
-    await client.query("INSERT INTO vsi_recruitment_submission_limits (email_hash) VALUES ($1)",[emailHash]);
+    const rateLimit=await client.query("SELECT public.vsi_recruitment_register_submission($1) AS allowed",[emailHash]);
+    if(rateLimit.rows[0]?.allowed!==true){await client.query("ROLLBACK");return NextResponse.json({error:"Too many applications from this email address. Please try again later."},{status:429});}
     const inserted=await client.query("INSERT INTO vsi_recruitment_applications (opportunity_id,reference_number,full_name,email,phone,location,education,current_occupation,experience,motivation,portfolio_url,consent_policy_version,application_details) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13::jsonb) RETURNING id",
       [opportunityId,reference,fullName,email,phone,locationText,educationText,clean(body.currentOccupation),experienceText,motivation,portfolioUrl,policyVersion,JSON.stringify(details)]);
     const applicationId=inserted.rows[0]?.id;
