@@ -7,7 +7,7 @@ GRANT USAGE ON SCHEMA public TO vsi_gen_public;
 GRANT SELECT ON public.vsi_recruitment_opportunities TO vsi_gen_public;
 
 -- The submission route may insert an application and receive only its generated id.
-GRANT INSERT ON public.vsi_recruitment_applications TO vsi_gen_public;
+GRANT INSERT (opportunity_id, reference_number, full_name, email, phone, location, education, current_occupation, experience, motivation, portfolio_url, consent_policy_version, application_details) ON public.vsi_recruitment_applications TO vsi_gen_public;
 GRANT SELECT (id) ON public.vsi_recruitment_applications TO vsi_gen_public;
 GRANT USAGE, SELECT ON SEQUENCE public.vsi_recruitment_applications_id_seq
   TO vsi_gen_public;
