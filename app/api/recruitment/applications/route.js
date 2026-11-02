@@ -7,11 +7,6 @@ const clean = value => typeof value === "string" ? value.trim() : "";
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const policyVersion = "2026-11";
 
-function requestKey(request) {
-  const ip = request.headers.get("x-real-ip") || request.headers.get("x-forwarded-for")?.split(",")[0] || "unknown";
-  return crypto.createHash("sha256").update(ip.trim()).digest("hex");
-}
-
 export async function POST(request) {
   let client;
   try {
@@ -34,9 +29,8 @@ export async function POST(request) {
     if (!publicPool) return NextResponse.json({ error: "Public recruitment submission is not configured." }, { status: 503 });
     client = await publicPool.connect();
     await client.query("BEGIN");
-    const key = requestKey(request);
-    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [key]);
     const emailHash = crypto.createHash("sha256").update(email).digest("hex");
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [emailHash]);
     const recent = await client.query(
       "SELECT COUNT(*)::int AS count FROM vsi_recruitment_submission_limits WHERE email_hash=$1 AND created_at > NOW() - INTERVAL '1 hour'",
       [emailHash]
