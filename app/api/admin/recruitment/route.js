@@ -44,6 +44,14 @@ export async function PATCH(request) {
       if(!result.rowCount)return NextResponse.json({error:"Verified application not found."},{status:404});
       return NextResponse.json({ok:true,application:result.rows[0]});
     }
+    if(body.kind==="edit-application"){
+      const fullName=typeof body.fullName==="string"?body.fullName.trim():"", email=typeof body.email==="string"?body.email.trim().toLowerCase():"", phone=typeof body.phone==="string"?body.phone.trim():"", motivation=typeof body.motivation==="string"?body.motivation.trim():"", occupation=typeof body.currentOccupation==="string"?body.currentOccupation.trim():"", portfolio=typeof body.portfolioUrl==="string"?body.portfolioUrl.trim():"";
+      if(!validId(body.id)||!fullName||fullName.length>160||!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)||email.length>254||!phone||phone.length>40||!motivation||motivation.length>5000||occupation.length>200||portfolio.length>2000) return NextResponse.json({error:"Check the applicant details and try again."},{status:400});
+      if(portfolio){try{const u=new URL(portfolio);if(!["http:","https:"].includes(u.protocol))throw new Error();}catch{return NextResponse.json({error:"Enter a valid professional profile or portfolio link."},{status:400});}}
+      const result=await pool.query("UPDATE vsi_recruitment_applications SET full_name=$1,email=$2,phone=$3,motivation=$4,current_occupation=$5,portfolio_url=$6,updated_at=NOW() WHERE id=$7 AND email_verified_at IS NOT NULL RETURNING id,full_name,email,phone,motivation,current_occupation,portfolio_url",[fullName,email,phone,motivation,occupation,portfolio,Number(body.id)]);
+      if(!result.rowCount)return NextResponse.json({error:"Verified application not found."},{status:404});
+      return NextResponse.json({ok:true,application:result.rows[0]});
+    }
     if(body.kind==="opportunity"){
       const allowed=["draft","published","closed","archived"];
       if(!validId(body.id)||!allowed.includes(body.status))return NextResponse.json({error:"Invalid opportunity update."},{status:400});
@@ -53,4 +61,22 @@ export async function PATCH(request) {
     }
     return NextResponse.json({error:"Unknown recruitment update."},{status:400});
   } catch(error) { console.error("Update recruitment:",error); return NextResponse.json({error:"Unable to update recruitment record."},{status:500}); }
+}
+
+export async function DELETE(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  let client;
+  try {
+    const body=await request.json();
+    if(!validId(body?.id))return NextResponse.json({error:"Invalid application."},{status:400});
+    client=await pool.connect();
+    await client.query("BEGIN");
+    const found=await client.query("SELECT id FROM vsi_recruitment_applications WHERE id=$1 AND email_verified_at IS NOT NULL FOR UPDATE",[Number(body.id)]);
+    if(!found.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"Verified application not found."},{status:404});}
+    await client.query("DELETE FROM vsi_recruitment_email_verifications WHERE application_id=$1",[Number(body.id)]);
+    await client.query("DELETE FROM vsi_recruitment_applications WHERE id=$1",[Number(body.id)]);
+    await client.query("COMMIT");
+    return NextResponse.json({ok:true});
+  } catch(error) { if(client)await client.query("ROLLBACK").catch(()=>{}); console.error("Delete recruitment application:",error); return NextResponse.json({error:"Unable to delete this application."},{status:500}); }
+  finally { client?.release(); }
 }
