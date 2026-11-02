@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { SiteHeader, SiteFooter } from "../components/SiteChrome";
 import { ECZ_2026_LOCATION_HIERARCHY } from "../data/ecz-2026-location-hierarchy";
 import styles from "./recruitment.module.css";
