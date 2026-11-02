@@ -1,0 +1,74 @@
+import { NextResponse } from "next/server";
+import { pool } from "../../../../lib/db";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
+
+export const dynamic = "force-dynamic";
+const types = ["permanent_staff","contract_staff","consultant","project_staff","volunteer"];
+const statuses = ["received","under_review","shortlisted","interview","selected","unsuccessful","withdrawn"];
+const unauthorized = () => NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
+
+export async function GET(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  try {
+    const [opportunities, applications, totals] = await Promise.all([
+      pool.query("SELECT * FROM vsi_recruitment_opportunities ORDER BY created_at DESC"),
+      pool.query(`SELECT a.*,o.title AS opportunity_title,o.opportunity_type FROM vsi_recruitment_applications a JOIN vsi_recruitment_opportunities o ON o.id=a.opportunity_id ORDER BY a.created_at DESC`),
+      pool.query(`SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE status='received')::int received,COUNT(*) FILTER (WHERE status='shortlisted')::int shortlisted,COUNT(*) FILTER (WHERE status='interview')::int interviews FROM vsi_recruitment_applications`)
+    ]);
+    return NextResponse.json({ opportunities: opportunities.rows, applications: applications.rows, totals: totals.rows[0] });
+  } catch (error) {
+    console.error("Admin recruitment:", error);
+    return NextResponse.json({ error: "Unable to load recruitment records. Confirm the recruitment migration has been applied." }, { status: 500 });
+  }
+}
+
+export async function POST(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  try {
+    const body = await request.json();
+    const title = typeof body.title === "string" ? body.title.trim() : "";
+    const type = body.opportunityType;
+    const description = typeof body.description === "string" ? body.description.trim() : "";
+    if (!title || title.length > 180 || !types.includes(type) || !description || description.length > 12000) {
+      return NextResponse.json({ error: "Provide a title, valid opportunity category and description." }, { status: 400 });
+    }
+    const closingDate = body.closingDate || null;
+    if (closingDate && !/^\d{4}-\d{2}-\d{2}$/.test(closingDate)) return NextResponse.json({ error: "Enter a valid closing date." }, { status: 400 });
+    const result = await pool.query(
+      `INSERT INTO vsi_recruitment_opportunities (title,opportunity_type,department,duty_station,description,requirements,closing_date,status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
+      [title,type,String(body.department||"").trim(),String(body.dutyStation||"").trim(),description,String(body.requirements||"").trim(),closingDate,body.publish === true ? "published" : "draft"]
+    );
+    return NextResponse.json({ ok: true, opportunity: result.rows[0] }, { status: 201 });
+  } catch (error) {
+    console.error("Create recruitment opportunity:", error);
+    return NextResponse.json({ error: "Unable to save opportunity." }, { status: 500 });
+  }
+}
+
+export async function PATCH(request) {
+  if (!isAdminAuthenticated(request)) return unauthorized();
+  try {
+    const body = await request.json();
+    if (body.kind === "application") {
+      if (!Number.isSafeInteger(Number(body.id)) || !statuses.includes(body.status)) return NextResponse.json({ error: "Invalid application update." }, { status: 400 });
+      const result = await pool.query(
+        "UPDATE vsi_recruitment_applications SET status=$1,reviewer_notes=$2,reviewed_at=NOW(),updated_at=NOW() WHERE id=$3 RETURNING id,status",
+        [body.status,typeof body.notes === "string" ? body.notes.trim().slice(0,5000) : null,Number(body.id)]
+      );
+      if (!result.rowCount) return NextResponse.json({ error: "Application not found." }, { status: 404 });
+      return NextResponse.json({ ok: true, application: result.rows[0] });
+    }
+    if (body.kind === "opportunity") {
+      const allowed = ["draft","published","closed","archived"];
+      if (!Number.isSafeInteger(Number(body.id)) || !allowed.includes(body.status)) return NextResponse.json({ error: "Invalid opportunity update." }, { status: 400 });
+      const result = await pool.query("UPDATE vsi_recruitment_opportunities SET status=$1,updated_at=NOW() WHERE id=$2 RETURNING id,status", [body.status,Number(body.id)]);
+      if (!result.rowCount) return NextResponse.json({ error: "Opportunity not found." }, { status: 404 });
+      return NextResponse.json({ ok: true, opportunity: result.rows[0] });
+    }
+    return NextResponse.json({ error: "Unknown recruitment update." }, { status: 400 });
+  } catch (error) {
+    console.error("Update recruitment:", error);
+    return NextResponse.json({ error: "Unable to update recruitment record." }, { status: 500 });
+  }
+}
