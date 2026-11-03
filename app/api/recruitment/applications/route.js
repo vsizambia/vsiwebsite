@@ -33,9 +33,9 @@ export async function POST(request) {
     if (!body || typeof body !== "object" || Array.isArray(body)) return NextResponse.json({ error: "Invalid application details." }, { status: 400 });
     const opportunityId = Number(body.opportunityId);
     const fullName = clean(body.fullName), email = clean(body.email).toLowerCase();
-    const phone = clean(body.phone), motivation = clean(body.motivation);
+    const phone = clean(body.phone), gender = clean(body.gender), motivation = clean(body.motivation);
     if (!Number.isSafeInteger(opportunityId) || opportunityId < 1 || !fullName || fullName.length > 160 ||
-        !emailPattern.test(email) || email.length > 254 || !phone || phone.length > 40 ||
+        !emailPattern.test(email) || email.length > 254 || !phone || phone.length > 40 || !["Female","Male","Prefer not to say"].includes(gender) ||
         !motivation || motivation.length > 5000 || body.consent !== true ||
         clean(body.currentOccupation).length > 200 || clean(body.availability).length > 300 ||
         clean(body.residentialAddress).length > 250) {
@@ -61,6 +61,7 @@ export async function POST(request) {
     const socialProfiles={linkedin:clean(body.linkedinUrl),tiktok:clean(body.tiktokUrl),facebook:clean(body.facebookUrl),instagram:clean(body.instagramUrl)};
     for (const [platform,url] of Object.entries(socialProfiles)) { if (url) { try { const parsed=new URL(url); if ((parsed.protocol!=="https:"&&parsed.protocol!=="http:") || url.length>2048) throw new Error(); } catch { return NextResponse.json({error:`Enter a valid ${platform} profile link or leave it blank.`},{status:400}); } } }
     const details={
+      gender,
       socialProfiles,
       location:{province:province.name,district:district.name,constituency:constituency.name,ward:ward.name,residentialAddress:clean(body.residentialAddress)},
       educationEntries:education.map(x=>({institution:clean(x.institution),qualification:clean(x.qualification),fieldOfStudy:clean(x.fieldOfStudy),yearStarted:clean(x.yearStarted),yearCompleted:clean(x.yearCompleted),grade:clean(x.grade)})),
