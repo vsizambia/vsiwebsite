@@ -15,5 +15,5 @@ export function SiteFooter({className=""}={}){return <div className={className}>
 .vsi-compact-footer .vsi-legal-links{display:flex;align-items:center;gap:16px}
 .vsi-compact-footer a{color:#fff;text-decoration:underline;text-underline-offset:3px}
 .vsi-compact-footer address{font-style:normal;text-align:right;max-width:100%;line-height:1.45}
-@media(max-width:700px){.vsi-compact-footer{padding:16px}.vsi-compact-footer-inner{justify-content:flex-start;gap:9px 16px}.vsi-compact-footer address{text-align:left;flex-basis:100%}.vsi-compact-footer .vsi-legal-links{gap:14px}}
+@media(max-width:700px){.vsi-compact-footer{padding:10px 14px}.vsi-compact-footer-inner{justify-content:flex-start;gap:6px 12px;font-size:10.5px;line-height:1.35}.vsi-compact-footer .vsi-copyright{white-space:normal}.vsi-compact-footer address{text-align:left;flex-basis:100%;line-height:1.3}.vsi-compact-footer .vsi-legal-links{gap:8px 11px;flex-wrap:wrap}.vsi-compact-footer .vsi-legal-links a{font-size:10.5px}}
 `}</style></div>}
