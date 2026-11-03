@@ -39,6 +39,17 @@ export async function PATCH(request) {
   try {
     const body=await request.json();
     if(!body||typeof body!=="object"||Array.isArray(body)) return NextResponse.json({error:"Invalid update."},{status:400});
+    if(body.kind==="edit-opportunity"){
+      const title=typeof body.title==="string"?body.title.trim():"",type=body.opportunityType,description=typeof body.description==="string"?body.description.trim():"";
+      if(!validId(body.id)||!title||title.length>180||!types.includes(type)||!description||description.length>12000)return NextResponse.json({error:"Provide a title, valid opportunity category and description."},{status:400});
+      const featureImageUrl=typeof body.featureImageUrl==="string"?body.featureImageUrl.trim():"";
+      if(featureImageUrl){try{const u=new URL(featureImageUrl);if(u.protocol!=="https:"||!u.hostname.endsWith(".public.blob.vercel-storage.com"))throw new Error();}catch{return NextResponse.json({error:"Use a valid uploaded opportunity feature image."},{status:400});}}
+      const closingDate=body.closingDate||null;
+      if(closingDate){const match=/^(\\d{4})-(\\d{2})-(\\d{2})$/.exec(closingDate);const date=match?new Date(Date.UTC(Number(match[1]),Number(match[2])-1,Number(match[3]))):null;if(!date||date.getUTCFullYear()!==Number(match[1])||date.getUTCMonth()!==Number(match[2])-1||date.getUTCDate()!==Number(match[3]))return NextResponse.json({error:"Enter a valid closing date."},{status:400});}
+      const result=await pool.query(`UPDATE vsi_recruitment_opportunities SET title=$1,opportunity_type=$2,department=$3,duty_station=$4,description=$5,requirements=$6,closing_date=$7,feature_image_url=$8,updated_at=NOW() WHERE id=$9 RETURNING id,title,status`,[title,type,String(body.department||"").trim().slice(0,180),String(body.dutyStation||"").trim().slice(0,180),description,String(body.requirements||"").trim().slice(0,12000),closingDate,featureImageUrl||null,Number(body.id)]);
+      if(!result.rowCount)return NextResponse.json({error:"Opportunity not found."},{status:404});
+      return NextResponse.json({ok:true,opportunity:result.rows[0]});
+    }
     if(body.kind==="application"){
       if(!validId(body.id)||!statuses.includes(body.status)) return NextResponse.json({error:"Invalid application update."},{status:400});
       const result=await pool.query("UPDATE vsi_recruitment_applications SET status=$1,reviewer_notes=$2,reviewed_at=NOW(),updated_at=NOW() WHERE id=$3 AND email_verified_at IS NOT NULL RETURNING id,status",
@@ -70,8 +81,18 @@ export async function DELETE(request) {
   let client;
   try {
     const body=await request.json();
-    if(!validId(body?.id))return NextResponse.json({error:"Invalid application."},{status:400});
+    if(!validId(body?.id))return NextResponse.json({error:"Invalid record."},{status:400});
     client=await pool.connect();
+    if(body.kind==="opportunity"){
+      await client.query("BEGIN");
+      const found=await client.query("SELECT id,title FROM vsi_recruitment_opportunities WHERE id=$1 FOR UPDATE",[Number(body.id)]);
+      if(!found.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"Opportunity not found."},{status:404});}
+      const linked=await client.query("SELECT COUNT(*)::int AS total FROM vsi_recruitment_applications WHERE opportunity_id=$1",[Number(body.id)]);
+      if(linked.rows[0].total>0){await client.query("ROLLBACK");return NextResponse.json({error:"This opportunity has applications linked to it. Change its status to Archived instead, so applicant records and recruitment history are preserved."},{status:409});}
+      await client.query("DELETE FROM vsi_recruitment_opportunities WHERE id=$1",[Number(body.id)]);
+      await client.query("COMMIT");
+      return NextResponse.json({ok:true});
+    }
     await client.query("BEGIN");
     const found=await client.query("SELECT opportunity_id, lower(trim(email)) AS email_key FROM vsi_recruitment_applications WHERE id=$1 AND email_verified_at IS NOT NULL FOR UPDATE",[Number(body.id)]);
     if(!found.rowCount){await client.query("ROLLBACK");return NextResponse.json({error:"Verified application not found."},{status:404});}
