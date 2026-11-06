@@ -7,10 +7,13 @@ const unauthorized=()=>NextResponse.json({error:"Admin authentication required."
 
 async function seedCatalogue(){
   const existing=await pool.query("SELECT COUNT(*)::int AS count FROM vsi_master_activity_catalogue");
-  if(Number(existing.rows[0]?.count)>0)return;
   const source=Array.isArray(ACTIVITY_CATALOGUE)?ACTIVITY_CATALOGUE:[];
   if(!source.length)throw new Error("Official VSI activity catalogue could not be loaded for seeding.");
-  for(const row of source){
+  const isFreshCatalogue=Number(existing.rows[0]?.count)===0;
+  const versionKey="fahr-operational-activities-v1";
+  const version=await pool.query("SELECT value FROM vsi_master_activity_catalogue_meta WHERE key=$1",[versionKey]);
+  const rowsToSeed=isFreshCatalogue?source:(version.rowCount?[]:source.filter(row=>(Array.isArray(row)?row[0]:row?.code)?.startsWith("FAHR-FPM-")||(Array.isArray(row)?row[0]:row?.code)?.startsWith("FAHR-PLM-")||(Array.isArray(row)?row[0]:row?.code)?.startsWith("FAHR-ARM-")||(Array.isArray(row)?row[0]:row?.code)?.startsWith("FAHR-AFM-")||(Array.isArray(row)?row[0]:row?.code)?.startsWith("FAHR-CRA-")));
+  for(const row of rowsToSeed){
     const activityCode=Array.isArray(row)?row[0]:row?.code;
     const activity=Array.isArray(row)?row[1]:row?.name;
     const project=Array.isArray(row)?row[2]:row?.project;
@@ -23,6 +26,7 @@ async function seedCatalogue(){
   const finalCount=await pool.query("SELECT COUNT(*)::int AS count FROM vsi_master_activity_catalogue");
   if(Number(finalCount.rows[0]?.count)===0)throw new Error("Official VSI activity catalogue contained no valid records.");
   await pool.query("INSERT INTO vsi_master_activity_catalogue_meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value",["seeded",new Date().toISOString()]);
+  if(!version.rowCount)await pool.query("INSERT INTO vsi_master_activity_catalogue_meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value",[versionKey,new Date().toISOString()]);
 }
 
 function clean(value){return typeof value==="string"?value.trim():value??null}
