@@ -69,7 +69,7 @@ function AlignmentList({items,type}){
 function DetailKpis({selected,detail}){
  const key=selected.programme_key;
  if(key==="ovc-support"||key==="education-support"){
-  return <><div><span>Boys reached</span><strong>{formatValue(detail.male)}</strong></div><div><span>Girls reached</span><strong>{formatValue(detail.female)}</strong></div></>;
+  return <><div><span>Boys reached</span><strong>{formatValue(detail.male)}</strong></div><div><span>Girls reached</span><strong>{formatValue(detail.female)}</strong></div><div><span>Sessions conducted</span><strong>{formatValue(detail.sessions)}</strong></div></>;
  }
  if(key==="clean-green-healthy"){
   return <div><span>Marketeers reached</span><strong>{formatValue(detail.primary)}</strong></div>;
@@ -109,16 +109,18 @@ export default function ImpactProgrammeCards({initialProgrammes}){
   const male=sum("male_reached"),female=sum("female_reached");
   const maleMarketeers=sum("male_marketeers_reached"),femaleMarketeers=sum("female_marketeers_reached");
   const peopleRecorded=sum("people_reached"),people=peopleRecorded||male+female;
+  const sessions=sum("sessions_conducted");
   const items=sum("items_donated"),schools=sum("schools_supported"),youth=sum("youth_participants"),trees=sum("trees_planted");
   const primary=selected.programme_key==="policy-contribution"?sum("documents_contributed"):selected.programme_key==="clean-green-healthy"?sum("marketeers_reached"):selected.programme_key==="youth-policy"?male+female:people;
-  return{count:detailRows.length,male,female,maleMarketeers,femaleMarketeers,people,items,schools,youth,trees,primary,locations:Object.entries(locations).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,7),partners:Object.entries(partners).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,6),sdgs,aus};
+  return{count:detailRows.length,sessions,male,female,maleMarketeers,femaleMarketeers,people,items,schools,youth,trees,primary,locations:Object.entries(locations).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,7),partners:Object.entries(partners).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value).slice(0,6),sdgs,aus};
  },[detailRows,selected]);
- const overview=useMemo(()=>{const people=activities.reduce((n,row)=>{const direct=Number(row.people_reached)||0;const gender=(Number(row.male_reached)||0)+(Number(row.female_reached)||0);const marketeers=Number(row.marketeers_reached)||0;return n+(direct||gender||marketeers)},0);const institutionKeys=new Set();activities.forEach(row=>{const name=String(row.institution_name||"").trim().toLowerCase();if(name)institutionKeys.add(name)});const institutions=institutionKeys.size;return{activities:activities.length,people,institutions,documents:activities.reduce((n,row)=>n+(Number(row.documents_contributed)||0),0)}},[activities]);
+ const overview=useMemo(()=>{const people=activities.reduce((n,row)=>{const direct=Number(row.people_reached)||0;const gender=(Number(row.male_reached)||0)+(Number(row.female_reached)||0);const marketeers=Number(row.marketeers_reached)||0;return n+(direct||gender||marketeers)},0);const institutionKeys=new Set();activities.forEach(row=>{const name=String(row.institution_name||"").trim().toLowerCase();if(name)institutionKeys.add(name)});const institutions=institutionKeys.size;return{activities:activities.length,sessions:activities.reduce((n,row)=>n+(Number(row.sessions_conducted)||0),0),people,institutions,documents:activities.reduce((n,row)=>n+(Number(row.documents_contributed)||0),0)}},[activities]);
  if(!selected)return null;
  return <div className="impact-dashboard">
   <div className="impact-dashboard-heading"><div><span className="impact-dashboard-kicker">IMPACT &amp; EVIDENCE</span><h2>Impact at a glance</h2></div><span className="impact-dashboard-status"><i/> Live programme register</span></div>
   <div className="impact-kpi-grid" aria-label="Impact overview">
    <div className="impact-kpi"><span className="impact-kpi-label">Activities conducted</span><strong><CountUp value={overview.activities}/></strong><small>Across tracked programmes</small></div>
+   <div className="impact-kpi"><span className="impact-kpi-label">Sessions conducted</span><strong><CountUp value={overview.sessions}/></strong><small>Recorded school and OVC sessions</small></div>
    <div className="impact-kpi"><span className="impact-kpi-label">People reached</span><strong><CountUp value={overview.people}/></strong><small>Reported people reached</small></div>
    <div className="impact-kpi"><span className="impact-kpi-label">Institutions &amp; facilities engaged</span><strong><CountUp value={overview.institutions}/></strong><small>Schools, health facilities &amp; organisations</small></div>
    <div className="impact-kpi impact-kpi-accent"><span className="impact-kpi-label">Policy &amp; research outputs</span><strong><CountUp value={overview.documents}/></strong><small>Contributions recorded</small></div>

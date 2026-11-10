@@ -13,6 +13,7 @@ const programmeImpact = [
     description: "Supporting orphans and vulnerable children through community-focused charity work.",
     metrics: [
       { key: "activities", value: null, label: "Activities conducted" },
+      { key: "sessions", value: null, label: "Sessions conducted" },
       { key: "male", value: null, label: "Boys reached" },
       { key: "female", value: null, label: "Girls reached" },
     ],
@@ -36,6 +37,7 @@ const programmeImpact = [
     description: "Helping learners access support and opportunities that can strengthen their educational journey.",
     metrics: [
       { key: "activities", value: null, label: "Activities conducted" },
+      { key: "sessions", value: null, label: "Sessions conducted" },
       { key: "male", value: null, label: "Boys reached" },
       { key: "female", value: null, label: "Girls reached" },
     ],
