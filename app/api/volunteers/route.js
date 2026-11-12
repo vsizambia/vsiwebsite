@@ -6,6 +6,17 @@ const db = publicPool || pool;
 import crypto from "node:crypto";
 
 const clean = (value) => typeof value === "string" ? value.trim() : null;
+
+const escapeHtml = value => String(value ?? "").replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+async function sendVolunteerVerificationEmail({ email, fullName, token, siteOrigin }) {
+  if (!process.env.RESEND_API_KEY || !process.env.VOLUNTEER_PORTAL_FROM_EMAIL) throw new Error("Email delivery is not configured.");
+  const verifyUrl = new URL("/api/volunteers/verify", siteOrigin);
+  verifyUrl.searchParams.set("token", token);
+  const html = '<div style="font-family:Arial,sans-serif;max-width:600px;margin:auto;color:#18324b"><h1 style="color:#07365f">Verify your VSI volunteer application</h1><p>Hello ' + escapeHtml(fullName) + ',</p><p>We received a volunteer application using this email address. To confirm that you control this address, please select the button below.</p><p style="margin:28px 0"><a href="' + escapeHtml(verifyUrl.toString()) + '" style="background:#07365f;color:#fff;padding:13px 20px;text-decoration:none;border-radius:5px;display:inline-block">Verify my email address</a></p><p>This link expires in 24 hours and can only be used once. Your application will remain pending and will not be available to the VSI recruitment team until you complete this step.</p><p>If you did not submit this application, you can ignore this message.</p><p>Kind regards,<br>Visionary Students Initiative (VSI)</p></div>';
+  const response = await fetch("https://api.resend.com/emails", { method:"POST", headers:{Authorization:"Bearer " + process.env.RESEND_API_KEY,"Content-Type":"application/json"}, body:JSON.stringify({from:process.env.VOLUNTEER_PORTAL_FROM_EMAIL,to:[email],subject:"Verify your VSI volunteer application",html}), signal:AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error("Resend returned HTTP " + response.status);
+}
+
 const RATE_LIMIT = 5;
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 
@@ -112,6 +123,9 @@ export async function POST(request) {
     if (!await allowVolunteerApplication(request)) return NextResponse.json({ error: "Too many application attempts. Please try again later." }, { status: 429 });
 
     await ensureVolunteerTable();
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationTokenHash = crypto.createHash("sha256").update(verificationToken).digest("hex");
+    const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const result = await db.query(
       `INSERT INTO volunteer_applications
        (full_name, date_of_birth, nationality, gender, faith, email, phone, province, district, constituency, ward, location, current_occupation, education, category, skills, availability, hours_per_week, motivation, volunteering_elsewhere, other_volunteering_details, past_volunteer_positions, reference_name, reference_organization, reference_phone, reference_email, criminal_conviction, criminal_offence_details, disability, disability_certificate, disability_certificate_name, profile_picture, emergency_name, emergency_phone, membership_fee_acknowledged, consent, privacy_policy_version, privacy_notice_accepted_at, photo_processing_consent, public_media_consent, guardian_name, guardian_relationship, guardian_phone, guardian_email, guardian_consent, guardian_consent_at)
@@ -140,7 +154,28 @@ export async function POST(request) {
       throw photoError;
     }
 
-    return NextResponse.json({ ok: true, id: result.rows[0].id }, { status: 201 });
+    const verification = await db.query(
+      "SELECT public.vsi_volunteer_create_email_verification($1,$2,$3) AS created",
+      [result.rows[0].id, verificationTokenHash, verificationExpiresAt]
+    );
+    if (verification.rows[0]?.created !== true) throw new Error("Unable to create the volunteer email verification request.");
+
+    const requestHost = (request.headers.get("host") || "").split(":")[0].toLowerCase();
+    const siteOrigin = ["www.vsizambia.org", "vsizambia.org"].includes(requestHost) ? "https://" + requestHost : "https://www.vsizambia.org";
+    let emailSent = false;
+    try {
+      await sendVolunteerVerificationEmail({ email: clean(body.email).toLowerCase(), fullName: clean(body.fullName), token: verificationToken, siteOrigin });
+      emailSent = true;
+    } catch (emailError) {
+      console.error("VSI volunteer verification email failed:", { applicationId: result.rows[0].id, message: emailError.message });
+    }
+
+    return NextResponse.json({
+      ok: true, id: result.rows[0].id, emailSent, emailVerified: false,
+      message: emailSent
+        ? "Your application has been saved. Please open the verification link sent to your email address. VSI will only receive your application for review after you verify your email."
+        : "Your application has been saved but is not yet verified because the verification email could not be sent. Please contact VSI for assistance."
+    }, { status: 201 });
   } catch (error) {
     console.error("Volunteer application error:", error);
     const detail = process.env.NODE_ENV === "development" && error instanceof Error ? error.message : undefined;
