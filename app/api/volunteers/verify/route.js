@@ -43,7 +43,7 @@ export async function POST(request) {
     await client.query("BEGIN");
     const found = await client.query(
       `SELECT v.id AS verification_id,v.application_id,a.full_name,a.email
-       FROM public.volunteer_application_email_verifications v
+       FROM vsi_private.volunteer_application_email_verifications v
        JOIN public.volunteer_applications a ON a.id=v.application_id
        WHERE v.token_hash=$1 AND v.used_at IS NULL AND v.expires_at>NOW() AND a.email_verified_at IS NULL
        FOR UPDATE OF v,a`,
@@ -54,7 +54,7 @@ export async function POST(request) {
       return new Response(page("Link expired or already used","This verification link has expired, was already used, or the email address has already been verified. If you need help, contact VSI."),{status:410,headers});
     }
     application = found.rows[0];
-    await client.query("UPDATE public.volunteer_application_email_verifications SET used_at=NOW() WHERE id=$1",[application.verification_id]);
+    await client.query("UPDATE vsi_private.volunteer_application_email_verifications SET used_at=NOW() WHERE id=$1",[application.verification_id]);
     await client.query("UPDATE public.volunteer_applications SET email_verified_at=NOW(),updated_at=NOW() WHERE id=$1",[application.application_id]);
     await client.query("COMMIT");
   } catch (error) {
