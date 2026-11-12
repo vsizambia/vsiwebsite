@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
-import { ensureVolunteerTable, pool, publicPool } from "../../../lib/db";
+import { ensureVolunteerTable, volunteerPublicPool } from "../../../lib/db";
 
-const db = publicPool || pool;
+const db = volunteerPublicPool;
 import crypto from "node:crypto";
 
 const clean = (value) => typeof value === "string" ? value.trim() : null;
@@ -95,6 +95,7 @@ function parseDateOfBirth(value) {
 }
 
 export async function POST(request) {
+  if (!db) return NextResponse.json({ error: "Volunteer application submission is temporarily unavailable." }, { status: 503 });
   try {
     const body = await request.json();
     const required = ["fullName","dateOfBirth","nationality","gender","faith","email","phone","province","district","constituency","ward","category","skills","availability","hoursPerWeek","motivation","referenceName","referenceOrganization","referencePhone","referenceEmail","emergencyName","emergencyPhone"];
@@ -150,7 +151,7 @@ export async function POST(request) {
       profilePicture = await storeProfilePicture(body.profilePicture, result.rows[0].id);
       if (profilePicture) await db.query("UPDATE volunteer_applications SET profile_picture = $1 WHERE id = $2", [profilePicture, result.rows[0].id]);
     } catch (photoError) {
-      await db.query("DELETE FROM volunteer_applications WHERE id = $1", [result.rows[0].id]);
+      console.error("VSI volunteer profile picture could not be stored:", photoError);
       throw photoError;
     }
 
