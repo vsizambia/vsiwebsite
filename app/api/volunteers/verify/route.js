@@ -42,11 +42,11 @@ export async function POST(request) {
     client = await pool.connect();
     await client.query("BEGIN");
     const found = await client.query(
-      \`SELECT v.id AS verification_id,v.application_id,a.full_name,a.email
+      `SELECT v.id AS verification_id,v.application_id,a.full_name,a.email
        FROM public.volunteer_application_email_verifications v
        JOIN public.volunteer_applications a ON a.id=v.application_id
        WHERE v.token_hash=$1 AND v.used_at IS NULL AND v.expires_at>NOW() AND a.email_verified_at IS NULL
-       FOR UPDATE OF v,a\`,
+       FOR UPDATE OF v,a`,
       [tokenHash]
     );
     if (!found.rowCount) {
