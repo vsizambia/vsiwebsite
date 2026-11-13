@@ -10,8 +10,9 @@ const LOGIN_WINDOW_SECONDS = 10 * 60;
 const MAX_FAILED_ATTEMPTS = 5;
 
 function requestIp(request) {
-  const forwarded = request.headers.get("x-forwarded-for") || "";
-  return (forwarded.split(",")[0] || request.headers.get("x-real-ip") || "unknown").trim();
+  // Vercel sets x-real-ip from the connecting client. Do not trust the
+  // client-controlled x-forwarded-for chain for authentication throttling.
+  return request.headers.get("x-real-ip")?.trim() || "unknown";
 }
 function hashIp(ip) { return crypto.createHash("sha256").update(`${process.env.ADMIN_SESSION_SECRET}:${ip}`).digest("hex"); }
 function clearCookie(response, name) { response.cookies.set(name, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 0 }); }
@@ -36,7 +37,8 @@ export async function POST(request) {
         await pool.query("INSERT INTO admin_login_attempts (ip_hash) VALUES ($1)", [ipHash]);
         return NextResponse.json({ error: "Incorrect password." }, { status: 401 });
       }
-      await pool.query("DELETE FROM admin_login_attempts WHERE ip_hash=$1", [ipHash]);
+      // Keep failures recorded until both password and authenticator succeed.
+      // Clearing here would let a correct password reset the TOTP attempt limit.
       const response = NextResponse.json({ ok: true, requiresAuthenticator: true });
       response.cookies.set(ADMIN_PENDING_COOKIE, makeSignedToken(PENDING_AGE), { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: PENDING_AGE });
       return response;
