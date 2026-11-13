@@ -31,8 +31,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Generate audit lockfile
-        run: npm install --package-lock-only --ignore-scripts --no-audit
+      - name: Install dependencies from the committed lockfile
+        run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Check for high and critical vulnerabilities
         run: npm audit --audit-level=high
