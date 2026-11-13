@@ -14,6 +14,16 @@ CREATE INDEX IF NOT EXISTS data_protection_request_rate_limits_ip_time_idx
 CREATE INDEX IF NOT EXISTS data_protection_request_rate_limits_time_idx
   ON public.data_protection_request_rate_limits (requested_at);
 
+-- The app login is provisioned as a scoped read/write role by Neon. Remove
+-- inherited grants on current objects and future objects before granting the
+-- single function it needs to execute.
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM vsi_data_protection_api;
+REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM vsi_data_protection_api;
+ALTER DEFAULT PRIVILEGES FOR ROLE neondb_owner IN SCHEMA public
+  REVOKE ALL ON TABLES FROM vsi_data_protection_api;
+ALTER DEFAULT PRIVILEGES FOR ROLE neondb_owner IN SCHEMA public
+  REVOKE ALL ON SEQUENCES FROM vsi_data_protection_api;
+
 ALTER TABLE public.data_protection_request_rate_limits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.data_protection_request_rate_limits FORCE ROW LEVEL SECURITY;
 
