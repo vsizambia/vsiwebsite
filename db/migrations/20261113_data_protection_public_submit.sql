@@ -17,6 +17,11 @@ CREATE INDEX IF NOT EXISTS data_protection_request_rate_limits_time_idx
 ALTER TABLE public.data_protection_request_rate_limits ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.data_protection_request_rate_limits FORCE ROW LEVEL SECURITY;
 
+-- The application login must not access the rate-limit table or its sequence
+-- directly; it can submit only through the SECURITY DEFINER function.
+REVOKE ALL PRIVILEGES ON TABLE public.data_protection_request_rate_limits FROM vsi_data_protection_api;
+REVOKE ALL PRIVILEGES ON SEQUENCE public.data_protection_request_rate_limits_id_seq FROM vsi_data_protection_api;
+
 CREATE OR REPLACE FUNCTION public.vsi_submit_data_protection_request(
   p_ip_hash text,
   p_request_type text,
