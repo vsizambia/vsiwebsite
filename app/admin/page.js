@@ -14,7 +14,8 @@ const groups=[
     ["Impact & Evidence","/admin/impact","◉"],
     ["Performance","/admin/performance","↗"],
     ["Activity Catalogue","/admin/activity-catalogue","▦"],
-    ["Events & Registrations","/admin/events","▣"],
+    ["Events","/admin/events","▣"],
+    ["Event Registrations","/admin/event-registrations","▧"],
   ]},
   {label:"PEOPLE",items:[
     ["Volunteers","/admin/volunteers","♙"],
