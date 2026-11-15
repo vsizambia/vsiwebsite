@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/lib/db";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { pool } from "../../../../lib/db";
+import { isAdminAuthenticated } from "../../../../lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
