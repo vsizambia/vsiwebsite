@@ -1,9 +1,8 @@
 import {NextResponse} from "next/server";
 import crypto from "node:crypto";
-import {ensureVolunteerTable,pool,publicPool} from "../../../../lib/db";
+import {ensureVolunteerTable,pool} from "../../../../lib/db";
 
 const db=pool;
-import {ACTIVITY_CATALOGUE} from "../../../../app/admin/activities/add/activity-catalogue";
 
 const hours=(s,e)=>{const[a,b]=String(s).split(":").map(Number),[c,d]=String(e).split(":").map(Number);let m=c*60+d-(a*60+b);if(m<0)m+=1440;return +(m/60).toFixed(2)};
 const clean=v=>typeof v==="string"?v.trim():"";
@@ -58,7 +57,6 @@ function validVerificationToken(token,volunteerId){
  }catch{return false}
 }
 
-const catalogueByCode=new Map(ACTIVITY_CATALOGUE.map(entry=>{const [code,name,project,directorate,sdgs,auAgenda]=Array.isArray(entry)?entry:[entry.code,entry.name,entry.project,entry.directorate,entry.sdgs,entry.auAgenda];return [String(code).trim().toUpperCase(),{code:String(code).trim(),name,project,directorate,sdgs,auAgenda}]}));
 
 export async function GET(request){
  try{
@@ -93,7 +91,9 @@ export async function POST(request){
 
   if(!b.volunteerId||!b.verificationToken||!b.activityDate||!b.activityName||!b.activityCode||!b.startTime||!b.endTime||!b.description)return NextResponse.json({error:"Please complete all required activity fields."},{status:400});
   const h=hours(b.startTime,b.endTime);if(h<=0)return NextResponse.json({error:"Activity duration must be greater than zero."},{status:400});
-  const catalogueActivity=catalogueByCode.get(clean(b.activityCode).toUpperCase());if(!catalogueActivity)return NextResponse.json({error:"Please select a valid VSI activity from the official activity catalogue."},{status:400});
+  const catalogueResult=await db.query(`SELECT activity_code AS code,activity AS name,project,directorate,sdgs,au_agenda_2063 AS "auAgenda" FROM vsi_master_activity_catalogue WHERE UPPER(TRIM(activity_code))=UPPER(TRIM($1)) AND active IS TRUE LIMIT 1`,[clean(b.activityCode)]);
+  if(!catalogueResult.rowCount)return NextResponse.json({error:"Please select an active VSI activity from the official activity catalogue."},{status:400});
+  const catalogueActivity=catalogueResult.rows[0];
   if(!await allowRate(request,"submit",ACTIVITY_RATE_LIMIT))return NextResponse.json({error:"Too many activity submissions. Please try again later."},{status:429});
   await ensureVolunteerTable();
   const v=await db.query("SELECT id,status,line_manager_name FROM volunteer_applications WHERE UPPER(TRIM(volunteer_id))=UPPER(TRIM($1)) LIMIT 1",[b.volunteerId]);
