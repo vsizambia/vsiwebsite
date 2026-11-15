@@ -174,8 +174,8 @@ export async function POST(request) {
     return NextResponse.json({
       ok: true, id: result.rows[0].id, emailSent, emailVerified: false,
       message: emailSent
-        ? "Your application has been saved. Please open the verification link sent to your email address. VSI will only receive your application for review after you verify your email."
-        : "Your application has been saved but is not yet verified because the verification email could not be sent. Please contact VSI for assistance."
+        ? "Your application has been saved successfully. Please check your email inbox (and spam folder) for the verification link. Your application will only be submitted to VSI for review after you verify your email address."
+        : "Your application has been saved, but we could not send the verification email. Please contact VSI for assistance before trying to apply again."
     }, { status: 201 });
   } catch (error) {
     console.error("Volunteer application error:", error);
