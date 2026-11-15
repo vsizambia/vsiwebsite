@@ -6,47 +6,47 @@ import styles from "./dashboard.module.css";
 
 const groups=[
   {label:"WORKSPACE",items:[
-    ["Overview","/admin","⌂"],
+    ["Overview","/admin"],
   ]},
   {label:"PROGRAMMES & IMPACT",items:[
-    ["Activity Register","/admin/activities","▤"],
-    ["Record Activity","/admin/activities/add","+ "],
-    ["Impact & Evidence","/admin/impact","◉"],
-    ["Performance","/admin/performance","↗"],
-    ["Activity Catalogue","/admin/activity-catalogue","▦"],
-    ["Events","/admin/events","▣"],
-    ["Event Registrations","/admin/event-registrations","▧"],
+    ["Activity Register","/admin/activities"],
+    ["Record Activity","/admin/activities/add"],
+    ["Impact & Evidence","/admin/impact"],
+    ["Performance","/admin/performance"],
+    ["Activity Catalogue","/admin/activity-catalogue"],
+    ["Events","/admin/events"],
+    ["Event Registrations","/admin/event-registrations"],
   ]},
   {label:"PEOPLE",items:[
-    ["Volunteers","/admin/volunteers","♙"],
-    ["Volunteer Portal","/volunteer/portal","↗"],
-    ["Recruitment","/admin/recruitment","＋"],
-    ["Safeguarding Accounts","/admin/safeguarding-accounts","♢"],
-    ["Safeguarding Cases","/admin/safeguarding","⚑"],
+    ["Volunteers","/admin/volunteers"],
+    ["Volunteer Portal","/volunteer/portal"],
+    ["Recruitment","/admin/recruitment"],
+    ["Safeguarding Accounts","/admin/safeguarding-accounts"],
+    ["Safeguarding Cases","/admin/safeguarding"],
   ]},
   {label:"FINANCE & RESOURCES",items:[
-    ["Volunteer Finance","/admin/volunteer-finance","Ｚ"],
-    ["Generosity & Donations","/admin/generosity","♡"],
+    ["Volunteer Finance","/admin/volunteer-finance"],
+    ["Generosity & Donations","/admin/generosity"],
   ]},
   {label:"COMMUNICATIONS",items:[
-    ["News Publishing","/admin/news","▧"],
-    ["Website Manager","/admin/website-manager","▣"],
-    ["Website Navigation","/admin/website-chrome","☷"],
-    ["Media Library","/admin/media-library","▧"],
-    ["E-Learning","/elearning","▹"],
+    ["News Publishing","/admin/news"],
+    ["Website Manager","/admin/website-manager"],
+    ["Website Navigation","/admin/website-chrome"],
+    ["Media Library","/admin/media-library"],
+    ["E-Learning","/elearning"],
   ]},
   {label:"GOVERNANCE",items:[
-    ["Data Protection","/admin/data-protection","◇"],
+    ["Data Protection","/admin/data-protection"],
   ]},
 ];
 
 const metricCards=[
-  {title:"Approved volunteers",path:"volunteers",key:"approved",icon:"♙",tone:"blue"},
-  {title:"Pending applications",path:"volunteers",key:"pending",icon:"◷",tone:"amber"},
-  {title:"People reached",path:"impact",key:"people",icon:"◎",tone:"green"},
-  {title:"Activities recorded",path:"impact",key:"activities",icon:"▤",tone:"violet"},
-  {title:"Verified volunteer hours",path:"volunteers",key:"verifiedHours",icon:"◷",tone:"blue",hours:true},
-  {title:"Upcoming events",path:"events",key:"upcoming",icon:"▣",tone:"green"},
+  {title:"Approved volunteers",path:"volunteers",key:"approved",tone:"blue"},
+  {title:"Pending applications",path:"volunteers",key:"pending",tone:"amber"},
+  {title:"People reached",path:"impact",key:"people",tone:"green"},
+  {title:"Activities recorded",path:"impact",key:"activities",tone:"violet"},
+  {title:"Verified volunteer hours",path:"volunteers",key:"verifiedHours",tone:"blue",hours:true},
+  {title:"Upcoming events",path:"events",key:"upcoming",tone:"green"},
 ];
 
 function number(value){return Number(value||0).toLocaleString("en-ZM",{maximumFractionDigits:2})}
@@ -97,25 +97,25 @@ export default function AdminDashboard(){
   }),[summary]);
 
   if(checking)return <main className={styles.center}><div className={styles.loading}>Loading VSI workspace…</div></main>;
-  if(!authenticated)return <main className={styles.loginPage}><section className={styles.loginShell}><div className={styles.logo}>VSI</div><p className={styles.eyebrow}>SECURE ADMIN ACCESS</p><h1>VSI Administration</h1><p className={styles.loginIntro}>{authStep==="code"?"Enter the 6-digit code from your Authenticator app to continue.":"Sign in to open the VSI dashboard and administration workspace."}</p><form onSubmit={login} className={styles.form}>{authStep==="password"?<><label htmlFor="admin-password">Admin password</label><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></>:<><label htmlFor="admin-auth-code">Authenticator code</label><input id="admin-auth-code" type="text" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="one-time-code" value={authCode} onChange={e=>setAuthCode(e.target.value.replace(/\D/g,"").slice(0,6))} required autoFocus/></>}{error&&<div className={styles.error}>{error}</div>}<button type="submit">{authStep==="code"?"Verify code":"Sign in"} <span>→</span></button>{authStep==="code"&&<button type="button" className={styles.back} onClick={()=>{setAuthStep("password");setAuthCode("");setError("")}}>← Back to password</button>}</form></section></main>;
+  if(!authenticated)return <main className={styles.loginPage}><section className={styles.loginShell}><div className={styles.logo}>VSI</div><p className={styles.eyebrow}>SECURE ADMIN ACCESS</p><h1>VSI Administration</h1><p className={styles.loginIntro}>{authStep==="code"?"Enter the 6-digit code from your Authenticator app to continue.":"Sign in to open the VSI dashboard and administration workspace."}</p><form onSubmit={login} className={styles.form}>{authStep==="password"?<><label htmlFor="admin-password">Admin password</label><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></>:<><label htmlFor="admin-auth-code">Authenticator code</label><input id="admin-auth-code" type="text" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="one-time-code" value={authCode} onChange={e=>setAuthCode(e.target.value.replace(/\D/g,"").slice(0,6))} required autoFocus/></>}{error&&<div className={styles.error}>{error}</div>}<button type="submit">{authStep==="code"?"Verify code":"Sign in"}</button>{authStep==="code"&&<button type="button" className={styles.back} onClick={()=>{setAuthStep("password");setAuthCode("");setError("")}}>Back to password</button>}</form></section></main>;
 
   return <div className={styles.workspace}>
     <aside className={`${styles.sidebar} ${menuOpen?styles.sidebarOpen:""}`}>
       <Link href="/admin" className={styles.brand}><span className={styles.brandMark}>V</span><span><strong>VSI</strong><small>ADMIN WORKSPACE</small></span></Link>
-      <div className={styles.navScroll}>{groups.map(group=><section className={styles.navGroup} key={group.label}><p>{group.label}</p>{group.items.map(([label,href,icon])=><Link key={href} href={href} onClick={()=>setMenuOpen(false)} className={href==="/admin"?styles.activeLink:styles.navLink}><span className={styles.navIcon}>{icon}</span>{label}{href==="/admin"&&<span className={styles.activeDot}/>}</Link>)}</section>)}</div>
+      <div className={styles.navScroll}>{groups.map(group=><section className={styles.navGroup} key={group.label}><p>{group.label}</p>{group.items.map(([label,href])=><Link key={href} href={href} onClick={()=>setMenuOpen(false)} className={href==="/admin"?styles.activeLink:styles.navLink}>{label}</Link>)}</section>)}</div>
       <div className={styles.sidebarBottom}><span className={styles.secureDot}/> Secure administration session</div>
     </aside>
     {menuOpen&&<button className={styles.scrim} aria-label="Close navigation" onClick={()=>setMenuOpen(false)}/>}
     <main className={styles.main}>
-      <header className={styles.topbar}><button className={styles.menuButton} onClick={()=>setMenuOpen(v=>!v)} aria-label="Toggle navigation">☰</button><div className={styles.breadcrumb}>VSI <span>/</span> Dashboard</div><div className={styles.topActions}><span className={styles.session}><i/> Secure session</span><button onClick={loadSummary} disabled={summaryLoading}>{summaryLoading?"Refreshing…":"Refresh ↻"}</button><button className={styles.logout} onClick={logout}>Log out ↗</button></div></header>
+      <header className={styles.topbar}><button className={styles.menuButton} onClick={()=>setMenuOpen(v=>!v)} aria-label="Toggle navigation">Menu</button><div className={styles.breadcrumb}>VSI <span>/</span> Dashboard</div><div className={styles.topActions}><span className={styles.session}><i/> Secure session</span><button onClick={loadSummary} disabled={summaryLoading}>{summaryLoading?"Refreshing…":"Refresh"}</button><button className={styles.logout} onClick={logout}>Log out</button></div></header>
       <div className={styles.content}>
         <section className={styles.welcome}><div><p className={styles.eyebrow}>VISIONARY STUDENTS INITIATIVE</p><h1>Good to see you.</h1><p>Your organisation at a glance. Choose a workspace from the sidebar to get things done.</p></div><div className={styles.welcomeMark}>VSI<span>Empowering students.<br/>Building a better Zambia.</span></div></section>
         <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>ORGANISATIONAL OVERVIEW</p><h2>Dashboard summary</h2></div><span className={styles.liveLabel}><i/> Live data</span></div>
         {error&&<div className={styles.errorBanner}>{error}<button onClick={loadSummary}>Try again</button></div>}
-        <section className={styles.metrics}>{metrics.map(item=><Link href={item.path==="volunteers"?"/admin/volunteers":item.path==="impact"?"/admin/impact":"/admin/events"} key={item.title} className={styles.metricCard}><span className={`${styles.metricIcon} ${styles[item.tone]}`}>{item.icon}</span><span className={styles.metricTitle}>{item.title}</span><strong>{summaryLoading||item.value===null?"—":item.value}</strong><small>View details <b>→</b></small></Link>)}</section>
+        <section className={styles.metrics}>{metrics.map(item=><Link href={item.path==="volunteers"?"/admin/volunteers":item.path==="impact"?"/admin/impact":"/admin/events"} key={item.title} className={styles.metricCard}><span className={styles.metricTitle}>{item.title}</span><strong>{summaryLoading||item.value===null?"—":item.value}</strong><small>View details</small></Link>)}</section>
         <section className={styles.lowerGrid}>
-          <div className={styles.panel}><div className={styles.panelHeading}><div><p className={styles.eyebrow}>QUICK ACCESS</p><h2>Frequently used</h2></div></div><div className={styles.quickLinks}><Link href="/admin/volunteers"><span>♙</span><div><strong>Manage volunteers</strong><small>Applications, profiles and assignments</small></div><b>→</b></Link><Link href="/admin/activities"><span>▤</span><div><strong>Review activity register</strong><small>Verify service entries and hours</small></div><b>→</b></Link><Link href="/admin/impact"><span>◎</span><div><strong>Update impact records</strong><small>Programme results and evidence</small></div><b>→</b></Link><Link href="/admin/events"><span>▣</span><div><strong>Manage events</strong><small>Events and participant registrations</small></div><b>→</b></Link></div></div>
-          <div className={styles.panel}><div className={styles.panelHeading}><div><p className={styles.eyebrow}>FINANCE SNAPSHOT</p><h2>Volunteer finance</h2></div><Link href="/admin/volunteer-finance">Open finance →</Link></div><div className={styles.financeRows}><div><span>Membership received</span><strong>{summary?money(summary.finance?.membershipPaid):"—"}</strong></div><div><span>Outstanding balances</span><strong>{summary?money(summary.finance?.outstanding):"—"}</strong></div><div><span>Volunteer donations</span><strong>{summary?money(summary.finance?.donations):"—"}</strong></div><div><span>Total spent</span><strong>{summary?money(summary.finance?.totalSpent):"—"}</strong></div></div><p className={styles.note}>These figures reflect the existing volunteer finance records.</p></div>
+          <div className={styles.panel}><div className={styles.panelHeading}><div><p className={styles.eyebrow}>QUICK ACCESS</p><h2>Frequently used</h2></div></div><div className={styles.quickLinks}><Link href="/admin/volunteers"><div><strong>Manage volunteers</strong><small>Applications, profiles and assignments</small></div></Link><Link href="/admin/activities"><div><strong>Review activity register</strong><small>Verify service entries and hours</small></div></Link><Link href="/admin/impact"><div><strong>Update impact records</strong><small>Programme results and evidence</small></div></Link><Link href="/admin/events"><div><strong>Manage events</strong><small>Events and participant registrations</small></div><b>→</b></Link></div></div>
+          <div className={styles.panel}><div className={styles.panelHeading}><div><p className={styles.eyebrow}>FINANCE SNAPSHOT</p><h2>Volunteer finance</h2></div><Link href="/admin/volunteer-finance">Open finance</Link></div><div className={styles.financeRows}><div><span>Membership received</span><strong>{summary?money(summary.finance?.membershipPaid):"—"}</strong></div><div><span>Outstanding balances</span><strong>{summary?money(summary.finance?.outstanding):"—"}</strong></div><div><span>Volunteer donations</span><strong>{summary?money(summary.finance?.donations):"—"}</strong></div><div><span>Total spent</span><strong>{summary?money(summary.finance?.totalSpent):"—"}</strong></div></div><p className={styles.note}>These figures reflect the existing volunteer finance records.</p></div>
         </section>
         <footer className={styles.footer}>Visionary Students Initiative <span>·</span> Internal administration workspace</footer>
       </div>
