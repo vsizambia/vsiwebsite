@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { pool } from "../../../../lib/db";
-import { isAdminAuthenticated } from "../../../../lib/admin-auth";
 import { readSafeguardingSession } from "../../../../lib/safeguarding-auth";
 
 const unauthorized = () => NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
@@ -22,11 +21,10 @@ async function resolveSafeguardingAccess(request, permission) {
 
 export async function GET(request) {
   const access = await resolveSafeguardingAccess(request, "read");
-  const legacyAdmin = isAdminAuthenticated(request);
-  if (!legacyAdmin && !access.allowed) return unauthorized();
+  if (!access.allowed) return unauthorized();
   const session = access.session;
-  const actor = session ? session.name + " (" + session.username + ")" : "Authenticated VSI Admin";
-  const user = session ? { username: session.username, displayName: session.name, role: session.role } : { username: "vsi-admin", displayName: "VSI Admin", role: "safeguarding_lead" };
+  const actor = session.name + " (" + session.username + ")";
+  const user = { username: session.username, displayName: session.name, role: session.role };
   try {
     const { searchParams } = new URL(request.url);
     const id = Number(searchParams.get("id"));
@@ -49,13 +47,12 @@ export async function GET(request) {
 
 export async function PATCH(request) {
   const access = await resolveSafeguardingAccess(request, "write_cases");
-  const legacyAdmin = isAdminAuthenticated(request);
-  if (!legacyAdmin && !access.allowed) {
+  if (!access.allowed) {
     if (access.session) return NextResponse.json({ error: "This account is read-only and cannot change case records." }, { status: 403 });
     return unauthorized();
   }
   const session = readSafeguardingSession(request);
-  const actor = session ? session.name + " (" + session.username + ")" : "Authenticated VSI Admin";
+  const actor = session.name + " (" + session.username + ")";
   let client;
   try {
     const body = await request.json();
@@ -125,8 +122,7 @@ export async function PATCH(request) {
 
 export async function POST(request) {
   const access = await resolveSafeguardingAccess(request, "write_cases");
-  const legacyAdmin = isAdminAuthenticated(request);
-  if (!legacyAdmin && !access.allowed) {
+  if (!access.allowed) {
     if (access.session) return NextResponse.json({ error: "This account is read-only and cannot add case notes." }, { status: 403 });
     return unauthorized();
   }
