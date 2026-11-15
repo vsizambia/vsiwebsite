@@ -45,7 +45,7 @@ export default function AdminAuthPage(){
       <img src="/images/VSI%20LOGO%20white%20and%20%20blue.png" alt="Visionary Students Initiative" style={styles.logo}/>
     </div>
     <h1 style={styles.title}>VSI Administration</h1>
-    <p style={styles.intro}>{authStep==="code"?"Enter the 6-digit code from your Authenticator app to continue.":"Sign in to access the VSI Administration Control Centre."}</p>
+    <p style={styles.intro}>{authStep==="code"?"Enter the 6-digit code from your Authenticator app to continue.":"Sign in to open the VSI dashboard and administration workspace."}</p>
     <form onSubmit={login}>
       {authStep==="password"?<><label style={styles.label} htmlFor="admin-password">Admin password</label><input style={styles.input} id="admin-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required autoFocus/></>:<><label style={styles.label} htmlFor="admin-auth-code">Authenticator code</label><input style={styles.input} id="admin-auth-code" type="text" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="one-time-code" value={authCode} onChange={e=>setAuthCode(e.target.value.replace(/\D/g,"").slice(0,6))} required autoFocus/><small style={styles.help}>Enter the current 6-digit code from your Authenticator app.</small></>}
       {error&&<div style={styles.error}>{error}</div>}

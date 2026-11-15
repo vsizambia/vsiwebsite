@@ -1,41 +1,124 @@
 "use client";
 
-import {useEffect,useState} from "react";
+import {useEffect,useMemo,useState} from "react";
 import Link from "next/link";
-import {SiteHeader,SiteFooter} from "../components/SiteChrome";
 import styles from "./dashboard.module.css";
-import summaryStyles from "./dashboard-summary.module.css";
 
-const modules=[
-  {title:"Volunteer Management",text:"Review applications, manage the volunteer register, assignments and profiles.",href:"/admin/volunteers",featured:true,summaryKey:"volunteers",metrics:[["approved","APPROVED VOLUNTEERS"],["pending","PENDING REVIEW"],["verifiedHours","TOTAL VERIFIED VOLUNTEER HOURS"],["professionalDevelopmentHours","PROFESSIONAL DEVELOPMENT HOURS"]]},
-  {title:"Volunteer Portal",text:"Open the volunteer-facing portal to review profiles, verified service, professional development and membership contribution records.",href:"/volunteer/portal",cardStyle:{backgroundColor:"#030164"}},
-  {title:"Volunteer Finance",text:"Track monthly membership payments, outstanding balances and volunteer donations.",href:"/admin/volunteer-finance",featured:true,summaryKey:"finance",metrics:[["membershipPaid","MEMBERSHIP RECEIVED"],["outstanding","OUTSTANDING"],["donations","VOLUNTEER DONATIONS"],["totalSpent","TOTAL SPENT"]]},
-  {title:"VSI Generosity",text:"Manage goods-only generosity offers, item quantities, contributor follow-up and collection records.",href:"/admin/generosity",cardStyle:{backgroundColor:"#4E1F6E"},summaryKey:"generosity",metrics:[["verifiedPledges","VERIFIED PLEDGES"],["awaitingCollection","AWAITING COLLECTION"],["quantitiesPledged","ITEMS PLEDGED"],["quantitiesCollected","ITEMS COLLECTED"]]},
-  {title:"News Publishing",text:"Create, edit, publish and manage VSI news stories and media.",href:"/admin/news",summaryKey:"news",metrics:[["published","PUBLISHED"],["drafts","DRAFTS"],["total","TOTAL STORIES"]]},
-  {title:"Impact & Evidence",text:"Update programme descriptions and the figures displayed on the public Impact page.",href:"/admin/impact",summaryKey:"impact",metrics:[["activities","ACTIVITIES"],["people","PEOPLE REACHED"],["institutions","INSTITUTIONS / FACILITIES"]]},
-  {title:"Events",text:"Manage VSI events and event registrations.",href:"/admin/events",events:true,summaryKey:"events",metrics:[["upcoming","UPCOMING EVENTS"],["registrations","REGISTRATIONS"],["completed","COMPLETED EVENTS"]]},
-  {title:"Data Protection Compliance",text:"Manage privacy requests, consent records and data-protection incidents.",href:"/admin/data-protection",cardStyle:{backgroundColor:"#1D4533"},summaryKey:"compliance",metrics:[["requests","DATA REQUESTS"],["incidents","OPEN INCIDENTS"],["retentionDue","RETENTION REVIEW DUE"],["retentionOverdue","OVERDUE RETENTION RECORDS"]]},
-  {title:"Master Activity Catalogue",text:"Manage the approved Directorate → Project → Activity library.",href:"/admin/activity-catalogue",cardStyle:{backgroundColor:"#3368A0"},summaryKey:"catalogue",metrics:[["activities","ACTIVITIES"],["projects","PROJECTS"],["directorates","DIRECTORATES"]]},
-  {title:"E-Learning",text:"View the VSI Youth Civic Engagement Programme and its five learning modules.",href:"/elearning",cardStyle:{backgroundColor:"#123F36"},stats:[["5","MODULES"],["10","LEARNING HOURS"]]},
-  {title:"Safeguarding Staff Accounts",text:"Create, review and disable individual safeguarding accounts and assign access roles.",href:"/admin/safeguarding-accounts",cardStyle:{backgroundColor:"#27515E"}},
-  {title:"Safeguarding Case Management",text:"Receive and manage safeguarding reports, assess risks, record protective actions and monitor follow-up.",href:"/admin/safeguarding",cardStyle:{backgroundColor:"#174D4B"}},
-  {title:"Recruitment & Engagement",text:"Publish staff, consultancy, project and volunteer opportunities; review applications and manage recruitment decisions.",href:"/admin/recruitment",cardStyle:{backgroundColor:"#174F7D"}}
+const groups=[
+  {label:"WORKSPACE",items:[
+    ["Overview","/admin","⌂"],
+  ]},
+  {label:"PROGRAMMES & IMPACT",items:[
+    ["Activity Register","/admin/activities","▤"],
+    ["Record Activity","/admin/activities/add","+ "],
+    ["Impact & Evidence","/admin/impact","◉"],
+    ["Performance","/admin/performance","↗"],
+    ["Activity Catalogue","/admin/activity-catalogue","▦"],
+    ["Events","/admin/events","▣"],
+    ["Event Registrations","/admin/event-registrations","▧"],
+  ]},
+  {label:"PEOPLE",items:[
+    ["Volunteers","/admin/volunteers","♙"],
+    ["Volunteer Portal","/volunteer/portal","↗"],
+    ["Recruitment","/admin/recruitment","＋"],
+    ["Safeguarding Accounts","/admin/safeguarding-accounts","♢"],
+    ["Safeguarding Cases","/admin/safeguarding","⚑"],
+  ]},
+  {label:"FINANCE & RESOURCES",items:[
+    ["Volunteer Finance","/admin/volunteer-finance","Ｚ"],
+    ["Generosity & Donations","/admin/generosity","♡"],
+  ]},
+  {label:"COMMUNICATIONS",items:[
+    ["News Publishing","/admin/news","▧"],
+    ["Website Manager","/admin/website-manager","▣"],
+    ["Website Navigation","/admin/website-chrome","☷"],
+    ["Media Library","/admin/media-library","▧"],
+    ["E-Learning","/elearning","▹"],
+  ]},
+  {label:"GOVERNANCE",items:[
+    ["Data Protection","/admin/data-protection","◇"],
+  ]},
 ];
 
-function formatHours(value){const n=Number(value||0);return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})+" hrs"}
+const metricCards=[
+  {title:"Approved volunteers",path:"volunteers",key:"approved",icon:"♙",tone:"blue"},
+  {title:"Pending applications",path:"volunteers",key:"pending",icon:"◷",tone:"amber"},
+  {title:"People reached",path:"impact",key:"people",icon:"◎",tone:"green"},
+  {title:"Activities recorded",path:"impact",key:"activities",icon:"▤",tone:"violet"},
+  {title:"Verified volunteer hours",path:"volunteers",key:"verifiedHours",icon:"◷",tone:"blue",hours:true},
+  {title:"Upcoming events",path:"events",key:"upcoming",icon:"▣",tone:"green"},
+];
+
+function number(value){return Number(value||0).toLocaleString("en-ZM",{maximumFractionDigits:2})}
+function money(value){return "ZMW "+number(value)}
 
 export default function AdminDashboard(){
-  const[authenticated,setAuthenticated]=useState(false),[checking,setChecking]=useState(true),[authStep,setAuthStep]=useState("password"),[password,setPassword]=useState(""),[authCode,setAuthCode]=useState(""),[error,setError]=useState(""),[summary,setSummary]=useState(null),[summaryLoading,setSummaryLoading]=useState(false);
-  async function checkSession(){try{const r=await fetch("/api/admin/volunteers",{cache:"no-store"});setAuthenticated(r.ok)}catch{setAuthenticated(false)}finally{setChecking(false)}}
+  const[authenticated,setAuthenticated]=useState(false);
+  const[checking,setChecking]=useState(true);
+  const[authStep,setAuthStep]=useState("password");
+  const[password,setPassword]=useState("");
+  const[authCode,setAuthCode]=useState("");
+  const[error,setError]=useState("");
+  const[summary,setSummary]=useState(null);
+  const[summaryLoading,setSummaryLoading]=useState(false);
+  const[menuOpen,setMenuOpen]=useState(false);
+
+  async function checkSession(){
+    try{const r=await fetch("/api/admin/volunteers",{cache:"no-store"});setAuthenticated(r.ok)}
+    catch{setAuthenticated(false)}
+    finally{setChecking(false)}
+  }
   useEffect(()=>{checkSession()},[]);
-  async function loadSummary(){setSummaryLoading(true);try{const r=await fetch("/api/admin/dashboard",{cache:"no-store"});const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to load dashboard summaries.");setSummary(d)}catch(e){setError(e.message)}finally{setSummaryLoading(false)}}
+  async function loadSummary(){
+    setSummaryLoading(true);setError("");
+    try{const r=await fetch("/api/admin/dashboard",{cache:"no-store"});const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to load dashboard summaries.");setSummary(d)}
+    catch(e){setError(e.message)}
+    finally{setSummaryLoading(false)}
+  }
   useEffect(()=>{if(authenticated)loadSummary()},[authenticated]);
-  async function login(e){e.preventDefault();setError("");try{const payload=authStep==="code"?{code:authCode}:{password};const r=await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to sign in.");if(d.requiresAuthenticator){setAuthStep("code");setAuthCode("");return}setPassword("");setAuthCode("");setAuthenticated(true)}catch(e){setError(e.message)}}
-  async function logout(){await fetch("/api/admin/login",{method:"DELETE"});setAuthenticated(false);setAuthStep("password");setPassword("");setAuthCode("");setSummary(null)}
-  if(checking)return <main className={styles.center}><div className={styles.loading}>Loading VSI Admin...</div></main>;
-  if(!authenticated)return <main className={styles.loginPage}><div className={styles.loginShell}><div className={styles.logo}>VSI</div><p className="kicker">ADMIN ACCESS</p><h1>VSI Administration</h1><p className={styles.loginIntro}>{authStep==="code"?"Enter the 6-digit code from your Authenticator app to continue.":"Sign in to access all VSI administration tools from one place."}</p><form onSubmit={login} className={styles.form}>{authStep==="password"?<><label htmlFor="admin-password">Admin password</label><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></>:<><label htmlFor="admin-auth-code">Authenticator code</label><input id="admin-auth-code" type="text" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="one-time-code" value={authCode} onChange={e=>setAuthCode(e.target.value.replace(/D/g,"").slice(0,6))} required autoFocus/><small>Open Google Authenticator, Microsoft Authenticator or Authy and enter the current 6-digit code.</small></>}{error&&<div className={styles.error}>{error}</div>}<button type="submit">{authStep==="code"?"Verify code":"Sign in"} <span>↗</span></button>{authStep==="code"&&<button type="button" className={styles.back} onClick={()=>{setAuthStep("password");setAuthCode("");setError("")}}>← Back to password</button>}</form></div></main>;
-  const metricValue=(key,name)=>{const value=summary?.[name]?.[key];if(summaryLoading||value===undefined)return "—";return key.toLowerCase().includes("hours")?formatHours(value):Number(value).toLocaleString()};
-  const renderSummary=item=><div className={summaryStyles.summary}>{item.metrics.map(([key,label])=><div className={summaryStyles.summaryItem} key={key}><strong>{metricValue(key,item.summaryKey)}</strong><span>{label}</span></div>)}</div>;
-  const renderStats=item=><div className={summaryStyles.summary}>{item.stats.map(([value,label])=><div className={summaryStyles.summaryItem} key={label}><strong>{value}</strong><span>{label}</span></div>)}</div>;
-  return <><SiteHeader ctaLabel="Administration" ctaHref="/admin"/><main className={styles.page}><div className={styles.shell}><header className={styles.topbar}><div></div><div className={styles.actions}><span className={styles.connected}><i/> Secure session</span><button onClick={logout}>Log out ↪</button></div></header><section className={styles.hero}><div className={styles.heroContent}><h1>VSI Administration Control Centre</h1><p>What would you like to manage?</p></div></section><section className={styles.grid}>{modules.map((item)=><div className={styles.card} style={item.cardStyle} key={item.href}>{item.events?<><h2>{item.title}</h2><p>{item.text}</p>{renderSummary(item)}<div className={styles.subLinks}><Link href="/admin/events">Manage Events</Link><Link href="/admin/event-registrations">Event Registrations</Link></div></>:<Link className={styles.cardLink} href={item.href}><h2>{item.title}</h2><p>{item.text}</p>{item.metrics&&renderSummary(item)}{item.stats&&renderStats(item)}<span className={styles.open}>Open {item.title} <b>→</b></span></Link>}</div>)}</section></div></main><SiteFooter/></>;
+  async function login(e){
+    e.preventDefault();setError("");
+    try{
+      const payload=authStep==="code"?{code:authCode}:{password};
+      const r=await fetch("/api/admin/login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+      const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to sign in.");
+      if(d.requiresAuthenticator){setAuthStep("code");setAuthCode("");return}
+      setPassword("");setAuthCode("");setAuthenticated(true);
+    }catch(e){setError(e.message)}
+  }
+  async function logout(){
+    await fetch("/api/admin/login",{method:"DELETE"});
+    setAuthenticated(false);setAuthStep("password");setPassword("");setAuthCode("");setSummary(null);
+  }
+
+  const metrics=useMemo(()=>metricCards.map(item=>{
+    const value=summary?.[item.path]?.[item.key];
+    return {...item,value:value===undefined?null:item.hours?Number(value).toFixed(2):number(value)};
+  }),[summary]);
+
+  if(checking)return <main className={styles.center}><div className={styles.loading}>Loading VSI workspace…</div></main>;
+  if(!authenticated)return <main className={styles.loginPage}><section className={styles.loginShell}><div className={styles.logo}>VSI</div><p className={styles.eyebrow}>SECURE ADMIN ACCESS</p><h1>VSI Administration</h1><p className={styles.loginIntro}>{authStep==="code"?"Enter the 6-digit code from your Authenticator app to continue.":"Sign in to open the VSI dashboard and administration workspace."}</p><form onSubmit={login} className={styles.form}>{authStep==="password"?<><label htmlFor="admin-password">Admin password</label><input id="admin-password" type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required/></>:<><label htmlFor="admin-auth-code">Authenticator code</label><input id="admin-auth-code" type="text" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} autoComplete="one-time-code" value={authCode} onChange={e=>setAuthCode(e.target.value.replace(/\D/g,"").slice(0,6))} required autoFocus/></>}{error&&<div className={styles.error}>{error}</div>}<button type="submit">{authStep==="code"?"Verify code":"Sign in"} <span>→</span></button>{authStep==="code"&&<button type="button" className={styles.back} onClick={()=>{setAuthStep("password");setAuthCode("");setError("")}}>← Back to password</button>}</form></section></main>;
+
+  return <div className={styles.workspace}>
+    <aside className={`${styles.sidebar} ${menuOpen?styles.sidebarOpen:""}`}>
+      <Link href="/admin" className={styles.brand}><span className={styles.brandMark}>V</span><span><strong>VSI</strong><small>ADMIN WORKSPACE</small></span></Link>
+      <div className={styles.navScroll}>{groups.map(group=><section className={styles.navGroup} key={group.label}><p>{group.label}</p>{group.items.map(([label,href,icon])=><Link key={href} href={href} onClick={()=>setMenuOpen(false)} className={href==="/admin"?styles.activeLink:styles.navLink}><span className={styles.navIcon}>{icon}</span>{label}{href==="/admin"&&<span className={styles.activeDot}/>}</Link>)}</section>)}</div>
+      <div className={styles.sidebarBottom}><span className={styles.secureDot}/> Secure administration session</div>
+    </aside>
+    {menuOpen&&<button className={styles.scrim} aria-label="Close navigation" onClick={()=>setMenuOpen(false)}/>}
+    <main className={styles.main}>
+      <header className={styles.topbar}><button className={styles.menuButton} onClick={()=>setMenuOpen(v=>!v)} aria-label="Toggle navigation">☰</button><div className={styles.breadcrumb}>VSI <span>/</span> Dashboard</div><div className={styles.topActions}><span className={styles.session}><i/> Secure session</span><button onClick={loadSummary} disabled={summaryLoading}>{summaryLoading?"Refreshing…":"Refresh ↻"}</button><button className={styles.logout} onClick={logout}>Log out ↗</button></div></header>
+      <div className={styles.content}>
+        <section className={styles.welcome}><div><p className={styles.eyebrow}>VISIONARY STUDENTS INITIATIVE</p><h1>Good to see you.</h1><p>Your organisation at a glance. Choose a workspace from the sidebar to get things done.</p></div><div className={styles.welcomeMark}>VSI<span>Empowering students.<br/>Building a better Zambia.</span></div></section>
+        <div className={styles.sectionHeading}><div><p className={styles.eyebrow}>ORGANISATIONAL OVERVIEW</p><h2>Dashboard summary</h2></div><span className={styles.liveLabel}><i/> Live data</span></div>
+        {error&&<div className={styles.errorBanner}>{error}<button onClick={loadSummary}>Try again</button></div>}
+        <section className={styles.metrics}>{metrics.map(item=><Link href={item.path==="volunteers"?"/admin/volunteers":item.path==="impact"?"/admin/impact":"/admin/events"} key={item.title} className={styles.metricCard}><span className={`${styles.metricIcon} ${styles[item.tone]}`}>{item.icon}</span><span className={styles.metricTitle}>{item.title}</span><strong>{summaryLoading||item.value===null?"—":item.value}</strong><small>View details <b>→</b></small></Link>)}</section>
+        <section className={styles.lowerGrid}>
+          <div className={styles.panel}><div className={styles.panelHeading}><div><p className={styles.eyebrow}>QUICK ACCESS</p><h2>Frequently used</h2></div></div><div className={styles.quickLinks}><Link href="/admin/volunteers"><span>♙</span><div><strong>Manage volunteers</strong><small>Applications, profiles and assignments</small></div><b>→</b></Link><Link href="/admin/activities"><span>▤</span><div><strong>Review activity register</strong><small>Verify service entries and hours</small></div><b>→</b></Link><Link href="/admin/impact"><span>◎</span><div><strong>Update impact records</strong><small>Programme results and evidence</small></div><b>→</b></Link><Link href="/admin/events"><span>▣</span><div><strong>Manage events</strong><small>Events and participant registrations</small></div><b>→</b></Link></div></div>
+          <div className={styles.panel}><div className={styles.panelHeading}><div><p className={styles.eyebrow}>FINANCE SNAPSHOT</p><h2>Volunteer finance</h2></div><Link href="/admin/volunteer-finance">Open finance →</Link></div><div className={styles.financeRows}><div><span>Membership received</span><strong>{summary?money(summary.finance?.membershipPaid):"—"}</strong></div><div><span>Outstanding balances</span><strong>{summary?money(summary.finance?.outstanding):"—"}</strong></div><div><span>Volunteer donations</span><strong>{summary?money(summary.finance?.donations):"—"}</strong></div><div><span>Total spent</span><strong>{summary?money(summary.finance?.totalSpent):"—"}</strong></div></div><p className={styles.note}>These figures reflect the existing volunteer finance records.</p></div>
+        </section>
+        <footer className={styles.footer}>Visionary Students Initiative <span>·</span> Internal administration workspace</footer>
+      </div>
+    </main>
+  </div>;
 }
