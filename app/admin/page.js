@@ -102,7 +102,7 @@ export default function AdminDashboard(){
   return <div className={styles.workspace}>
     <aside className={`${styles.sidebar} ${menuOpen?styles.sidebarOpen:""}`}>
       <Link href="/admin" className={styles.brand}><span className={styles.brandMark}>V</span><span><strong>VSI</strong><small>ADMIN WORKSPACE</small></span></Link>
-      <div className={styles.navScroll}>{groups.map(group=><section className={styles.navGroup} key={group.label}><p>{group.label}</p>{group.items.map(([label,href])=><Link key={href} href={href} onClick={()=>setMenuOpen(false)} className={href==="/admin"?styles.activeLink:styles.navLink}>{label}{href==="/admin"&&}</Link>)}</section>)}</div>
+      <div className={styles.navScroll}>{groups.map(group=><section className={styles.navGroup} key={group.label}><p>{group.label}</p>{group.items.map(([label,href])=><Link key={href} href={href} onClick={()=>setMenuOpen(false)} className={href==="/admin"?styles.activeLink:styles.navLink}>{label}</Link>)}</section>)}</div>
       <div className={styles.sidebarBottom}><span className={styles.secureDot}/> Secure administration session</div>
     </aside>
     {menuOpen&&<button className={styles.scrim} aria-label="Close navigation" onClick={()=>setMenuOpen(false)}/>}
