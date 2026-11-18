@@ -107,7 +107,7 @@ export default function AdminDashboard(){
 
   return <div className={styles.workspace}>
     <aside className={`${styles.sidebar} ${menuOpen?styles.sidebarOpen:""}`}>
-      <Link href="/admin" className={styles.brand}><span className={styles.brandMark}>V</span><span><strong>VSI</strong><small>ADMIN WORKSPACE</small></span></Link>
+      <Link href="/admin" className={styles.brand} aria-label="VSI Admin Workspace"><img src="/images/VSI%20LOGO%20white.png" alt="Visionary Students Initiative" className={styles.brandLogo}/></Link>
       <div className={styles.navScroll}>{groups.map(group=><section className={styles.navGroup} key={group.label}><p>{group.label}</p>{group.items.map(([label,href])=><Link key={href} href={href} onClick={()=>setMenuOpen(false)} className={href==="/admin"?styles.activeLink:styles.navLink}>{label}</Link>)}</section>)}</div>
       <div className={styles.sidebarBottom}><span className={styles.secureDot}/> Secure administration session</div>
     </aside>
