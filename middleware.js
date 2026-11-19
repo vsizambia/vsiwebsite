@@ -14,6 +14,32 @@ function sameOrigin(request){
   try{return new URL(referer).origin===requestOrigin;}catch{return false;}
 }
 
+async function isValidSafeguardingSession(request){
+  const token=request.cookies.get("vsi_safeguarding_session")?.value;
+  const secret=process.env.ADMIN_SESSION_SECRET;
+  if(!token||!secret||secret.length<32)return false;
+  const parts=token.split(".");
+  if(parts.length!==2)return false;
+  const [payload,signature]=parts;
+  if(!payload||!signature)return false;
+  try{
+    const decodeBase64Url=value=>{
+      const normalized=value.replace(/-/g,"+").replace(/_/g,"/");
+      const padded=normalized+"=".repeat((4-normalized.length%4)%4);
+      return Uint8Array.from(atob(padded),character=>character.charCodeAt(0));
+    };
+    const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-256"},false,["verify"]);
+    const validSignature=await crypto.subtle.verify("HMAC",key,decodeBase64Url(signature),new TextEncoder().encode(payload));
+    if(!validSignature)return false;
+    const session=JSON.parse(new TextDecoder().decode(decodeBase64Url(payload)));
+    const roles=new Set(["safeguarding_lead","case_officer","read_only"]);
+    return typeof session.sub==="string"&&session.sub.length>0&&
+      typeof session.username==="string"&&session.username.length>0&&
+      roles.has(session.role)&&Number.isInteger(session.exp)&&
+      session.exp>Math.floor(Date.now()/1000);
+  }catch{return false;}
+}
+
 async function isValidAdminSession(request){
   const token=request.cookies.get(ADMIN_COOKIE)?.value;
   const secret=process.env.ADMIN_SESSION_SECRET;
@@ -36,7 +62,13 @@ export async function middleware(request){
     return NextResponse.redirect(url,308);
   }
   const pathname=request.nextUrl.pathname;
-  if(pathname === "/admin/safeguarding" && request.cookies.get("vsi_safeguarding_session")?.value)return NextResponse.next();
+  if(pathname === "/admin/safeguarding" || pathname === "/admin/safeguarding/"){
+    if(await isValidSafeguardingSession(request))return NextResponse.next();
+    const loginUrl=request.nextUrl.clone();
+    loginUrl.pathname="/auth/safeguarding";
+    loginUrl.searchParams.set("next",pathname+request.nextUrl.search);
+    return NextResponse.redirect(loginUrl);
+  }
   if(pathname.startsWith("/admin")){
     if(await isValidAdminSession(request))return NextResponse.next();
     const loginUrl=request.nextUrl.clone();
