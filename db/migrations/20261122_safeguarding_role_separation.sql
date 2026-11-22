@@ -1,5 +1,5 @@
 -- Isolate confidential safeguarding casework from the general VSI application login.
--- Provision the LOGIN credential separately in Neon; never commit its password.
+-- Provision the LOGIN credential separately in Neon. Never commit its password.
 CREATE ROLE vsi_safeguarding_access NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS;
 
 CREATE TABLE public.safeguarding_login_attempts (
