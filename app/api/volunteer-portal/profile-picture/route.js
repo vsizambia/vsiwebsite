@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { get } from "@vercel/blob";
-import { pool } from "../../../../lib/db";
+import { volunteerPortalPool } from "../../../../lib/db";
 import { currentVolunteer } from "../../../../lib/volunteer-portal-auth";
 
 export const runtime = "nodejs";
@@ -16,7 +16,7 @@ export async function GET() {
       });
     }
 
-    const profileResult = await pool.query(
+    const profileResult = await volunteerPortalPool.query(
       "SELECT profile_picture FROM volunteer_applications WHERE id=$1 AND LOWER(status)='approved' LIMIT 1",
       [sessionVolunteer.id]
     );

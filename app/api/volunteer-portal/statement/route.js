@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool } from "../../../../lib/db";
+import { volunteerPortalPool } from "../../../../lib/db";
 import { currentVolunteer } from "../../../../lib/volunteer-portal-auth";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -10,7 +10,7 @@ export async function GET() {
   try {
     const volunteer = await currentVolunteer();
     if (!volunteer) return NextResponse.json({error:"Please sign in to view your volunteer portal."},{status:401,headers:{"Cache-Control":"no-store"}});
-    const paymentsResult = await pool.query(
+    const paymentsResult = await volunteerPortalPool.query(
       `SELECT payment_month,amount_paid,payment_date,payment_method,reference
          FROM volunteer_membership_payments WHERE volunteer_id=$1 ORDER BY payment_month ASC`,
       [volunteer.id]

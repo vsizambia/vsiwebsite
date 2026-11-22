@@ -1,28 +1,28 @@
 import {NextResponse} from "next/server";
 import {del as deleteBlob} from "@vercel/blob";
-import {ensureDataProtectionTables,pool} from "../../../../lib/db";
+import {ensureDataProtectionTables,dataProtectionAdminPool} from "../../../../lib/db";
 import {isAdminAuthenticated} from "../../../../lib/admin-auth";
 const unauthorized=()=>NextResponse.json({error:"Admin authentication required."},{status:401});
 
 async function retentionSummary(){
-  const rules=(await pool.query("SELECT * FROM data_retention_rules WHERE active=TRUE ORDER BY label")).rows;
-  const volunteer=(await pool.query("SELECT COUNT(*)::int total, COUNT(*) FILTER (WHERE created_at + INTERVAL '60 months' <= NOW())::int due FROM volunteer_applications")).rows[0];
-  const activities=(await pool.query("SELECT COUNT(*)::int total, COUNT(*) FILTER (WHERE created_at + INTERVAL '84 months' <= NOW())::int due FROM volunteer_activity_register")).rows[0];
-  const requests=(await pool.query("SELECT COUNT(*)::int total, COUNT(*) FILTER (WHERE received_at + INTERVAL '36 months' <= NOW())::int due FROM data_protection_requests")).rows[0];
-  const incidents=(await pool.query("SELECT COUNT(*)::int total, COUNT(*) FILTER (WHERE reported_at + INTERVAL '84 months' <= NOW())::int due FROM data_protection_incidents")).rows[0];
+  const rules=(await dataProtectionAdminPool.query("SELECT * FROM data_retention_rules WHERE active=TRUE ORDER BY label")).rows;
+  const volunteer=(await dataProtectionAdminPool.query("SELECT COUNT(*)::int total, COUNT(*) FILTER (WHERE created_at + INTERVAL '60 months' <= NOW())::int due FROM volunteer_applications")).rows[0];
+  const activities=(await dataProtectionAdminPool.query("SELECT COUNT(*)::int total, COUNT(*) FILTER (WHERE created_at + INTERVAL '84 months' <= NOW())::int due FROM volunteer_activity_register")).rows[0];
+  const requests=(await dataProtectionAdminPool.query("SELECT COUNT(*)::int total, COUNT(*) FILTER (WHERE received_at + INTERVAL '36 months' <= NOW())::int due FROM data_protection_requests")).rows[0];
+  const incidents=(await dataProtectionAdminPool.query("SELECT COUNT(*)::int total, COUNT(*) FILTER (WHERE reported_at + INTERVAL '84 months' <= NOW())::int due FROM data_protection_incidents")).rows[0];
   const counts={volunteer_application:volunteer,volunteer_profile_photo:volunteer,volunteer_activity:activities,professional_development:{total:0,due:0},event_registration:{total:0,due:0},data_subject_request:requests,data_protection_incident:incidents};
   return rules.map(rule=>({...rule,total:Number(counts[rule.record_type]?.total||0),due:Number(counts[rule.record_type]?.due||0)}));
 }
 
 async function retentionQueue(){
   const rows=[];
-  const volunteers=await pool.query("SELECT id,full_name,status,created_at,created_at + INTERVAL '60 months' due_at FROM volunteer_applications WHERE created_at + INTERVAL '60 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
+  const volunteers=await dataProtectionAdminPool.query("SELECT id,full_name,status,created_at,created_at + INTERVAL '60 months' due_at FROM volunteer_applications WHERE created_at + INTERVAL '60 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
   volunteers.rows.forEach(r=>rows.push({recordType:"volunteer_application",recordId:r.id,label:r.full_name||"Volunteer application",status:r.status,createdAt:r.created_at,dueAt:r.due_at}));
-  const activities=await pool.query("SELECT id,volunteer_id,activity_name,created_at,created_at + INTERVAL '84 months' due_at FROM volunteer_activity_register WHERE created_at + INTERVAL '84 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
+  const activities=await dataProtectionAdminPool.query("SELECT id,volunteer_id,activity_name,created_at,created_at + INTERVAL '84 months' due_at FROM volunteer_activity_register WHERE created_at + INTERVAL '84 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
   activities.rows.forEach(r=>rows.push({recordType:"volunteer_activity",recordId:r.id,label:r.activity_name||("Volunteer activity #"+r.id),status:"verified history",createdAt:r.created_at,dueAt:r.due_at,volunteerId:r.volunteer_id}));
-  const requests=await pool.query("SELECT id,request_type,requester_name,status,received_at,received_at + INTERVAL '36 months' due_at FROM data_protection_requests WHERE received_at + INTERVAL '36 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
+  const requests=await dataProtectionAdminPool.query("SELECT id,request_type,requester_name,status,received_at,received_at + INTERVAL '36 months' due_at FROM data_protection_requests WHERE received_at + INTERVAL '36 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
   requests.rows.forEach(r=>rows.push({recordType:"data_subject_request",recordId:r.id,label:r.request_type+" — "+r.requester_name,status:r.status,createdAt:r.received_at,dueAt:r.due_at}));
-  const incidents=await pool.query("SELECT id,incident_type,status,reported_at,reported_at + INTERVAL '84 months' due_at FROM data_protection_incidents WHERE reported_at + INTERVAL '84 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
+  const incidents=await dataProtectionAdminPool.query("SELECT id,incident_type,status,reported_at,reported_at + INTERVAL '84 months' due_at FROM data_protection_incidents WHERE reported_at + INTERVAL '84 months' <= NOW() ORDER BY due_at ASC LIMIT 100");
   incidents.rows.forEach(r=>rows.push({recordType:"data_protection_incident",recordId:r.id,label:r.incident_type,status:r.status,createdAt:r.reported_at,dueAt:r.due_at}));
   return rows.sort((a,b)=>new Date(a.dueAt)-new Date(b.dueAt)).slice(0,200);
 }
@@ -31,15 +31,15 @@ export async function GET(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{await ensureDataProtectionTables();
  const [requests,incidents,consents,volunteerConsent,retention,recentActions,retentionQueueRecords]=await Promise.all([
- pool.query("SELECT * FROM data_protection_requests ORDER BY received_at DESC LIMIT 100"),
- pool.query("SELECT * FROM data_protection_incidents ORDER BY reported_at DESC LIMIT 100"),
- pool.query("SELECT consent_type,COUNT(*) FILTER(WHERE granted) granted,COUNT(*) total,COUNT(DISTINCT subject_id) unique_subjects,COUNT(DISTINCT subject_id) FILTER (WHERE EXISTS (SELECT 1 FROM volunteer_applications v WHERE v.id=data_protection_consent_log.subject_id)) current_volunteers FROM data_protection_consent_log WHERE subject_type='volunteer' GROUP BY consent_type ORDER BY consent_type"),
- pool.query("SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE consent=TRUE)::int privacyDeclared,COUNT(*) FILTER (WHERE privacy_notice_accepted_at IS NOT NULL)::int privacyTimestamped,COUNT(*) FILTER (WHERE photo_processing_consent=TRUE)::int photoGranted,COUNT(*) FILTER (WHERE public_media_consent=TRUE)::int mediaGranted,COUNT(*) FILTER (WHERE public_media_consent=FALSE)::int mediaFalse FROM volunteer_applications"),
+ dataProtectionAdminPool.query("SELECT * FROM data_protection_requests ORDER BY received_at DESC LIMIT 100"),
+ dataProtectionAdminPool.query("SELECT * FROM data_protection_incidents ORDER BY reported_at DESC LIMIT 100"),
+ dataProtectionAdminPool.query("SELECT consent_type,COUNT(*) FILTER(WHERE granted) granted,COUNT(*) total,COUNT(DISTINCT subject_id) unique_subjects,COUNT(DISTINCT subject_id) FILTER (WHERE EXISTS (SELECT 1 FROM volunteer_applications v WHERE v.id=data_protection_consent_log.subject_id)) current_volunteers FROM data_protection_consent_log WHERE subject_type='volunteer' GROUP BY consent_type ORDER BY consent_type"),
+ dataProtectionAdminPool.query("SELECT COUNT(*)::int total,COUNT(*) FILTER (WHERE consent=TRUE)::int privacyDeclared,COUNT(*) FILTER (WHERE privacy_notice_accepted_at IS NOT NULL)::int privacyTimestamped,COUNT(*) FILTER (WHERE photo_processing_consent=TRUE)::int photoGranted,COUNT(*) FILTER (WHERE public_media_consent=TRUE)::int mediaGranted,COUNT(*) FILTER (WHERE public_media_consent=FALSE)::int mediaFalse FROM volunteer_applications"),
  retentionSummary(),
- pool.query("SELECT * FROM data_retention_actions ORDER BY performed_at DESC LIMIT 50"),
+ dataProtectionAdminPool.query("SELECT * FROM data_retention_actions ORDER BY performed_at DESC LIMIT 50"),
  retentionQueue()]);
 
- const consentReconciliation={volunteers:volunteerConsent.rows[0]||{},legacyReconciled:(await pool.query("SELECT COUNT(DISTINCT subject_id)::int count FROM data_protection_consent_log WHERE subject_type='volunteer' AND source='legacy_reconciliation'")).rows[0]?.count||0};
+ const consentReconciliation={volunteers:volunteerConsent.rows[0]||{},legacyReconciled:(await dataProtectionAdminPool.query("SELECT COUNT(DISTINCT subject_id)::int count FROM data_protection_consent_log WHERE subject_type='volunteer' AND source='legacy_reconciliation'")).rows[0]?.count||0};
  const dueCount=retentionQueueRecords.length;
  const overdueCount=retentionQueueRecords.filter(item=>new Date(item.dueAt)<new Date()).length;
  const recentActionCount=recentActions.rows.filter(item=>["delete","anonymise"].includes(item.action)).length;
@@ -50,9 +50,9 @@ export async function GET(request){
 export async function PATCH(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{await ensureDataProtectionTables();const b=await request.json();
- if(b.kind==="request"){const status=String(b.status||"").trim();if(!["received","in_progress","completed","closed"].includes(status))return NextResponse.json({error:"Invalid request status."},{status:400});const r=await pool.query("UPDATE data_protection_requests SET status=$1,completed_at=CASE WHEN $1 IN ('completed','closed') THEN COALESCE(completed_at,NOW()) ELSE NULL END WHERE id=$2 RETURNING *",[status,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
- if(b.kind==="incident"){const status=String(b.status||"").trim();if(!["open","contained","investigating","resolved"].includes(status))return NextResponse.json({error:"Invalid incident status."},{status:400});const r=await pool.query("UPDATE data_protection_incidents SET status=$1,resolved_at=CASE WHEN $1='resolved' THEN COALESCE(resolved_at,NOW()) ELSE NULL END WHERE id=$2 RETURNING *",[status,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
- if(b.kind==="retention_rule"){const months=Number(b.retentionMonths);const action=String(b.action||"");if(!Number.isInteger(months)||months<0||!["review","archive","anonymise","delete"].includes(action))return NextResponse.json({error:"Invalid retention rule."},{status:400});const r=await pool.query("UPDATE data_retention_rules SET retention_months=$1,action=$2,updated_at=NOW() WHERE id=$3 RETURNING *",[months,action,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
+ if(b.kind==="request"){const status=String(b.status||"").trim();if(!["received","in_progress","completed","closed"].includes(status))return NextResponse.json({error:"Invalid request status."},{status:400});const r=await dataProtectionAdminPool.query("UPDATE data_protection_requests SET status=$1,completed_at=CASE WHEN $1 IN ('completed','closed') THEN COALESCE(completed_at,NOW()) ELSE NULL END WHERE id=$2 RETURNING *",[status,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
+ if(b.kind==="incident"){const status=String(b.status||"").trim();if(!["open","contained","investigating","resolved"].includes(status))return NextResponse.json({error:"Invalid incident status."},{status:400});const r=await dataProtectionAdminPool.query("UPDATE data_protection_incidents SET status=$1,resolved_at=CASE WHEN $1='resolved' THEN COALESCE(resolved_at,NOW()) ELSE NULL END WHERE id=$2 RETURNING *",[status,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
+ if(b.kind==="retention_rule"){const months=Number(b.retentionMonths);const action=String(b.action||"");if(!Number.isInteger(months)||months<0||!["review","archive","anonymise","delete"].includes(action))return NextResponse.json({error:"Invalid retention rule."},{status:400});const r=await dataProtectionAdminPool.query("UPDATE data_retention_rules SET retention_months=$1,action=$2,updated_at=NOW() WHERE id=$3 RETURNING *",[months,action,Number(b.id)]);return NextResponse.json({record:r.rows[0]});}
  return NextResponse.json({error:"Invalid update."},{status:400});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to update record."},{status:500});}
 }
@@ -64,7 +64,7 @@ export async function POST(request){
   const action=String(b.action||"");const type=String(b.recordType||"");const id=Number(b.recordId);
   if(!type||!Number.isFinite(id)||!["retain","review","archive","anonymise","delete"].includes(action))return NextResponse.json({error:"Invalid retention action."},{status:400});
   if(["anonymise","delete"].includes(action)&&b.confirmation!=="CONFIRM")return NextResponse.json({error:"Type CONFIRM before anonymising or deleting a record."},{status:400});
-  const client=await pool.connect();
+  const client=await dataProtectionAdminPool.connect();
   try{
     await client.query("BEGIN");
     let metadata={};
@@ -102,6 +102,6 @@ export async function POST(request){
   }catch(error){await client.query("ROLLBACK");console.error(error);return NextResponse.json({error:error.message||"Unable to perform retention action."},{status:500});}
   finally{client.release();}
 }
- const type=String(b.incidentType||"").trim(),summary=String(b.summary||"").trim();if(!type||!summary)return NextResponse.json({error:"Incident type and summary are required."},{status:400});const r=await pool.query("INSERT INTO data_protection_incidents (incident_type,summary,personal_data_affected,containment_action) VALUES ($1,$2,$3,$4) RETURNING *",[type,summary,b.personalDataAffected===true,String(b.containmentAction||"").trim()||null]);return NextResponse.json({incident:r.rows[0]},{status:201});
+ const type=String(b.incidentType||"").trim(),summary=String(b.summary||"").trim();if(!type||!summary)return NextResponse.json({error:"Incident type and summary are required."},{status:400});const r=await dataProtectionAdminPool.query("INSERT INTO data_protection_incidents (incident_type,summary,personal_data_affected,containment_action) VALUES ($1,$2,$3,$4) RETURNING *",[type,summary,b.personalDataAffected===true,String(b.containmentAction||"").trim()||null]);return NextResponse.json({incident:r.rows[0]},{status:201});
  }catch(e){console.error(e);return NextResponse.json({error:"Unable to record compliance action."},{status:500});}
 }

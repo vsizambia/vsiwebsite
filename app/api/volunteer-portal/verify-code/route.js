@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool } from "../../../../lib/db";
+import { volunteerPortalPool } from "../../../../lib/db";
 import { VOLUNTEER_PORTAL_COOKIE, hmac, originAllowed, portalSecret, safeEqualHex, sha256, newSessionToken, sessionCookieOptions, sessionExpiry } from "../../../../lib/volunteer-portal-auth";
 
 export const runtime = "nodejs";
@@ -12,7 +12,7 @@ export async function POST(request) {
     const challengeId = typeof body.challengeId === "string" ? body.challengeId : "";
     const code = typeof body.code === "string" ? body.code.trim() : "";
     if (!/^[0-9a-f-]{36}$/i.test(challengeId) || !/^\d{6}$/.test(code)) return json({error:"The code is invalid or expired."},400);
-    const client = await pool.connect();
+    const client = await volunteerPortalPool.connect();
     let volunteerId = null;
     try {
       await client.query("BEGIN");
@@ -41,7 +41,7 @@ export async function POST(request) {
     } finally { client.release(); }
     const token = newSessionToken();
     const expiresAt = sessionExpiry();
-    await pool.query("INSERT INTO volunteer_portal_sessions(volunteer_application_id,token_hash,expires_at) VALUES($1,$2,$3)",[volunteerId,sha256(token),expiresAt]);
+    await volunteerPortalPool.query("INSERT INTO volunteer_portal_sessions(volunteer_application_id,token_hash,expires_at) VALUES($1,$2,$3)",[volunteerId,sha256(token),expiresAt]);
     const response = json({ok:true});
     response.cookies.set(VOLUNTEER_PORTAL_COOKIE,token,{...sessionCookieOptions(),expires:expiresAt});
     return response;
