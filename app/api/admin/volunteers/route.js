@@ -8,7 +8,7 @@ const fields=["full_name","age","date_of_birth","nationality","gender","faith","
 const assignmentKeys=["programme","project","activity"];
 const integerFields=["age","hours_per_week"];
 const booleanFields=["volunteering_elsewhere","criminal_conviction","disability","membership_fee_acknowledged"];
-const unauthorized=()=>NextResponse.json({error:"Admin authentication required."});
+const unauthorized=()=>NextResponse.json({error:"Admin authentication required."},{status:401});
 const adminPhotoUrl=(value)=>typeof value==="string"&&value.startsWith("https://")&&value.includes(".private.blob.vercel-storage.com/")?`/api/admin/volunteer-photo?url=${encodeURIComponent(value)}`:value;
 const formatDob=(value)=>{if(!value)return null;const d=new Date(value);if(Number.isNaN(d.getTime()))return String(value);return `${String(d.getUTCDate()).padStart(2,"0")}/${String(d.getUTCMonth()+1).padStart(2,"0")}/${d.getUTCFullYear()}`;};
 const formatReceivedAt=(value)=>{if(!value)return null;const d=new Date(value);if(Number.isNaN(d.getTime()))return null;return d.toLocaleString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit",hour12:false,timeZone:"Africa/Lusaka"});};

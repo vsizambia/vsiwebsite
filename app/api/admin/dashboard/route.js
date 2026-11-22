@@ -1,7 +1,7 @@
 import {NextResponse} from "next/server";
 import {pool,ensureVolunteerTable,ensureNewsTable,ensureEventsTable,ensureDataProtectionTables,ensureVolunteerFinanceTables} from "../../../../lib/db";
 import {isAdminAuthenticated} from "../../../../lib/admin-auth";
-const unauthorized=()=>NextResponse.json({error:"Admin authentication required."});
+const unauthorized=()=>NextResponse.json({error:"Admin authentication required."},{status:401});
 export async function GET(request){
  if(!isAdminAuthenticated(request))return unauthorized();
  try{
