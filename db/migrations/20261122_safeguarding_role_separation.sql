@@ -20,6 +20,9 @@ ALTER TABLE public.safeguarding_login_attempts ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS vsi_safeguarding_access_all ON public.safeguarding_reports;
 CREATE POLICY vsi_safeguarding_access_all ON public.safeguarding_reports
   FOR ALL TO vsi_safeguarding_access USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS vsi_safeguarding_legacy_access ON public.safeguarding_reports;
+CREATE POLICY vsi_safeguarding_legacy_access ON public.safeguarding_reports
+  FOR ALL TO vsi_app USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS vsi_safeguarding_ingest_insert ON public.safeguarding_reports;
 CREATE POLICY vsi_safeguarding_ingest_insert ON public.safeguarding_reports
   FOR INSERT TO vsi_safeguarding_ingest WITH CHECK (true);
@@ -27,12 +30,21 @@ CREATE POLICY vsi_safeguarding_ingest_insert ON public.safeguarding_reports
 DROP POLICY IF EXISTS vsi_safeguarding_access_all ON public.safeguarding_case_notes;
 CREATE POLICY vsi_safeguarding_access_all ON public.safeguarding_case_notes
   FOR ALL TO vsi_safeguarding_access USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS vsi_safeguarding_legacy_access ON public.safeguarding_case_notes;
+CREATE POLICY vsi_safeguarding_legacy_access ON public.safeguarding_case_notes
+  FOR ALL TO vsi_app USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS vsi_safeguarding_access_all ON public.safeguarding_audit_log;
 CREATE POLICY vsi_safeguarding_access_all ON public.safeguarding_audit_log
   FOR ALL TO vsi_safeguarding_access USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS vsi_safeguarding_legacy_access ON public.safeguarding_audit_log;
+CREATE POLICY vsi_safeguarding_legacy_access ON public.safeguarding_audit_log
+  FOR ALL TO vsi_app USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS vsi_safeguarding_access_all ON public.safeguarding_users;
 CREATE POLICY vsi_safeguarding_access_all ON public.safeguarding_users
   FOR ALL TO vsi_safeguarding_access USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS vsi_safeguarding_legacy_access ON public.safeguarding_users;
+CREATE POLICY vsi_safeguarding_legacy_access ON public.safeguarding_users
+  FOR ALL TO vsi_app USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS vsi_safeguarding_access_all ON public.safeguarding_login_attempts;
 CREATE POLICY vsi_safeguarding_access_all ON public.safeguarding_login_attempts
   FOR ALL TO vsi_safeguarding_access USING (true) WITH CHECK (true);
@@ -48,5 +60,5 @@ GRANT USAGE ON SEQUENCE public.safeguarding_audit_log_id_seq TO vsi_safeguarding
 GRANT USAGE ON SEQUENCE public.safeguarding_users_id_seq TO vsi_safeguarding_access;
 GRANT USAGE ON SEQUENCE public.safeguarding_login_attempts_id_seq TO vsi_safeguarding_access;
 
-REVOKE ALL PRIVILEGES ON public.safeguarding_reports, public.safeguarding_case_notes, public.safeguarding_audit_log, public.safeguarding_users FROM vsi_app;
-REVOKE ALL PRIVILEGES ON SEQUENCE public.safeguarding_reports_id_seq, public.safeguarding_case_notes_id_seq, public.safeguarding_audit_log_id_seq, public.safeguarding_users_id_seq FROM vsi_app;
+-- vsi_app access is retained temporarily for a zero-downtime code rollout.
+-- Remove the legacy policies and grants after the dedicated app login is live.
