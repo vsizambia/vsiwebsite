@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { pool } from "../../../../lib/db";
+import { volunteerPortalPool } from "../../../../lib/db";
 import { hmac, identityDigest, ipDigest, originAllowed, portalSecret } from "../../../../lib/volunteer-portal-auth";
 
 export const runtime = "nodejs";
@@ -22,7 +22,7 @@ export async function POST(request) {
     }
     const identityHash = identityDigest(volunteerId, email);
     const clientIpHash = ipDigest(request);
-    const client = await pool.connect();
+    const client = await volunteerPortalPool.connect();
     let volunteer = null;
     const challengeId = crypto.randomUUID();
     const code = String(crypto.randomInt(0, 1000000)).padStart(6, "0");
@@ -81,12 +81,12 @@ export async function POST(request) {
         })
         });
       } catch {
-        await pool.query("DELETE FROM volunteer_portal_challenges WHERE id=$1", [challengeId]).catch(()=>{});
+        await volunteerPortalPool.query("DELETE FROM volunteer_portal_challenges WHERE id=$1", [challengeId]).catch(()=>{});
         console.error("Volunteer portal email provider request failed before confirmation.");
         return json({error:"Email verification is temporarily unavailable. Please try again later."},503);
       }
       if (!mail.ok) {
-        await pool.query("DELETE FROM volunteer_portal_challenges WHERE id=$1", [challengeId]).catch(()=>{});
+        await volunteerPortalPool.query("DELETE FROM volunteer_portal_challenges WHERE id=$1", [challengeId]).catch(()=>{});
         console.error("Volunteer portal email provider rejected a verification email.", {status:mail.status});
         return json({error:"Email verification is temporarily unavailable. Please try again later."},503);
       }
