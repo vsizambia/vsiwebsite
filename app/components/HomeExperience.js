@@ -66,14 +66,6 @@ const sections = [
   },
 ];
 
-const mobileLinks = [
-  { label: "Discover VSI", detail: "Our purpose, values and story", href: "/discover" },
-  { label: "VSI in Action", detail: "Programmes and community work", href: "/projects" },
-  { label: "Impact & Evidence", detail: "Progress, outcomes and learning", href: "/impact" },
-  { label: "E-Learning", detail: "Learning resources and opportunities", href: "/elearning" },
-  { label: "VSI News", detail: "Stories, updates and perspectives", href: "/news" },
-];
-
 export default function HomeExperience() {
   const [activeId, setActiveId] = useState("who-we-are");
   const active = sections.find((item) => item.id === activeId) || sections[0];
@@ -118,37 +110,6 @@ export default function HomeExperience() {
           </button>
         ))}
       </nav>
-
-      <section className="mobile-home-hub" aria-label="Explore Visionary Students Initiative">
-        <div className="mobile-home-intro">
-          <span className="mobile-home-rule" aria-hidden="true" />
-          <p>We promote policies and initiatives that give young people the knowledge, voice, skills and opportunities to participate meaningfully in Zambia’s future.</p>
-        </div>
-
-        <div className="mobile-home-navigation">
-          <div className="mobile-home-section-heading">
-            <span>EXPLORE</span>
-            <span className="mobile-home-section-count">01 — 05</span>
-          </div>
-          <nav aria-label="Explore VSI">
-            {mobileLinks.map((item, index) => (
-              <a className="mobile-home-link" href={item.href} key={item.href}>
-                <span className="mobile-home-link-number">{String(index + 1).padStart(2, "0")}</span>
-                <span className="mobile-home-link-copy">
-                  <strong>{item.label}</strong>
-                  <small>{item.detail}</small>
-                </span>
-                <span className="mobile-home-link-arrow" aria-hidden="true">↗</span>
-              </a>
-            ))}
-          </nav>
-        </div>
-
-        <div className="mobile-home-actions">
-          <a className="mobile-home-volunteer" href="/volunteer">Volunteer with VSI <span aria-hidden="true">↗</span></a>
-          <a className="mobile-home-donate" href="/generosity">Support our work <span aria-hidden="true">↗</span></a>
-        </div>
-      </section>
     </div>
   );
 }
