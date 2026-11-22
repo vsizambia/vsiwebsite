@@ -1,4 +1,4 @@
--- Website manager schema is provisioned by migrations, never by request handlers.
+-- Website manager and chrome schemas are provisioned by migrations, never by request handlers.
 -- The application role receives only the table operations required by the manager.
 
 CREATE TABLE IF NOT EXISTS public.website_pages (
@@ -44,3 +44,23 @@ GRANT SELECT, INSERT, UPDATE, DELETE
   ON TABLE public.website_pages, public.website_page_versions TO vsi_app;
 GRANT USAGE, SELECT
   ON SEQUENCE public.website_pages_id_seq, public.website_page_versions_id_seq TO vsi_app;
+
+CREATE TABLE IF NOT EXISTS public.website_chrome (
+  id bigserial PRIMARY KEY,
+  chrome_key text NOT NULL UNIQUE,
+  draft_content jsonb NOT NULL,
+  published_content jsonb NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  published_at timestamptz
+);
+
+ALTER TABLE public.website_chrome ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS transitional_vsi_app_access ON public.website_chrome;
+CREATE POLICY transitional_vsi_app_access
+  ON public.website_chrome FOR ALL TO vsi_app
+  USING (true) WITH CHECK (true);
+
+REVOKE ALL PRIVILEGES ON TABLE public.website_chrome FROM PUBLIC;
+REVOKE ALL PRIVILEGES ON SEQUENCE public.website_chrome_id_seq FROM PUBLIC;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.website_chrome TO vsi_app;
+GRANT USAGE, SELECT ON SEQUENCE public.website_chrome_id_seq TO vsi_app;
