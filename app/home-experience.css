@@ -39,3 +39,50 @@
 .home-section-cards{display:none}
 }
 @media(prefers-reduced-motion:reduce){.home-hero .hero-image img,.home-section-card{animation:none;transition:none}}
+
+
+/* Niagara-inspired mobile home: quiet hierarchy, generous spacing and a single navigation list. */
+.mobile-home-hub{display:none}
+@media(max-width:600px){
+  .home-experience{background:#080f1c}
+  .home-hero,.home-section-cards{display:none!important}
+  .mobile-home-hub{
+    display:block;
+    min-height:calc(100svh - 68px);
+    padding:34px 22px 42px;
+    color:#f5f3ee;
+    background:linear-gradient(160deg,#102747 0%,#0b1b30 48%,#080f1c 100%);
+  }
+  .mobile-home-intro{max-width:520px;padding:5px 0 34px}
+  .mobile-home-rule{display:block;width:38px;height:2px;margin-bottom:20px;background:#d6c29a}
+  .mobile-home-intro p{margin:0;color:rgba(245,243,238,.84);font-size:15px;line-height:1.75;letter-spacing:.005em}
+  .mobile-home-navigation{padding-top:4px}
+  .mobile-home-section-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;color:#d6c29a;font-size:10px;font-weight:800;letter-spacing:.18em}
+  .mobile-home-section-count{color:rgba(245,243,238,.42);font-variant-numeric:tabular-nums;letter-spacing:.12em}
+  .mobile-home-link{display:grid;grid-template-columns:34px minmax(0,1fr) 20px;align-items:center;gap:12px;min-height:76px;padding:12px 0;border-bottom:1px solid rgba(245,243,238,.13);color:#f5f3ee}
+  .mobile-home-link:first-child{border-top:1px solid rgba(245,243,238,.13)}
+  .mobile-home-link-number{align-self:start;padding-top:3px;color:#d6c29a;font-size:10px;font-weight:700;letter-spacing:.08em;font-variant-numeric:tabular-nums}
+  .mobile-home-link-copy{display:flex;flex-direction:column;gap:5px;min-width:0}
+  .mobile-home-link-copy strong{font-size:17px;line-height:1.2;font-weight:650;letter-spacing:-.025em}
+  .mobile-home-link-copy small{color:rgba(245,243,238,.56);font-size:11px;line-height:1.4}
+  .mobile-home-link-arrow{justify-self:end;color:#d6c29a;font-size:19px;transition:transform .2s ease}
+  .mobile-home-link:active .mobile-home-link-arrow{transform:translate(2px,-2px)}
+  .mobile-home-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:27px}
+  .mobile-home-actions a{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:49px;padding:0 13px;border-radius:3px;font-size:11px;font-weight:750;letter-spacing:.01em}
+  .mobile-home-volunteer{background:#d6c29a;color:#102747}
+  .mobile-home-donate{border:1px solid rgba(214,194,154,.52);color:#f5f3ee}
+  .mobile-home-actions a span{font-size:15px}
+  .site-header{background:#f5f3ee;border-bottom:1px solid rgba(16,39,71,.1);box-shadow:none}
+  .nav-shell{min-height:68px}
+  .brand img{width:148px}
+  .mobile-menu summary{border-color:rgba(16,39,71,.18);background:transparent}
+  .mobile-menu summary span,.mobile-menu summary span::before,.mobile-menu summary span::after{background:#102747}
+  .mobile-menu-panel{background:#f5f3ee;border-color:rgba(16,39,71,.12);box-shadow:0 18px 40px rgba(8,15,28,.2)}
+  .mobile-menu-panel a{color:#102747}
+  .mobile-menu-panel a[href="/generosity"]{background:#d6c29a}
+  .vsi-compact-footer{background:#080f1c!important;color:rgba(245,243,238,.7)!important;border-top:1px solid rgba(214,194,154,.2)}
+  .vsi-compact-footer a{color:#d6c29a!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .mobile-home-link-arrow{transition:none}
+}
