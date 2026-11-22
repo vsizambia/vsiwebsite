@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool, ensureVolunteerTable, ensureVolunteerFinanceTables } from "../../../../lib/db";
+import { volunteerPortalPool, ensureVolunteerTable, ensureVolunteerFinanceTables } from "../../../../lib/db";
 import { currentVolunteer } from "../../../../lib/volunteer-portal-auth";
 
 export const runtime = "nodejs";
@@ -20,12 +20,12 @@ export async function GET() {
 
     await Promise.all([ensureVolunteerTable(), ensureVolunteerFinanceTables()]);
     const [profileResult, activityResult, membershipResult, donationResult, otherPaymentResult, hoursResult] = await Promise.all([
-      pool.query("SELECT * FROM volunteer_applications WHERE id=$1 AND LOWER(status)='approved' LIMIT 1", [sessionVolunteer.id]),
-      pool.query("SELECT id,activity_date,activity_name,activity_code,project,location,start_time,end_time,hours,directorate,sdgs,au_agenda,description,supervisor_name,facilitator,verified FROM volunteer_activity_register WHERE volunteer_id=$1 ORDER BY activity_date DESC,start_time DESC", [sessionVolunteer.id]),
-      pool.query("SELECT id,payment_month,amount_due,amount_paid,status,payment_date,payment_method,reference,notes FROM volunteer_membership_payments WHERE volunteer_id=$1 ORDER BY payment_month DESC,id DESC", [sessionVolunteer.id]),
-      pool.query("SELECT id,cause,amount,donation_date,payment_method,reference,notes FROM volunteer_donations WHERE volunteer_id=$1 ORDER BY donation_date DESC,id DESC", [sessionVolunteer.id]),
-      pool.query("SELECT id,description,amount,payment_date,payment_method,reference,notes FROM volunteer_other_payments WHERE volunteer_id=$1 ORDER BY payment_date DESC,id DESC", [sessionVolunteer.id]),
-      pool.query(`SELECT
+      volunteerPortalPool.query("SELECT * FROM volunteer_applications WHERE id=$1 AND LOWER(status)='approved' LIMIT 1", [sessionVolunteer.id]),
+      volunteerPortalPool.query("SELECT id,activity_date,activity_name,activity_code,project,location,start_time,end_time,hours,directorate,sdgs,au_agenda,description,supervisor_name,facilitator,verified FROM volunteer_activity_register WHERE volunteer_id=$1 ORDER BY activity_date DESC,start_time DESC", [sessionVolunteer.id]),
+      volunteerPortalPool.query("SELECT id,payment_month,amount_due,amount_paid,status,payment_date,payment_method,reference,notes FROM volunteer_membership_payments WHERE volunteer_id=$1 ORDER BY payment_month DESC,id DESC", [sessionVolunteer.id]),
+      volunteerPortalPool.query("SELECT id,cause,amount,donation_date,payment_method,reference,notes FROM volunteer_donations WHERE volunteer_id=$1 ORDER BY donation_date DESC,id DESC", [sessionVolunteer.id]),
+      volunteerPortalPool.query("SELECT id,description,amount,payment_date,payment_method,reference,notes FROM volunteer_other_payments WHERE volunteer_id=$1 ORDER BY payment_date DESC,id DESC", [sessionVolunteer.id]),
+      volunteerPortalPool.query(`SELECT
         COALESCE(SUM(CASE WHEN verified=true AND activity_date >= date_trunc('week',CURRENT_DATE)::date AND UPPER(TRIM(COALESCE(activity_code,''))) NOT LIKE 'FAHR%' THEN hours ELSE 0 END),0) AS week_hours,
         COALESCE(SUM(CASE WHEN verified=true AND UPPER(TRIM(COALESCE(activity_code,''))) NOT LIKE 'FAHR%' THEN hours ELSE 0 END),0) AS total_hours,
         COALESCE(SUM(CASE WHEN verified=true AND UPPER(TRIM(COALESCE(activity_code,''))) NOT LIKE 'FAHR%' THEN 1 ELSE 0 END),0) AS verified_activity_count,
