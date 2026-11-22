@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import crypto from "node:crypto";
-import { pool } from "../../../../lib/db";
+import { safeguardingAdminPool } from "../../../../lib/db";
 import { isAdminAuthenticated } from "../../../../lib/admin-auth";
 import {
   encryptSafeguardingTotp, generateSafeguardingTotpSecret,
@@ -12,7 +12,7 @@ const denied = () => NextResponse.json({ error: "Existing VSI Admin authenticati
 export async function GET(request) {
   if (!isAdminAuthenticated(request)) return denied();
   try {
-    const result = await pool.query("SELECT id,username,display_name,role,active,created_at,updated_at,last_login_at FROM safeguarding_users ORDER BY display_name,username");
+    const result = await safeguardingAdminPool.query("SELECT id,username,display_name,role,active,created_at,updated_at,last_login_at FROM safeguarding_users ORDER BY display_name,username");
     return NextResponse.json({ users: result.rows.map(user => ({ ...user, roleLabel: safeguardingRoleLabels(user.role) })) });
   } catch (error) {
     console.error("Safeguarding account list failed:", error?.message || "unknown error");
@@ -31,11 +31,11 @@ export async function POST(request) {
     }
     const password = generateTemporaryPassword();
     const secret = generateSafeguardingTotpSecret();
-    const result = await pool.query(
+    const result = await safeguardingAdminPool.query(
       "INSERT INTO safeguarding_users(username,display_name,password_hash,role,active,totp_secret_encrypted) VALUES($1,$2,$3,$4,TRUE,$5) RETURNING id,username,display_name,role,active,created_at",
       [username, displayName, hashSafeguardingPassword(password), role, encryptSafeguardingTotp(secret)]
     );
-    await pool.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES(NULL,'user_created','Authenticated VSI Admin',$1::jsonb)", [JSON.stringify({ username, role })]);
+    await safeguardingAdminPool.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES(NULL,'user_created','Authenticated VSI Admin',$1::jsonb)", [JSON.stringify({ username, role })]);
     const user = result.rows[0];
     return NextResponse.json({
       ok: true,
@@ -56,9 +56,9 @@ export async function PATCH(request) {
     const id = Number(body?.id);
     const active = body?.active;
     if (!Number.isInteger(id) || id < 1 || typeof active !== "boolean") return NextResponse.json({ error: "Provide an account ID and active true/false." }, { status: 400 });
-    const result = await pool.query("UPDATE safeguarding_users SET active=$1,updated_at=NOW() WHERE id=$2 RETURNING id,username,display_name,role,active", [active, id]);
+    const result = await safeguardingAdminPool.query("UPDATE safeguarding_users SET active=$1,updated_at=NOW() WHERE id=$2 RETURNING id,username,display_name,role,active", [active, id]);
     if (!result.rows[0]) return NextResponse.json({ error: "Account not found." }, { status: 404 });
-    await pool.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES(NULL,'user_status_changed','Authenticated VSI Admin',$1::jsonb)", [JSON.stringify({ username: result.rows[0].username, active })]);
+    await safeguardingAdminPool.query("INSERT INTO safeguarding_audit_log(report_id,action,actor,details) VALUES(NULL,'user_status_changed','Authenticated VSI Admin',$1::jsonb)", [JSON.stringify({ username: result.rows[0].username, active })]);
     return NextResponse.json({ ok: true, user: result.rows[0] });
   } catch (error) {
     console.error("Safeguarding account update failed:", error?.message || "unknown error");

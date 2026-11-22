@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { pool } from "../../../../lib/db";
+import { safeguardingAdminPool } from "../../../../lib/db";
 import { readSafeguardingSession } from "../../../../lib/safeguarding-auth";
 
 const unauthorized = () => NextResponse.json({ error: "Admin authentication required." }, { status: 401 });
@@ -10,7 +10,7 @@ const clean = (v,max=5000) => typeof v === "string" ? v.trim().slice(0,max) : ""
 async function resolveSafeguardingAccess(request, permission) {
   const tokenSession = readSafeguardingSession(request);
   if (!tokenSession) return { allowed: false, session: null };
-  const result = await pool.query("SELECT username,display_name,role,active FROM safeguarding_users WHERE id=$1 LIMIT 1", [Number(tokenSession.sub)]);
+  const result = await safeguardingAdminPool.query("SELECT username,display_name,role,active FROM safeguarding_users WHERE id=$1 LIMIT 1", [Number(tokenSession.sub)]);
   const user = result.rows[0];
   if (!user || !user.active) return { allowed: false, session: null };
   const allowed = user.role === "safeguarding_lead" ||
@@ -30,14 +30,14 @@ export async function GET(request) {
     const id = Number(searchParams.get("id"));
     if (id > 0) {
       const [report,notes,audit] = await Promise.all([
-        pool.query("SELECT * FROM safeguarding_reports WHERE id=$1",[id]),
-        pool.query("SELECT id,report_id,note_type,note_text,created_by,created_at FROM safeguarding_case_notes WHERE report_id=$1 ORDER BY created_at DESC LIMIT 100",[id]),
-        pool.query("SELECT id,action,actor,details,created_at FROM safeguarding_audit_log WHERE report_id=$1 ORDER BY created_at DESC LIMIT 100",[id])
+        safeguardingAdminPool.query("SELECT * FROM safeguarding_reports WHERE id=$1",[id]),
+        safeguardingAdminPool.query("SELECT id,report_id,note_type,note_text,created_by,created_at FROM safeguarding_case_notes WHERE report_id=$1 ORDER BY created_at DESC LIMIT 100",[id]),
+        safeguardingAdminPool.query("SELECT id,action,actor,details,created_at FROM safeguarding_audit_log WHERE report_id=$1 ORDER BY created_at DESC LIMIT 100",[id])
       ]);
       if (!report.rows[0]) return NextResponse.json({error:"Case not found."},{status:404});
       return NextResponse.json({report:report.rows[0],notes:notes.rows,audit:audit.rows,user});
     }
-    const result = await pool.query("SELECT id,case_reference,received_at,reporter_type,anonymous,reporter_name,reporter_contact,safe_contact_method,affected_person_type,affected_person_age_band,concern_category,concern_details,incident_date,immediate_danger,safe_to_contact,status,urgency,assigned_to,updated_at,closed_at FROM safeguarding_reports ORDER BY CASE WHEN immediate_danger THEN 0 WHEN urgency='urgent' THEN 1 WHEN urgency='high' THEN 2 ELSE 3 END, received_at DESC LIMIT 250");
+    const result = await safeguardingAdminPool.query("SELECT id,case_reference,received_at,reporter_type,anonymous,reporter_name,reporter_contact,safe_contact_method,affected_person_type,affected_person_age_band,concern_category,concern_details,incident_date,immediate_danger,safe_to_contact,status,urgency,assigned_to,updated_at,closed_at FROM safeguarding_reports ORDER BY CASE WHEN immediate_danger THEN 0 WHEN urgency='urgent' THEN 1 WHEN urgency='high' THEN 2 ELSE 3 END, received_at DESC LIMIT 250");
     return NextResponse.json({reports:result.rows,user});
   } catch (error) {
     console.error("Safeguarding admin GET failed:",error?.message||"unknown error");
@@ -65,7 +65,7 @@ export async function PATCH(request) {
       if (body[key] !== undefined) fields[key]=clean(body[key],limit)||null;
     }
     if (!Object.keys(fields).length) return NextResponse.json({error:"No valid changes supplied."},{status:400});
-    client=await pool.connect();
+    client=await safeguardingAdminPool.connect();
     await client.query("BEGIN");
     const current=await client.query("SELECT id,status,urgency,immediate_danger,risk_assessment,protective_actions,outcome_summary FROM safeguarding_reports WHERE id=$1 FOR UPDATE",[id]);
     if (!current.rows[0]) { await client.query("ROLLBACK"); return NextResponse.json({error:"Case not found."},{status:404}); }
@@ -133,7 +133,7 @@ export async function POST(request) {
     const body=await request.json();
     const id=Number(body.id), noteType=clean(body.noteType,40), noteText=clean(body.noteText,5000);
     if(!Number.isInteger(id)||id<1||!noteTypes.has(noteType)||noteText.length<2) return NextResponse.json({error:"Provide a valid case, note category and note."},{status:400});
-    client=await pool.connect();
+    client=await safeguardingAdminPool.connect();
     await client.query("BEGIN");
     const exists=await client.query("SELECT id FROM safeguarding_reports WHERE id=$1 FOR UPDATE",[id]);
     if(!exists.rows[0]){await client.query("ROLLBACK");return NextResponse.json({error:"Case not found."},{status:404});}
