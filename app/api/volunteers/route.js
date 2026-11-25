@@ -57,17 +57,24 @@ async function allowVolunteerApplication(request) {
 }
 
 async function storeProfilePicture(dataUrl, volunteerId) {
-  if (!dataUrl) return null;
-  const match = dataUrl.match(/^data:(image\/(?:jpeg|png|webp));base64,(.+)$/);
-  if (!match) throw new Error("Invalid profile picture format.");
-  const contentType = match[1] === "image/png" ? "image/png" : "image/jpeg";
-  const extension = contentType === "image/png" ? "png" : "jpg";
-  const buffer = Buffer.from(match[2], "base64");
-  if (buffer.length > 1000000) throw new Error("Please upload a smaller profile picture (maximum 1 MB).");
-  const blob = await put(`volunteers/${volunteerId}/profile.${extension}`, buffer, {
+  if (!dataUrl || typeof dataUrl !== "string") throw new Error("Please provide a profile picture.");
+  // The browser converts profile photos to JPEG. Only accept that canonical format
+  // server-side; never trust the submitted data-URI MIME label alone.
+  const match = dataUrl.match(/^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/);
+  if (!match) throw new Error("Profile picture must be a valid JPEG image.");
+  const encoded = match[1];
+  if (encoded.length > 1400000) throw new Error("Please upload a smaller profile picture (maximum 1 MB).");
+  const buffer = Buffer.from(encoded, "base64");
+  if (buffer.length < 4 || buffer.length > 1000000 ||
+      buffer.toString("base64").replace(/=+$/, "") !== encoded.replace(/=+$/, "") ||
+      buffer[0] !== 0xff || buffer[1] !== 0xd8 || buffer[2] !== 0xff ||
+      buffer[buffer.length - 2] !== 0xff || buffer[buffer.length - 1] !== 0xd9) {
+    throw new Error("The uploaded profile picture is not a valid JPEG file.");
+  }
+  const blob = await put(`volunteers/${volunteerId}/profile-${crypto.randomUUID()}.jpg`, buffer, {
     access: "private",
-    contentType,
-    addRandomSuffix: true,
+    contentType: "image/jpeg",
+    addRandomSuffix: false,
   });
   return blob.url;
 }
@@ -97,6 +104,10 @@ function parseDateOfBirth(value) {
 export async function POST(request) {
   if (!db) return NextResponse.json({ error: "Volunteer application submission is temporarily unavailable." }, { status: 503 });
   try {
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > 2 * 1024 * 1024) {
+      return NextResponse.json({ error: "Application payload is too large. Please reduce the profile photo size and try again." }, { status: 413 });
+    }
     const body = await request.json();
     const required = ["fullName","dateOfBirth","nationality","gender","faith","email","phone","province","district","constituency","ward","category","skills","availability","hoursPerWeek","motivation","referenceName","referenceOrganization","referencePhone","referenceEmail","emergencyName","emergencyPhone"];
     if (!required.every((field) => clean(body[field]) !== null && clean(body[field]) !== "")) return NextResponse.json({ error: "Please complete all required fields." }, { status: 400 });
