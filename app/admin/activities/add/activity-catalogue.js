@@ -150,6 +150,6 @@ export const ACTIVITY_CATALOGUE = [
 ['PAR-PDP-001','Strategic Policy Roundtables & Expert Seminars','Youth Policy Dialogue, Advocacy & Governance','Directorate of Policy, Advocacy & Research','SDG 16, SDG 17','Aspiration 3, Aspiration 6'],
 ['PAR-PDP-002','National Multi-Stakeholder Policy Conferences','Youth Policy Dialogue, Advocacy & Governance','Directorate of Policy, Advocacy & Research','SDG 16, SDG 17','Aspiration 3, Aspiration 6'],
 ['PAR-SYPP-001','Student & Youth Policy Consultations','Youth Policy Dialogue, Advocacy & Governance','Directorate of Policy, Advocacy & Research','SDG 4, SDG 16','Aspiration 6'],
-['PAR-SYPP-002','Youth Civic & Governance Dialogues','Youth Policy Dialogue, Advocacy & Governance','Directorate of Policy, Advocacy & Research','SDG 16','Aspiration 3, Aspiration 6']
+['PAR-SYPP-002','Youth Civic & Governance Dialogues','Youth Policy Dialogue, Advocacy & Governance','Directorate of Policy, Advocacy & Research','SDG 16','Aspiration 3, Aspiration 6'],
 ['FAHR-PDP-015','Adolescent HIV Management','Staff Capacity & People Development','Directorate of Finance, Administration and Human Resource','SDG 3 – Good Health and Well-being; SDG 4 – Quality Education; SDG 5 – Gender Equality','Aspiration 1 – A prosperous Africa, based on inclusive growth and sustainable development'],
 ].map(([code,name,project,directorate,sdgs,au])=>({code,name,project,directorate,sdgs,au}));
