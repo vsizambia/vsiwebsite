@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { put } from "@vercel/blob";
 import { isAdminAuthenticated } from "../../../../../lib/admin-auth";
+import { randomUUID } from "node:crypto";
+import { inspectImageUpload } from "../../../../../lib/secure-image-upload";
 
 export const runtime = "nodejs";
 
@@ -35,27 +37,21 @@ export async function POST(request) {
       );
     }
 
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > 8 * 1024 * 1024 + 256 * 1024) {
+      return NextResponse.json({ error: "Image upload is too large." }, { status: 413 });
+    }
     const formData = await request.formData();
-    const file = formData.get("file");
-    if (!file || typeof file.arrayBuffer !== "function") {
-      return NextResponse.json({ error: "Please select an image." }, { status: 400 });
-    }
+    const checked = await inspectImageUpload(formData.get("file"), 8 * 1024 * 1024);
+    if (checked.error) return NextResponse.json({ error: checked.error }, { status: 400 });
 
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) {
-      return NextResponse.json({ error: "Please choose a JPG, PNG or WebP image." }, { status: 400 });
-    }
-    if (file.size > 8 * 1024 * 1024) {
-      return NextResponse.json({ error: "Image must be 8 MB or smaller." }, { status: 400 });
-    }
-
-    const originalName = String(file.name || "image").replace(/[^a-zA-Z0-9._-]/g, "-");
-    const blob = await put(`news/${Date.now()}-${originalName}`, file, {
+    // Public images use a fixed image MIME and an opaque, non-user-controlled key.
+    const blob = await put(`news/${randomUUID()}.${checked.extension}`, checked.bytes, {
       access: "public",
       token,
       storeId,
-      addRandomSuffix: true,
-      contentType: file.type,
+      addRandomSuffix: false,
+      contentType: checked.contentType,
       cacheControlMaxAge: 31536000,
     });
 
