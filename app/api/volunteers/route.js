@@ -56,10 +56,8 @@ async function allowVolunteerApplication(request) {
   }
 }
 
-async function storeProfilePicture(dataUrl, volunteerId) {
+function validateProfilePictureData(dataUrl) {
   if (!dataUrl || typeof dataUrl !== "string") throw new Error("Please provide a profile picture.");
-  // The browser converts profile photos to JPEG. Only accept that canonical format
-  // server-side; never trust the submitted data-URI MIME label alone.
   const match = dataUrl.match(/^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/);
   if (!match) throw new Error("Profile picture must be a valid JPEG image.");
   const encoded = match[1];
@@ -71,6 +69,10 @@ async function storeProfilePicture(dataUrl, volunteerId) {
       buffer[buffer.length - 2] !== 0xff || buffer[buffer.length - 1] !== 0xd9) {
     throw new Error("The uploaded profile picture is not a valid JPEG file.");
   }
+  return buffer;
+}
+
+async function storeProfilePicture(buffer, volunteerId) {
   const blob = await put(`volunteers/${volunteerId}/profile-${crypto.randomUUID()}.jpg`, buffer, {
     access: "private",
     contentType: "image/jpeg",
@@ -118,6 +120,9 @@ export async function POST(request) {
     if (body.membershipFeeAccepted !== true) return NextResponse.json({ error: "Please confirm the VSI membership fee of ZMW 30 monthly." }, { status: 400 });
     if (body.consent !== true) return NextResponse.json({ error: "Please acknowledge the Privacy Policy and volunteer data-processing notice." }, { status: 400 });
     if (body.photoProcessingConsent !== true) return NextResponse.json({ error: "Consent is required to process the profile photograph for volunteer administration." }, { status: 400 });
+    let profilePictureBuffer;
+    try { profilePictureBuffer = validateProfilePictureData(body.profilePicture); }
+    catch (photoValidationError) { return NextResponse.json({ error: photoValidationError.message }, { status: 400 }); }
     const applicantAge = ageOnToday(dateOfBirth);
     if (applicantAge < 18) {
       if (!clean(body.guardianName) || !clean(body.guardianRelationship) || !clean(body.guardianPhone) || body.guardianConsent !== true) {
@@ -159,7 +164,7 @@ export async function POST(request) {
 
     let profilePicture = null;
     try {
-      profilePicture = await storeProfilePicture(body.profilePicture, result.rows[0].id);
+      profilePicture = await storeProfilePicture(profilePictureBuffer, result.rows[0].id);
       if (profilePicture) await db.query("UPDATE volunteer_applications SET profile_picture = $1 WHERE id = $2", [profilePicture, result.rows[0].id]);
     } catch (photoError) {
       console.error("VSI volunteer profile picture could not be stored:", photoError);
