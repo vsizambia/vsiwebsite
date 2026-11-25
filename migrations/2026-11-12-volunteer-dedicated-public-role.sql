@@ -129,4 +129,4 @@ CREATE POLICY vsi_volunteer_public_rate_limit_delete
 DROP POLICY IF EXISTS vsi_volunteer_public_consent_insert ON public.data_protection_consent_log;
 CREATE POLICY vsi_volunteer_public_consent_insert
   ON public.data_protection_consent_log FOR INSERT TO vsi_volunteer_public
-  WITH CHECK (subject_type = 'volunteer' AND granted = true);
+  WITH CHECK (subject_type = 'volunteer' AND consent_type IN ('privacy_notice','profile_photo_processing','public_media','parent_or_guardian_consent'));
