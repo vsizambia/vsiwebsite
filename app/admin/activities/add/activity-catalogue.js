@@ -8,6 +8,7 @@ export const ACTIVITY_CATALOGUE = [
 ['PROG-CSVP-001','Community-Led Service Initiatives','Community Service & Volunteerism','Directorate of Programmes','SDG 4, SDG 11, SDG 17','Aspiration 6'],
 ['PROG-CSVP-002','Grassroots Community Development Projects','Community Service & Volunteerism','Directorate of Programmes','SDG 4, SDG 11, SDG 17','Aspiration 6'],
 ['PROG-CSVP-003','Corporate & Youth Social Responsibility Drives','Community Service & Volunteerism','Directorate of Programmes','SDG 4, SDG 11, SDG 17','Aspiration 6'],
+['PROG-CSVP-004','Meeting Attendance & Participation','Community Service and Volunteerism Project','Directorate of Programmes','SDG 16 – Peace, Justice and Strong Institutions; SDG 17 – Partnerships for the Goals','Aspiration 3 – An Africa of good governance, democracy, respect for human rights, justice and the rule of law'],
 ['PROG-SOP-001','Secondary School Civic & Career Outreach','Education, Schools & Youth Development','Directorate of Programmes','SDG 4, SDG 8','Aspiration 6'],
 ['PROG-SOP-002','Tertiary Campus Leadership & Skills Outreach','Education, Schools & Youth Development','Directorate of Programmes','SDG 4, SDG 8','Aspiration 6'],
 ['PROG-AAP-001','Agricultural Practical Skills & Agro-Processing Training','Youth Skills, Innovation & Economic Empowerment','Directorate of Programmes','SDG 1, SDG 2, SDG 8','Aspiration 1'],
